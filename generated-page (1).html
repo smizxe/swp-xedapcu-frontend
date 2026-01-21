@@ -1,0 +1,637 @@
+<html lang="vi" class="scroll-smooth"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CycleTrust | Nền tảng xe đạp thể thao chuẩn mực</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9', // Blue
+                            600: '#0284c7',
+                        },
+                        accent: {
+                            400: '#22d3ee', // Cyan
+                            500: '#34d399', // Emerald/Soft Green
+                        }
+                    },
+                    animation: {
+                        'float': 'float 8s ease-in-out infinite',
+                        'float-delayed': 'float 8s ease-in-out 4s infinite',
+                        'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc; /* Very light gray base */
+            color: #0f172a;
+        }
+        
+        /* Custom Scrollbar for Webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Glass Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease-out;
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Gradients */
+        .text-gradient {
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .bg-gradient-brand {
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #10b981 100%);
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        /* Utilities */
+        .tracking-tighter-custom {
+            letter-spacing: -0.03em;
+        }
+    </style>
+</head>
+<body class="relative overflow-x-hidden font-sans antialiased selection:bg-cyan-100 selection:text-cyan-900">
+
+    <!-- Ambient Background Shapes -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="blob bg-blue-200 w-[500px] h-[500px] -top-24 -left-24 animate-float"></div>
+        <div class="blob bg-cyan-200 w-[400px] h-[400px] top-1/3 right-0 animate-float-delayed"></div>
+        <div class="blob bg-emerald-100 w-[600px] h-[600px] -bottom-32 left-1/3 opacity-30"></div>
+    </div>
+
+    <!-- 1. Sticky Glass Header -->
+    <header class="fixed top-0 w-full z-50 transition-all duration-300">
+        <div class="glass-panel mx-auto max-w-7xl mt-4 mx-4 md:mx-auto rounded-2xl px-6 py-4 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-2 group">
+                <div class="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center text-white">
+                    <iconify-icon icon="solar:bicycle-linear" width="20"></iconify-icon>
+                </div>
+                <span class="text-xl font-semibold tracking-tight text-slate-800">CycleTrust</span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="#how-it-works" class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Cách hoạt động</a>
+                <a href="#inspection" class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Xe đã kiểm định</a>
+                <a href="#" class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Dành cho người bán</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-4">
+                <a href="#" class="hidden md:block text-sm font-medium text-slate-600 hover:text-slate-900">Đăng nhập</a>
+                <a href="#" class="bg-gradient-brand text-white text-sm font-medium px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-cyan-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                    Khám phá xe
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative z-10 pt-32 pb-20">
+
+        <!-- 2. HERO SECTION -->
+        <section class="max-w-7xl mx-auto px-6 lg:px-8 mb-24">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                
+                <!-- Text Content -->
+                <div class="flex-1 text-center lg:text-left pt-10">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium mb-6 animate-fade-in-up">
+                        <iconify-icon icon="solar:shield-check-linear"></iconify-icon>
+                        Nền tảng giao dịch xe đạp tiêu chuẩn EV
+                    </div>
+                    
+                    <h1 class="text-5xl lg:text-7xl font-semibold tracking-tighter-custom text-slate-900 mb-6 leading-[1.1]">
+                        Mua bán xe đạp <br>
+                        <span class="text-gradient">minh bạch &amp; an tâm</span>
+                    </h1>
+                    
+                    <p class="text-lg text-slate-500 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light">
+                        CycleTrust giúp bạn mua và bán xe đạp thể thao cao cấp như mua xe chính hãng. Kiểm định 50 điểm, định giá minh bạch, bảo vệ người mua tuyệt đối.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                        <a href="#" class="w-full sm:w-auto bg-gradient-brand text-white text-base font-medium px-8 py-3.5 rounded-full hover:shadow-xl hover:shadow-cyan-500/20 transition-all text-center">
+                            Khám phá xe
+                        </a>
+                        <a href="#" class="w-full sm:w-auto glass-card text-slate-700 text-base font-medium px-8 py-3.5 rounded-full hover:bg-white transition-all text-center flex items-center justify-center gap-2">
+                            <iconify-icon icon="solar:tag-linear"></iconify-icon>
+                            Đăng bán xe
+                        </a>
+                    </div>
+
+                    <div class="mt-12 flex items-center justify-center lg:justify-start gap-6 text-sm text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <iconify-icon icon="solar:check-circle-linear" class="text-emerald-500"></iconify-icon>
+                            <span>100% Xe kiểm định</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <iconify-icon icon="solar:check-circle-linear" class="text-emerald-500"></iconify-icon>
+                            <span>Hoàn tiền 7 ngày</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Content (Mockup) -->
+                <div class="flex-1 w-full relative h-[500px] flex items-center justify-center">
+                    <!-- Main Card -->
+                    <div class="absolute w-80 md:w-96 glass-card p-4 rounded-3xl z-20 animate-float">
+                        <div class="relative w-full h-48 bg-slate-100 rounded-2xl mb-4 overflow-hidden group">
+                            <!-- Placeholder for bike image -->
+                            <div class="absolute inset-0 bg-gradient-to-tr from-slate-200 to-slate-100 flex items-center justify-center text-slate-300">
+                                <iconify-icon icon="solar:bicycle-bold" width="64"></iconify-icon>
+                            </div>
+                            <div class="absolute top-3 left-3 bg-emerald-500/90 backdrop-blur text-white text-[10px] font-semibold px-2 py-1 rounded-full uppercase tracking-wide">
+                                Verified
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-semibold text-slate-800">Specialized Tarmac SL7</h3>
+                                    <p class="text-xs text-slate-500">2022 • Size 54 • Carbon</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-cyan-600">85.0tr ₫</p>
+                                </div>
+                            </div>
+                            <!-- Trust Indicators Strip inside card -->
+                            <div class="flex gap-2 pt-2 border-t border-slate-100">
+                                <div class="flex-1 bg-slate-50 rounded-lg p-2 text-center">
+                                    <p class="text-[10px] text-slate-400 uppercase">Khung sườn</p>
+                                    <p class="text-xs font-medium text-slate-700">98%</p>
+                                </div>
+                                <div class="flex-1 bg-slate-50 rounded-lg p-2 text-center">
+                                    <p class="text-[10px] text-slate-400 uppercase">Truyền động</p>
+                                    <p class="text-xs font-medium text-slate-700">Tốt</p>
+                                </div>
+                                <div class="flex-1 bg-slate-50 rounded-lg p-2 text-center">
+                                    <p class="text-[10px] text-slate-400 uppercase">Chủ xe</p>
+                                    <div class="flex justify-center text-amber-400 text-[10px]">
+                                        <iconify-icon icon="solar:star-bold"></iconify-icon>
+                                        <iconify-icon icon="solar:star-bold"></iconify-icon>
+                                        <iconify-icon icon="solar:star-bold"></iconify-icon>
+                                        <iconify-icon icon="solar:star-bold"></iconify-icon>
+                                        <iconify-icon icon="solar:star-bold"></iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Inspection Badge -->
+                    <div class="absolute -right-4 md:right-10 top-20 glass-panel p-3 rounded-2xl flex items-center gap-3 animate-float-delayed z-30">
+                        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-500">
+                            <iconify-icon icon="solar:file-check-linear" width="20"></iconify-icon>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Trạng thái</p>
+                            <p class="text-sm font-semibold text-slate-800">Đã kiểm định</p>
+                        </div>
+                    </div>
+
+                    <!-- Floating Support Badge -->
+                    <div class="absolute left-0 md:left-10 bottom-24 glass-panel p-3 rounded-2xl flex items-center gap-3 animate-pulse-slow z-10">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                            <iconify-icon icon="solar:shield-user-linear" width="20"></iconify-icon>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Bảo vệ</p>
+                            <p class="text-sm font-semibold text-slate-800">Thanh toán an toàn</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. TRUST SIGNAL STRIP -->
+        <section class="max-w-7xl mx-auto px-6 lg:px-8 mb-24">
+            <div class="glass-panel rounded-3xl p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                        <iconify-icon icon="solar:checklist-minimalistic-linear" width="24"></iconify-icon>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-900 mb-1">Kiểm định 50 điểm</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Mọi chiếc xe đều được kiểm tra kỹ thuật bởi chuyên gia.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center text-cyan-600 shrink-0">
+                        <iconify-icon icon="solar:user-check-linear" width="24"></iconify-icon>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-900 mb-1">Người bán xác thực</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Danh tính người bán được xác minh qua eKYC.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                        <iconify-icon icon="solar:wallet-money-linear" width="24"></iconify-icon>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-900 mb-1">Đặt cọc an toàn</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Tiền của bạn được giữ an toàn cho đến khi nhận xe.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 shrink-0">
+                        <iconify-icon icon="solar:chat-round-check-linear" width="24"></iconify-icon>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-900 mb-1">Hỗ trợ tranh chấp</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">CycleTrust đứng ra giải quyết mọi vấn đề phát sinh.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. MARKET PROBLEM SECTION -->
+        <section class="max-w-7xl mx-auto px-6 lg:px-8 mb-32">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 mb-4">Thị trường xe cũ đầy rủi ro?</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto">Mua bán xe đạp thể thao giá trị cao trên mạng xã hội thường mang lại sự bất an và thiếu minh bạch.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Problem 1 -->
+                <div class="p-8 rounded-3xl bg-white border border-slate-100 hover:border-slate-200 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-6">
+                        <iconify-icon icon="solar:close-circle-linear" width="20"></iconify-icon>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-3">Thông tin mơ hồ</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Ảnh chụp qua loa, không mô tả đúng tình trạng xước xát hay hỏng hóc của bộ truyền động.</p>
+                </div>
+                
+                <!-- Problem 2 -->
+                <div class="p-8 rounded-3xl bg-white border border-slate-100 hover:border-slate-200 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-6">
+                        <iconify-icon icon="solar:danger-circle-linear" width="20"></iconify-icon>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-3">Rủi ro giao dịch</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Chuyển cọc xong người bán mất tích, hoặc xe nhận được không đúng như cam kết.</p>
+                </div>
+
+                <!-- Problem 3 -->
+                <div class="p-8 rounded-3xl bg-white border border-slate-100 hover:border-slate-200 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-6">
+                        <iconify-icon icon="solar:tag-price-linear" width="20"></iconify-icon>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-3">Loạn giá</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Khó xác định giá trị thực của xe cũ. Mua hớ giá cao hoặc bị ép giá khi bán.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. SOLUTION SECTION -->
+        <section class="max-w-7xl mx-auto px-6 lg:px-8 mb-32 relative">
+            <!-- Background Decoration -->
+            <div class="absolute inset-0 bg-gradient-brand opacity-[0.03] rounded-[40px] -z-10 blur-3xl"></div>
+
+            <div class="text-center mb-16">
+                <h2 class="text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 mb-4">CycleTrust giải quyết triệt để</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto">Chúng tôi mang quy trình vận hành của các nền tảng EV cao cấp vào thế giới xe đạp.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Solution Card 1 -->
+                <div class="glass-card p-10 rounded-3xl flex flex-col justify-between h-full group cursor-default">
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-brand flex items-center justify-center text-white mb-6 shadow-lg shadow-cyan-500/30">
+                            <iconify-icon icon="solar:clipboard-check-linear" width="28"></iconify-icon>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-slate-900 mb-4">Verified by Inspector</h3>
+                        <p class="text-slate-500 leading-relaxed mb-6">
+                            Đội ngũ Inspector độc lập sẽ kiểm tra khung sườn (carbon/nhôm), groupset, bánh xe và các chi tiết hao mòn. Báo cáo minh bạch từng vết xước nhỏ.
+                        </p>
+                    </div>
+                    <div class="pt-6 border-t border-slate-200/50 flex items-center gap-3">
+                        <div class="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-emerald-500 w-4/5 rounded-full"></div>
+                        </div>
+                        <span class="text-xs font-medium text-slate-600">Độ tin cậy 98%</span>
+                    </div>
+                </div>
+
+                <!-- Solution Card 2 -->
+                <div class="glass-card p-10 rounded-3xl flex flex-col justify-between h-full group cursor-default">
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-900 mb-6 shadow-sm">
+                            <iconify-icon icon="solar:filter-linear" width="28"></iconify-icon>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-slate-900 mb-4">Bộ lọc chuyên sâu</h3>
+                        <p class="text-slate-500 leading-relaxed mb-6">
+                            Tìm xe chính xác theo Size (52, 54, S, M), Groupset (Shimano 105, Ultegra, SRAM Red), Vật liệu khung và Loại phanh (Disc/Rim). Không còn tìm kiếm vô vọng.
+                        </p>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <span class="px-3 py-1 rounded-full bg-slate-100 text-xs text-slate-600 border border-slate-200">Size 54</span>
+                        <span class="px-3 py-1 rounded-full bg-slate-100 text-xs text-slate-600 border border-slate-200">Carbon</span>
+                        <span class="px-3 py-1 rounded-full bg-slate-100 text-xs text-slate-600 border border-slate-200">Disc Brake</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. HOW IT WORKS -->
+        <section id="how-it-works" class="max-w-7xl mx-auto px-6 lg:px-8 mb-32">
+            <h2 class="text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 mb-12 text-center">Quy trình đơn giản</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                <!-- Connecting Line (Desktop) -->
+                <div class="hidden md:block absolute top-12 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-slate-200 to-transparent -z-10"></div>
+
+                <!-- Step 1 -->
+                <div class="relative pt-4 text-center">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-white border-4 border-slate-50 shadow-sm flex items-center justify-center text-slate-900 mb-6 z-10 relative">
+                        <span class="text-xl font-bold">1</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">Đăng bán &amp; Kiểm định</h3>
+                    <p class="text-sm text-slate-500 px-4">Người bán đăng thông tin. Inspector của CycleTrust xác thực tình trạng xe.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative pt-4 text-center">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-white border-4 border-slate-50 shadow-sm flex items-center justify-center text-slate-900 mb-6 z-10 relative">
+                        <span class="text-xl font-bold">2</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">Đặt cọc qua nền tảng</h3>
+                    <p class="text-sm text-slate-500 px-4">Người mua đặt cọc. Tiền được CycleTrust giữ an toàn, chưa chuyển cho người bán.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative pt-4 text-center">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-white border-4 border-slate-50 shadow-sm flex items-center justify-center text-slate-900 mb-6 z-10 relative">
+                        <span class="text-xl font-bold">3</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">Giao xe &amp; Xác nhận</h3>
+                    <p class="text-sm text-slate-500 px-4">Người mua nhận xe, kiểm tra. Nếu đúng mô tả, tiền mới được giải ngân.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. INSPECTION VISUAL -->
+        <section id="inspection" class="relative py-24 bg-slate-900 overflow-hidden">
+            <!-- Dark Mode Blobs -->
+            <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/20 blur-[100px] rounded-full pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+                <div class="flex flex-col lg:flex-row items-center gap-16">
+                    <div class="flex-1 text-center lg:text-left">
+                        <h2 class="text-3xl lg:text-4xl font-semibold tracking-tight text-white mb-6">Tiêu chuẩn kiểm định <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">nghiêm ngặt</span></h2>
+                        <p class="text-slate-400 text-lg leading-relaxed mb-8">
+                            Không chỉ nhìn bề ngoài. Chúng tôi soi khung carbon bằng siêu âm (nếu cần), đo độ mòn xích, kiểm tra độ đảo vành. Báo cáo chi tiết giúp bạn mua xe cũ như mua xe mới.
+                        </p>
+                        <ul class="space-y-4 text-slate-300 inline-block text-left">
+                            <li class="flex items-center gap-3">
+                                <iconify-icon icon="solar:check-circle-bold" class="text-emerald-400"></iconify-icon>
+                                Kiểm tra rạn nứt khung sườn
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <iconify-icon icon="solar:check-circle-bold" class="text-emerald-400"></iconify-icon>
+                                Đánh giá tình trạng Groupset
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <iconify-icon icon="solar:check-circle-bold" class="text-emerald-400"></iconify-icon>
+                                Kiểm tra vòng bi, trục giữa
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <!-- Glass UI for Checklist -->
+                        <div class="bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 max-w-md mx-auto shadow-2xl">
+                            <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
+                                <span class="text-white font-medium">Báo cáo kiểm định</span>
+                                <span class="bg-emerald-500/20 text-emerald-300 text-xs px-2 py-1 rounded">ID: #CT-8829</span>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <!-- Item 1 -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-300">
+                                            <iconify-icon icon="solar:wheel-angle-linear"></iconify-icon>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-white">Khung &amp; Phuộc</p>
+                                            <p class="text-xs text-slate-400">Không nứt gãy, sơn zin</p>
+                                        </div>
+                                    </div>
+                                    <iconify-icon icon="solar:check-circle-bold" class="text-emerald-400 text-xl"></iconify-icon>
+                                </div>
+
+                                <!-- Item 2 -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-300">
+                                            <iconify-icon icon="solar:settings-minimalistic-linear"></iconify-icon>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-white">Bộ truyền động</p>
+                                            <p class="text-xs text-slate-400">Xích mòn 0.5%, líp tốt</p>
+                                        </div>
+                                    </div>
+                                    <iconify-icon icon="solar:check-circle-bold" class="text-emerald-400 text-xl"></iconify-icon>
+                                </div>
+
+                                <!-- Item 3 -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-300">
+                                            <iconify-icon icon="solar:stop-circle-linear"></iconify-icon>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-white">Hệ thống phanh</p>
+                                            <p class="text-xs text-slate-400">Má phanh còn 80%</p>
+                                        </div>
+                                    </div>
+                                    <iconify-icon icon="solar:check-circle-bold" class="text-emerald-400 text-xl"></iconify-icon>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 pt-6 border-t border-white/10">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 p-[1px]">
+                                        <img src="https://ui-avatars.com/api/?name=Minh+Tuan&amp;background=0D8ABC&amp;color=fff" alt="Inspector" class="rounded-full w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-white">Minh Tuấn</p>
+                                        <p class="text-xs text-slate-400">Senior Technician</p>
+                                    </div>
+                                    <div class="ml-auto">
+                                        <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/917d6f93-fb36-439a-8c48-884b67b35381_1600w.jpg" class="h-8 opacity-50 invert" alt="Signature">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. SOCIAL PROOF -->
+        <section class="py-20 border-b border-slate-200 bg-white">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                    <div class="py-4">
+                        <p class="text-4xl font-bold text-slate-900 mb-2">2,500+</p>
+                        <p class="text-slate-500 font-medium">Xe đã được kiểm định</p>
+                    </div>
+                    <div class="py-4">
+                        <p class="text-4xl font-bold text-slate-900 mb-2">98%</p>
+                        <p class="text-slate-500 font-medium">Khách hàng hài lòng</p>
+                    </div>
+                    <div class="py-4">
+                        <p class="text-4xl font-bold text-slate-900 mb-2">0</p>
+                        <p class="text-slate-500 font-medium">Sự cố lừa đảo</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. FINAL CTA -->
+        <section class="py-32 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-white to-blue-50/50"></div>
+            <div class="blob bg-gradient-brand w-[800px] h-[800px] opacity-10 blur-3xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"></div>
+            
+            <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+                <h2 class="text-4xl md:text-5xl font-semibold tracking-tighter text-slate-900 mb-6">
+                    Mua bán xe đạp thể thao,<br>
+                    cuối cùng cũng có nơi <span class="italic font-medium text-cyan-600">đáng tin.</span>
+                </h2>
+                <p class="text-lg text-slate-500 mb-10 max-w-xl mx-auto">
+                    Không còn lo rủi ro. Không còn mua bán mơ hồ. Trải nghiệm nền tảng chuyên nghiệp ngay hôm nay.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="#" class="w-full sm:w-auto bg-gradient-brand text-white text-base font-medium px-10 py-4 rounded-full hover:shadow-xl hover:shadow-cyan-500/20 transition-all transform hover:-translate-y-1">
+                        Khám phá xe ngay
+                    </a>
+                    <a href="#" class="w-full sm:w-auto bg-white border border-slate-200 text-slate-700 text-base font-medium px-10 py-4 rounded-full hover:bg-slate-50 transition-all">
+                        Đăng bán xe
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 10. FOOTER -->
+    <footer class="bg-white border-t border-slate-100 pt-16 pb-12">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <div class="col-span-1 md:col-span-1">
+                    <a href="#" class="flex items-center gap-2 mb-6">
+                        <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white">
+                            <iconify-icon icon="solar:bicycle-linear" width="20"></iconify-icon>
+                        </div>
+                        <span class="text-xl font-semibold tracking-tight text-slate-900">CycleTrust</span>
+                    </a>
+                    <p class="text-sm text-slate-500 leading-relaxed">
+                        Nền tảng mua bán xe đạp thể thao đã qua sử dụng với tiêu chuẩn kiểm định cao nhất Việt Nam.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-slate-900 mb-4">Khám phá</h4>
+                    <ul class="space-y-3 text-sm text-slate-500">
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Road Bike</a></li>
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">MTB</a></li>
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Touring</a></li>
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Triathlon</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-slate-900 mb-4">Hỗ trợ</h4>
+                    <ul class="space-y-3 text-sm text-slate-500">
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Quy trình kiểm định</a></li>
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Chính sách bảo vệ</a></li>
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Câu hỏi thường gặp</a></li>
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Liên hệ</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-slate-900 mb-4">Pháp lý</h4>
+                    <ul class="space-y-3 text-sm text-slate-500">
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Điều khoản sử dụng</a></li>
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Chính sách bảo mật</a></li>
+                        <li><a href="#" class="hover:text-cyan-600 transition-colors">Giải quyết tranh chấp</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-slate-400">© 2023 CycleTrust. All rights reserved.</p>
+                <div class="flex gap-4 text-slate-400">
+                    <a href="#" class="hover:text-slate-600"><iconify-icon icon="solar:facebook-linear" width="20"></iconify-icon></a>
+                    <a href="#" class="hover:text-slate-600"><iconify-icon icon="solar:instagram-linear" width="20"></iconify-icon></a>
+                    <a href="#" class="hover:text-slate-600"><iconify-icon icon="solar:youtube-linear" width="20"></iconify-icon></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body></html>
