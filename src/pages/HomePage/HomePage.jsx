@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styles from './HomePage.module.css';
+import Header from '../../components/Header/Header';
 
 const HomePage = () => {
     const [hoveredCard, setHoveredCard] = useState(null);
@@ -52,24 +53,7 @@ const HomePage = () => {
     return (
         <div className={styles.homePage}>
             {/* Navigation */}
-            <nav className={styles.navbar}>
-                <div className={styles.navContainer}>
-                    <div className={styles.logo}>
-                        <span className={styles.logoIcon}>🚴</span>
-                        <span className={styles.logoText}>BikeHub</span>
-                    </div>
-                    <div className={styles.navLinks}>
-                        <a href="#browse">Browse</a>
-                        <a href="#sell">Sell Bike</a>
-                        <a href="#verified">Verified</a>
-                        <a href="#about">About</a>
-                    </div>
-                    <div className={styles.navActions}>
-                        <button className={styles.btnSecondary}>Sign In</button>
-                        <button className={styles.btnPrimary}>Get Started</button>
-                    </div>
-                </div>
-            </nav>
+            <Header />
 
             {/* Hero Section */}
             <section className={styles.hero}>
