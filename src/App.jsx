@@ -1,18 +1,15 @@
-import { useState } from 'react'
-import './App.css'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
-import HomePage from './pages/HomePage'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LoginPage from './pages/Auth/Login/LoginPage.jsx';
+import HomePage from './pages/HomePage/HomePage.jsx';
 
 function App() {
   return (
-    <div className="app-container">
-      <Navbar />
-      <main className="main-content">
-        <HomePage />
-      </main>
-      <Footer />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<HomePage />} />
+      </Routes>
+    </Router>
   )
 }
 

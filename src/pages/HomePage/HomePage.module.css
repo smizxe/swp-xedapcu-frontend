@@ -1,0 +1,784 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+.homePage {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    color: #000000;
+}
+
+/* Navigation */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid #e5e5e5;
+    transition: all 0.3s ease;
+}
+
+.navContainer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.25rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+}
+
+.logoIcon {
+    font-size: 2rem;
+}
+
+.logoText {
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.navLinks {
+    display: flex;
+    gap: 3rem;
+}
+
+.navLinks a {
+    color: #000000;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.navLinks a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #000000;
+    transition: width 0.3s ease;
+}
+
+.navLinks a:hover {
+    color: #666666;
+}
+
+.navLinks a:hover::after {
+    width: 100%;
+}
+
+.navActions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btnSecondary {
+    padding: 0.75rem 1.75rem;
+    background: transparent;
+    border: 2px solid #000000;
+    color: #000000;
+    border-radius: 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnSecondary:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.btnPrimary {
+    padding: 0.75rem 1.75rem;
+    background: #000000;
+    border: 2px solid #000000;
+    color: #ffffff;
+    border-radius: 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnPrimary:hover {
+    background: #333333;
+    border-color: #333333;
+}
+
+/* Hero Section */
+.hero {
+    position: relative;
+    padding: 4rem 3rem 6rem;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.heroBackground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, #f8f8f8 0%, #ffffff 100%);
+    z-index: 0;
+}
+
+.heroContent {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.heroTitle {
+    font-size: 5rem;
+    font-weight: 900;
+    line-height: 0.95;
+    margin-bottom: 2rem;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+    animation: fadeInUp 0.8s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.heroGradient {
+    display: block;
+    color: #000000;
+    position: relative;
+}
+
+.heroGradient::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100px;
+    height: 6px;
+    background: #000000;
+}
+
+.heroSubtitle {
+    font-size: 1.15rem;
+    color: #666666;
+    margin-bottom: 3rem;
+    line-height: 1.7;
+    font-weight: 400;
+    max-width: 90%;
+    animation: fadeInUp 0.8s ease 0.2s backwards;
+}
+
+.heroButtons {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 4rem;
+    animation: fadeInUp 0.8s ease 0.4s backwards;
+}
+
+.btnHeroPrimary {
+    padding: 1.25rem 2.5rem;
+    background: #000000;
+    border: 2px solid #000000;
+    color: white;
+    border-radius: 0;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btnHeroPrimary:hover {
+    background: #333333;
+    border-color: #333333;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.btnArrow {
+    transition: transform 0.3s ease;
+    font-size: 1.25rem;
+}
+
+.btnHeroPrimary:hover .btnArrow {
+    transform: translateX(5px);
+}
+
+.btnHeroSecondary {
+    padding: 1.25rem 2.5rem;
+    background: transparent;
+    border: 2px solid #000000;
+    color: #000000;
+    border-radius: 0;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnHeroSecondary:hover {
+    background: #000000;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.heroStats {
+    display: flex;
+    gap: 4rem;
+    animation: fadeInUp 0.8s ease 0.6s backwards;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.statNumber {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #000000;
+    letter-spacing: -1px;
+}
+
+.statLabel {
+    font-size: 0.8rem;
+    color: #999999;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.heroImage {
+    position: relative;
+    animation: fadeInRight 1s ease;
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.floatingCard {
+    position: relative;
+    border-radius: 0;
+    overflow: hidden;
+    background: #f8f8f8;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.floatingCard img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.verificationBadge {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    background: #000000;
+    padding: 1rem 1.75rem;
+    color: #ffffff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.checkmark {
+    background: #ffffff;
+    color: #000000;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 900;
+}
+
+/* Trust Bar */
+.trustBar {
+    max-width: 1400px;
+    margin: 0 auto 6rem;
+    padding: 3rem;
+    display: flex;
+    justify-content: space-around;
+    background: #f8f8f8;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.trustItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 600;
+    color: #000000;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trustIcon {
+    font-size: 1.75rem;
+}
+
+/* Featured Section */
+.featured {
+    max-width: 1400px;
+    margin: 6rem auto;
+    padding: 0 3rem;
+}
+
+.sectionHeader {
+    text-align: center;
+    margin-bottom: 5rem;
+}
+
+.sectionTitle {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    color: #000000;
+}
+
+.sectionSubtitle {
+    font-size: 1.1rem;
+    color: #666666;
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.bikeGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 2.5rem;
+}
+
+.bikeCard {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.bikeCard:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+    border-color: #000000;
+}
+
+.verifiedBadge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #000000;
+    color: white;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.bikeImage {
+    height: 320px;
+    overflow: hidden;
+    background: #f8f8f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bikeImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.bikeCard:hover .bikeImage img {
+    transform: scale(1.05);
+}
+
+.bikeInfo {
+    padding: 2rem;
+    background: #ffffff;
+}
+
+.bikeName {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    color: #000000;
+}
+
+.bikeCondition {
+    color: #999999;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.bikeFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e5e5;
+}
+
+.bikePrice {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #000000;
+    letter-spacing: -1px;
+}
+
+.btnView {
+    padding: 0.75rem 1.5rem;
+    background: #000000;
+    border: none;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.btnView:hover {
+    background: #333333;
+    transform: translateX(3px);
+}
+
+/* How It Works */
+.howItWorks {
+    max-width: 1400px;
+    margin: 8rem auto;
+    padding: 0 3rem;
+}
+
+.stepsContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    position: relative;
+}
+
+.stepCard {
+    background: #f8f8f8;
+    border: 1px solid #e5e5e5;
+    padding: 3.5rem 2.5rem;
+    text-align: center;
+    transition: all 0.4s ease;
+    position: relative;
+}
+
+.stepCard:hover {
+    background: #ffffff;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    border-color: #000000;
+}
+
+.stepIcon {
+    font-size: 4.5rem;
+    margin-bottom: 2rem;
+}
+
+.stepTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    color: #000000;
+}
+
+.stepDescription {
+    color: #666666;
+    line-height: 1.7;
+    font-weight: 400;
+}
+
+.stepArrow {
+    position: absolute;
+    right: -2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2rem;
+    color: #cccccc;
+}
+
+/* CTA Section */
+.cta {
+    max-width: 1400px;
+    margin: 8rem auto;
+    padding: 0 3rem;
+}
+
+.ctaContent {
+    background: #000000;
+    padding: 6rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.ctaContent::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #ffffff;
+}
+
+.ctaTitle {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
+
+.ctaSubtitle {
+    font-size: 1.15rem;
+    margin-bottom: 3rem;
+    color: #cccccc;
+    position: relative;
+    z-index: 1;
+    font-weight: 400;
+}
+
+.ctaButtons {
+    display: flex;
+    gap: 1.25rem;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.btnCtaPrimary {
+    padding: 1.25rem 2.75rem;
+    background: #ffffff;
+    border: 2px solid #ffffff;
+    color: #000000;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnCtaPrimary:hover {
+    background: transparent;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.btnCtaSecondary {
+    padding: 1.25rem 2.75rem;
+    background: transparent;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnCtaSecondary:hover {
+    background: #ffffff;
+    color: #000000;
+    transform: translateY(-2px);
+}
+
+/* Footer */
+.footer {
+    background: #f8f8f8;
+    border-top: 1px solid #e5e5e5;
+    padding: 5rem 3rem 3rem;
+    margin-top: 8rem;
+}
+
+.footerContent {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4rem;
+    margin-bottom: 3rem;
+}
+
+.footerSection h4 {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #000000;
+}
+
+.footerSection p {
+    color: #666666;
+    line-height: 1.7;
+    font-weight: 400;
+}
+
+.footerSection a {
+    display: block;
+    color: #666666;
+    text-decoration: none;
+    margin-bottom: 1rem;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+.footerSection a:hover {
+    color: #000000;
+}
+
+.footerBottom {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-top: 3rem;
+    border-top: 1px solid #e5e5e5;
+    text-align: center;
+    color: #999999;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .heroContent {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .heroTitle {
+        font-size: 4rem;
+    }
+
+    .navLinks {
+        display: none;
+    }
+
+    .bikeGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .stepsContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .stepArrow {
+        display: none;
+    }
+
+    .footerContent {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .heroStats {
+        gap: 2rem;
+    }
+
+    .trustBar {
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .ctaButtons {
+        flex-direction: column;
+    }
+
+    .navContainer {
+        padding: 1rem 1.5rem;
+    }
+
+    .hero {
+        padding: 3rem 1.5rem;
+    }
+
+    .featured,
+    .howItWorks,
+    .cta {
+        padding: 0 1.5rem;
+    }
+}
