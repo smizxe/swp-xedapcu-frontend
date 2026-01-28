@@ -1,6 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './Header.module.css';
-import LogoImg from '../../assets/HomePage/Logo_ekibdlo.png';
+import { MessageCircleQuestionMark } from 'lucide-react';
+import { MapPin } from 'lucide-react';
+import { User } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
+import LogoImg from '../../assets/HomePage/Logo_ekibdlo2.png';
 
 const Header = () => {
     const navigate = useNavigate();
@@ -20,6 +24,7 @@ const Header = () => {
                     <Link to="/sell">Sell Bike</Link>
                     <Link to="/verified">Verified</Link>
                     <Link to="/about">About</Link>
+
                 </div>
 
                 {/* Nút hành động */}
@@ -28,13 +33,25 @@ const Header = () => {
                         className={styles.btnSecondary}
                         onClick={() => navigate('/login')}
                     >
-                        Sign In
+                        <MessageCircleQuestionMark />
                     </button>
                     <button
-                        className={styles.btnPrimary}
-                        onClick={() => navigate('/register')}
+                        className={styles.btnSecondary}
+                        onClick={() => navigate('/login')}
                     >
-                        Get Started
+                        <MapPin />
+                    </button>
+                    <button
+                        className={styles.btnSecondary}
+                        onClick={() => navigate('/login')}
+                    >
+                        <User />
+                    </button>
+                    <button
+                        className={styles.btnSecondary}
+                        onClick={() => navigate('/login')}
+                    >
+                        <ShoppingCart />
                     </button>
                 </div>
             </div>
