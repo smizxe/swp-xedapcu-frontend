@@ -145,3 +145,37 @@
         padding: 1rem;
     }
 }
+
+/* Dark Variant - For pages other than HomePage */
+.navbarDark {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.navbarDark .logoText {
+    color: #000000;
+    text-shadow: none;
+}
+
+.navbarDark .navLinks a {
+    color: #000000;
+    text-shadow: none;
+}
+
+.navbarDark .navLinks a:hover {
+    color: #666666;
+}
+
+.navbarDark .navLinks a::after {
+    background: #000000;
+}
+
+.navbarDark .btnSecondary {
+    color: #000000;
+    filter: none;
+}
+
+.navbarDark .btnSecondary:hover {
+    color: #666666;
+}

@@ -6,11 +6,14 @@ import { User } from 'lucide-react';
 import { ShoppingCart } from 'lucide-react';
 import LogoImg from '../../assets/HomePage/Logo_ekibdlo2.png';
 
-const Header = () => {
+const Header = ({ variant = 'light' }) => {
     const navigate = useNavigate();
 
+    // Determine which CSS classes to use based on variant
+    const navbarClass = variant === 'dark' ? `${styles.navbar} ${styles.navbarDark}` : styles.navbar;
+
     return (
-        <nav className={styles.navbar}>
+        <nav className={navbarClass}>
             <div className={styles.navContainer}>
                 {/* Logo - Click để về Home */}
                 <Link to="/" className={styles.logo}>
@@ -31,7 +34,7 @@ const Header = () => {
                 <div className={styles.navActions}>
                     <button
                         className={styles.btnSecondary}
-                        onClick={() => navigate('/login')}
+                        onClick={() => navigate('/help')}
                     >
                         <MessageCircleQuestionMark />
                     </button>
