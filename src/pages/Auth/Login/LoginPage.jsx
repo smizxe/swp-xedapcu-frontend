@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import styles from './LoginPage.module.css';
@@ -9,7 +9,6 @@ function LoginPage({
   onSubmit,
   onGoogleLogin,
   onForgotPassword,
-  onSignUp,
   isLoading = false,
   externalErrors = {},
   externalSuccess = ''
@@ -18,6 +17,14 @@ function LoginPage({
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleGoBack = () => {
+    navigate('/');
+  };
+
+  const handleGoToSignUp = () => {
+    navigate('/register');
+  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -32,7 +39,7 @@ function LoginPage({
         <button
           type="button"
           className={styles.backButton}
-          onClick={() => navigate('/')} // Sửa thành /
+          onClick={handleGoBack}
         >
           <span className={styles.backIcon}>&larr;</span>
           <span className={styles.backText}>Back</span>
@@ -52,7 +59,7 @@ function LoginPage({
             <h2>Sign In</h2>
             <p>
               Don't have an account?{' '}
-              <span className={styles.link} onClick={onSignUp}>
+              <span className={styles.link} onClick={handleGoToSignUp}>
                 Sign up now
               </span>
             </p>
