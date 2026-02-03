@@ -58,7 +58,7 @@ function RegisterPageUI({
 
                 {/* Cột bên trái: Giới thiệu */}
                 <div className={styles.leftPane}>
-                    <div className={styles.brand}>Cycly</div>
+                    <div className={styles.brand}>EkibDlo</div>
                     <h1 className={styles.title}>Create New Account</h1>
                     <p className={styles.subtitle}>
                         Join the trusted marketplace for pre-owned bicycles. Buy, sell, and verify with confidence.

@@ -47,7 +47,7 @@ function LoginPage({
 
         {/* Cột bên trái: Giới thiệu */}
         <div className={styles.leftPane}>
-          <div className={styles.brand}>EkidBlo</div>
+          <div className={styles.brand}>EkibDlo</div>
           <h1 className={styles.title}>Welcome Back</h1>
           <p className={styles.subtitle}>
             Your trusted destination for buying, selling, and verifying quality bicycles.</p>
