@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LoginPage from './pages/Auth/Login/LoginPage.jsx';
+import LoginContainer from './pages/Auth/Login/LoginContainer.jsx';
 import HomePage from './pages/HomePage/HomePage.jsx';
 import RegisterPage from './pages/Auth/Register/RegisterPage.jsx';
 import HelpPage from './pages/HelpPage/HelpPage.jsx';
@@ -10,7 +10,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<LoginContainer />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/about" element={<AboutUsPage />} />
