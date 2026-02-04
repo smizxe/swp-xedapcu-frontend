@@ -1,50 +1,43 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import styles from './RegisterPage.module.css';
+import authService from '../../../services/authService';
+import styles from '../Login/LoginPage.module.css'; // Reuse login styles
 
-function RegisterPageUI({
-    onRegister,
-    onGoogleLogin,
-    onBack,
-    isLoading = false,
-    externalErrors = {},
-    externalSuccess = ''
-}) {
+function RegisterPage() {
     const navigate = useNavigate();
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // State nội bộ cho form để người dùng nhập liệu mượt mà
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
         email: '',
         password: '',
-        confirmPassword: '',
-        agreeToTerms: false,
+        fullName: '',
+        phone: '',
     });
-
-    const handleGoBack = () => {
-        navigate('/');
-    };
-
-    const handleGoToSignIn = () => {
-        navigate('/login');
-    };
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
-        }));
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleFormSubmit = (e) => {
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
-        if (onRegister) onRegister(formData);
+        setError('');
+        setSuccess('');
+        setIsLoading(true);
+
+        try {
+            await authService.register(formData);
+            setSuccess('Registration successful! Redirecting to login...');
+            setTimeout(() => navigate('/login'), 2000);
+        } catch (err) {
+            setError(err.response?.data || 'Registration failed. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -52,16 +45,21 @@ function RegisterPageUI({
             <div className={styles.gradientBg} />
             <div className={styles.container}>
                 {/* Nút Back */}
-                <button type="button" className={styles.backButton} onClick={handleGoBack}>
-                    <span className={styles.backText}>&larr; Back</span>
+                <button
+                    type="button"
+                    className={styles.backButton}
+                    onClick={() => navigate('/')}
+                >
+                    <span className={styles.backIcon}>&larr;</span>
+                    <span className={styles.backText}>Back</span>
                 </button>
 
                 {/* Cột bên trái: Giới thiệu */}
                 <div className={styles.leftPane}>
-                    <div className={styles.brand}>EkibDlo</div>
-                    <h1 className={styles.title}>Create New Account</h1>
+                    <div className={styles.brand}>CycleTrust</div>
+                    <h1 className={styles.title}>Join Us Today</h1>
                     <p className={styles.subtitle}>
-                        Join the trusted marketplace for pre-owned bicycles. Buy, sell, and verify with confidence.
+                        Create an account to start buying, selling, and verifying quality bicycles with confidence.
                     </p>
                 </div>
 
@@ -71,125 +69,92 @@ function RegisterPageUI({
                         <h2>Sign Up</h2>
                         <p>
                             Already have an account?{' '}
-                            <span className={styles.link} onClick={handleGoToSignIn}>Sign in</span>
+                            <Link to="/login" className={styles.link}>
+                                Sign in
+                            </Link>
                         </p>
                     </div>
 
                     <form className={styles.form} onSubmit={handleFormSubmit}>
-                        {externalSuccess && <div className={styles.successMessage}>{externalSuccess}</div>}
-                        {externalErrors.general && <div className={styles.errorMessage}>{externalErrors.general}</div>}
+                        {/* Thông báo */}
+                        {error && <div className={styles.errorMessage}>{error}</div>}
+                        {success && <div className={styles.successMessage}>{success}</div>}
 
-                        <div className={styles.inputRow}>
-                            <div className={styles.inputGroup}>
-                                <input
-                                    name="firstName"
-                                    type="text"
-                                    placeholder=" "
-                                    className={`${styles.input} ${externalErrors.firstName ? styles.inputError : ''}`}
-                                    required
-                                    value={formData.firstName}
-                                    onChange={handleChange}
-                                    disabled={isLoading}
-                                />
-                                <label className={styles.label}>First Name</label>
-                            </div>
-                            <div className={styles.inputGroup}>
-                                <input
-                                    name="lastName"
-                                    type="text"
-                                    placeholder=" "
-                                    className={`${styles.input} ${externalErrors.lastName ? styles.inputError : ''}`}
-                                    required
-                                    value={formData.lastName}
-                                    onChange={handleChange}
-                                    disabled={isLoading}
-                                />
-                                <label className={styles.label}>Last Name</label>
-                            </div>
-                        </div>
-
+                        {/* Input Full Name */}
                         <div className={styles.inputGroup}>
                             <input
+                                id="fullName"
+                                name="fullName"
+                                type="text"
+                                placeholder=" "
+                                className={styles.input}
+                                required
+                                value={formData.fullName}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                            />
+                            <label htmlFor="fullName" className={styles.label}>Full Name</label>
+                        </div>
+
+                        {/* Input Email */}
+                        <div className={styles.inputGroup}>
+                            <input
+                                id="email"
                                 name="email"
                                 type="email"
                                 placeholder=" "
-                                className={`${styles.input} ${externalErrors.email ? styles.inputError : ''}`}
+                                className={styles.input}
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
                                 disabled={isLoading}
                             />
-                            <label className={styles.label}>Email Address</label>
+                            <label htmlFor="email" className={styles.label}>Email</label>
                         </div>
 
+                        {/* Input Phone */}
                         <div className={styles.inputGroup}>
                             <input
+                                id="phone"
+                                name="phone"
+                                type="tel"
+                                placeholder=" "
+                                className={styles.input}
+                                value={formData.phone}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                            />
+                            <label htmlFor="phone" className={styles.label}>Phone (optional)</label>
+                        </div>
+
+                        {/* Input Password */}
+                        <div className={styles.inputGroup}>
+                            <input
+                                id="password"
                                 name="password"
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder=" "
-                                className={`${styles.input} ${styles.passwordInput} ${externalErrors.password ? styles.inputError : ''}`}
+                                className={`${styles.input} ${styles.passwordInput}`}
                                 required
+                                minLength={6}
                                 value={formData.password}
                                 onChange={handleChange}
                                 disabled={isLoading}
                             />
-                            <label className={styles.label}>Password</label>
+                            <label htmlFor="password" className={styles.label}>Password</label>
                             <button
                                 type="button"
                                 className={styles.passwordToggle}
                                 onClick={() => setShowPassword(!showPassword)}
+                                disabled={isLoading}
                             >
                                 {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
                             </button>
                         </div>
 
-                        <div className={styles.inputGroup}>
-                            <input
-                                name="confirmPassword"
-                                type={showConfirmPassword ? 'text' : 'password'}
-                                placeholder=" "
-                                className={`${styles.input} ${styles.passwordInput} ${externalErrors.confirmPassword ? styles.inputError : ''}`}
-                                required
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                disabled={isLoading}
-                            />
-                            <label className={styles.label}>Confirm Password</label>
-                            <button
-                                type="button"
-                                className={styles.passwordToggle}
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            >
-                                {showConfirmPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
-                            </button>
-                        </div>
-
-                        <label className={styles.checkboxLabel}>
-                            <input
-                                type="checkbox"
-                                name="agreeToTerms"
-                                className={styles.checkbox}
-                                checked={formData.agreeToTerms}
-                                onChange={handleChange}
-                                required
-                            />
-                            <span>I agree to the terms and conditions</span>
-                        </label>
-
+                        {/* Nút Submit */}
                         <button type="submit" className={styles.submitButton} disabled={isLoading}>
-                            {isLoading ? 'Creating Account...' : 'Create Account'}
-                        </button>
-
-                        <div className={styles.divider}><span>or</span></div>
-
-                        <button type="button" className={styles.socialButton} onClick={onGoogleLogin}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" style={{ marginRight: '8px' }}>
-                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                            </svg>
-                            <span>Continue with Google</span>
+                            {isLoading ? 'Creating account...' : 'Create Account'}
                         </button>
                     </form>
                 </div>
@@ -198,4 +163,4 @@ function RegisterPageUI({
     );
 }
 
-export default RegisterPageUI;
+export default RegisterPage;

@@ -1,34 +1,43 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { useAuth } from '../../../context/AuthContext';
+import authService from '../../../services/authService';
 import styles from './LoginPage.module.css';
 
-//check again 
-function LoginPage({
-  onSubmit,
-  onGoogleLogin,
-  onForgotPassword,
-  isLoading = false,
-  externalErrors = {},
-  externalSuccess = ''
-}) {
+function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleGoBack = () => {
-    navigate('/');
-  };
+  const from = location.state?.from?.pathname || '/home';
 
-  const handleGoToSignUp = () => {
-    navigate('/register');
-  };
-
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (onSubmit) onSubmit({ email, password });
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await authService.login(email, password);
+      login(response); // Save to context + localStorage
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err.response?.data || 'Invalid email or password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    // Redirect to backend OAuth2 endpoint
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
   return (
@@ -39,7 +48,7 @@ function LoginPage({
         <button
           type="button"
           className={styles.backButton}
-          onClick={handleGoBack}
+          onClick={() => navigate('/')}
         >
           <span className={styles.backIcon}>&larr;</span>
           <span className={styles.backText}>Back</span>
@@ -50,7 +59,8 @@ function LoginPage({
           <div className={styles.brand}>EkibDlo</div>
           <h1 className={styles.title}>Welcome Back</h1>
           <p className={styles.subtitle}>
-            Your trusted destination for buying, selling, and verifying quality bicycles.</p>
+            Your trusted destination for buying, selling, and verifying quality bicycles.
+          </p>
         </div>
 
         {/* Card Đăng nhập */}
@@ -59,16 +69,15 @@ function LoginPage({
             <h2>Sign In</h2>
             <p>
               Don't have an account?{' '}
-              <span className={styles.link} onClick={handleGoToSignUp}>
+              <Link to="/register" className={styles.link}>
                 Sign up now
-              </span>
+              </Link>
             </p>
           </div>
 
           <form className={styles.form} onSubmit={handleFormSubmit}>
-            {/* Thông báo trạng thái */}
-            {externalSuccess && <div className={styles.successMessage}>{externalSuccess}</div>}
-            {externalErrors.general && <div className={styles.errorMessage}>{externalErrors.general}</div>}
+            {/* Thông báo lỗi */}
+            {error && <div className={styles.errorMessage}>{error}</div>}
 
             {/* Input Email */}
             <div className={styles.inputGroup}>
@@ -76,7 +85,7 @@ function LoginPage({
                 id="email"
                 type="email"
                 placeholder=" "
-                className={`${styles.input} ${externalErrors.email ? styles.inputError : ''}`}
+                className={styles.input}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -91,7 +100,7 @@ function LoginPage({
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder=" "
-                className={`${styles.input} ${styles.passwordInput} ${externalErrors.password ? styles.inputError : ''}`}
+                className={`${styles.input} ${styles.passwordInput}`}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -109,7 +118,7 @@ function LoginPage({
             </div>
 
             <div className={styles.optionsRow}>
-              <button type="button" className={styles.textButton} onClick={onForgotPassword}>
+              <button type="button" className={styles.textButton}>
                 Forgot password?
               </button>
             </div>
@@ -125,7 +134,7 @@ function LoginPage({
 
             {/* Nút Google */}
             <div className={styles.socialRow}>
-              <button type="button" className={styles.socialButton} onClick={onGoogleLogin}>
+              <button type="button" className={styles.socialButton} onClick={handleGoogleLogin}>
                 <svg width="20" height="20" viewBox="0 0 24 24" style={{ marginRight: '8px' }}>
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
