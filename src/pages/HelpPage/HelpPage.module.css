@@ -1,0 +1,454 @@
+.helpPage {
+    background: #ffffff;
+    min-height: 100vh;
+    color: #000000;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(180deg, #f8f8f8 0%, #ffffff 100%);
+    padding: 6rem 3rem 4rem;
+    text-align: center;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.heroContent {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.heroTitle {
+    font-size: 4rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    animation: fadeInUp 0.8s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.heroSubtitle {
+    font-size: 1.15rem;
+    color: #666666;
+    font-weight: 400;
+    animation: fadeInUp 0.8s ease 0.2s backwards;
+}
+
+/* Quick Links */
+.quickLinks {
+    background: #ffffff;
+    padding: 2rem 3rem;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.quickLinks .container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.quickLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: #f8f8f8;
+    border: 2px solid #e5e5e5;
+    text-decoration: none;
+    color: #000000;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.quickLink:hover {
+    background: #000000;
+    border-color: #000000;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* Section Styling */
+.faqSection,
+.contactSection,
+.safetySection,
+.startedSection {
+    padding: 6rem 3rem;
+}
+
+.sectionHeader {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.sectionTitle {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    color: #000000;
+}
+
+.sectionSubtitle {
+    font-size: 1.1rem;
+    color: #666666;
+    font-weight: 400;
+}
+
+/* FAQ Section */
+.faqSection {
+    background: #f8f8f8;
+}
+
+.faqCategory {
+    margin-bottom: 3rem;
+}
+
+.categoryTitle {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    color: #000000;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid #000000;
+}
+
+.faqList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.faqItem {
+    background: #ffffff;
+    border: 2px solid #e5e5e5;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.faqItem:hover {
+    border-color: #000000;
+}
+
+.faqItemOpen {
+    border-color: #000000;
+}
+
+.faqQuestion {
+    width: 100%;
+    padding: 1.75rem 2rem;
+    background: transparent;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: left;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: -0.3px;
+    transition: all 0.3s ease;
+}
+
+.faqQuestion:hover {
+    background: #f8f8f8;
+}
+
+.faqToggle {
+    font-size: 2rem;
+    font-weight: 300;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+
+.faqItemOpen .faqToggle {
+    transform: rotate(180deg);
+}
+
+.faqAnswer {
+    padding: 0 2rem 2rem;
+    color: #666666;
+    line-height: 1.8;
+    font-size: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Contact Section */
+.contactGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+}
+
+.contactCard {
+    background: #ffffff;
+    border: 2px solid #e5e5e5;
+    padding: 3rem 2rem;
+    text-align: center;
+    transition: all 0.4s ease;
+}
+
+.contactCard:hover {
+    border-color: #000000;
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+.contactTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    color: #000000;
+}
+
+.contactDescription {
+    color: #666666;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.contactInfo {
+    font-weight: 700;
+    color: #000000;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.contactResponse {
+    color: #999999;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* Safety Section */
+.safetySection {
+    background: #f8f8f8;
+}
+
+.safetyGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.safetyCard {
+    background: #ffffff;
+    border: 2px solid #e5e5e5;
+    padding: 2.5rem 2rem;
+    transition: all 0.4s ease;
+}
+
+.safetyCard:hover {
+    border-color: #000000;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.safetyTitle {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    color: #000000;
+}
+
+.safetyTip {
+    color: #666666;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+/* Getting Started Section */
+.startedSteps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    margin-bottom: 4rem;
+}
+
+.startedStep {
+    text-align: center;
+}
+
+.stepNumber {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #000000;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+}
+
+.stepTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    color: #000000;
+}
+
+.stepDescription {
+    color: #666666;
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+.startedCta {
+    text-align: center;
+}
+
+.btnStarted {
+    padding: 1.25rem 3rem;
+    background: #000000;
+    border: 2px solid #000000;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnStarted:hover {
+    background: #333333;
+    border-color: #333333;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* CTA Section */
+.cta {
+    background: #000000;
+    padding: 6rem 3rem;
+    text-align: center;
+}
+
+.ctaContent {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ctaTitle {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
+
+.ctaSubtitle {
+    font-size: 1.15rem;
+    margin-bottom: 2.5rem;
+    color: #cccccc;
+    font-weight: 400;
+}
+
+.btnCta {
+    padding: 1.25rem 3rem;
+    background: #ffffff;
+    border: 2px solid #ffffff;
+    color: #000000;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnCta:hover {
+    background: transparent;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .headerTitle {
+        font-size: 3rem;
+    }
+
+    .sectionTitle {
+        font-size: 2.5rem;
+    }
+
+    .quickLinks .container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .contactGrid,
+    .safetyGrid,
+    .startedSteps {
+        grid-template-columns: 1fr;
+    }
+
+    .faqQuestion {
+        font-size: 1rem;
+        padding: 1.5rem 1.5rem;
+    }
+
+    .faqAnswer {
+        padding: 0 1.5rem 1.5rem;
+    }
+
+    .faqSection,
+    .contactSection,
+    .safetySection,
+    .startedSection {
+        padding: 4rem 1.5rem;
+    }
+
+    .hero {
+        padding: 4rem 1.5rem 3rem;
+    }
+
+    .cta {
+        padding: 4rem 1.5rem;
+    }
+
+    .ctaTitle {
+        font-size: 2rem;
+    }
+}

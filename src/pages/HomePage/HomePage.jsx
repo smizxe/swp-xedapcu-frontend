@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from './HomePage.module.css';
-import Header from '../../components/Header/Header';
+import HeroSection from './HeroSection/HeroSection';
 
 const HomePage = () => {
     const [hoveredCard, setHoveredCard] = useState(null);
@@ -52,9 +52,8 @@ const HomePage = () => {
 
     return (
         <div className={styles.homePage}>
-            {/* Navigation */}
-            <Header />
-
+            {/* Hero Section with Header and ReadyForFaster sharing one video background */}
+            <HeroSection />
             {/* Hero Section */}
             <section className={styles.hero}>
                 <div className={styles.heroBackground}></div>
@@ -104,26 +103,6 @@ const HomePage = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
-
-            {/* Trust Indicators */}
-            <section className={styles.trustBar}>
-                <div className={styles.trustItem}>
-                    <span className={styles.trustIcon}>🔒</span>
-                    <span>Secure Payments</span>
-                </div>
-                <div className={styles.trustItem}>
-                    <span className={styles.trustIcon}>✓</span>
-                    <span>Inspector Verified</span>
-                </div>
-                <div className={styles.trustItem}>
-                    <span className={styles.trustIcon}>📦</span>
-                    <span>Safe Delivery</span>
-                </div>
-                <div className={styles.trustItem}>
-                    <span className={styles.trustIcon}>💬</span>
-                    <span>24/7 Support</span>
                 </div>
             </section>
 
