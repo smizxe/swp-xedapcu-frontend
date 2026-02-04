@@ -29,6 +29,40 @@ export const loginUser = async (email, password) => {
     }
 };
 
+// Register new user
+export const registerUser = async (userData) => {
+    try {
+        console.log('🚀 Sending registration request:', {
+            email: userData.email,
+            password: '***',
+            role: userData.role || 'BUYER'
+        });
+
+        const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, {
+            email: userData.email,
+            password: userData.password,
+            role: userData.role || 'BUYER', // Default role is BUYER for new registrations
+        });
+
+        console.log('✅ Registration successful:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('❌ Registration error:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message,
+            fullError: error
+        });
+
+        // Backend returns error message as plain string in response.data
+        const errorMessage = typeof error.response?.data === 'string'
+            ? error.response.data
+            : error.response?.data?.message || 'Registration failed';
+
+        throw new Error(errorMessage);
+    }
+};
+
 // Logout function
 export const logoutUser = () => {
     localStorage.removeItem('authToken');
