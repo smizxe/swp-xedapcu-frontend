@@ -4,10 +4,9 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import styles from './RegisterPage.module.css';
 
-function RegisterPageUI({
-    onRegister,
+function RegisterPage({
+    onSubmit,
     onGoogleLogin,
-    onBack,
     isLoading = false,
     externalErrors = {},
     externalSuccess = ''
@@ -18,8 +17,6 @@ function RegisterPageUI({
 
     // State nội bộ cho form để người dùng nhập liệu mượt mà
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -44,7 +41,7 @@ function RegisterPageUI({
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        if (onRegister) onRegister(formData);
+        if (onSubmit) onSubmit(formData);
     };
 
     return (
@@ -78,35 +75,6 @@ function RegisterPageUI({
                     <form className={styles.form} onSubmit={handleFormSubmit}>
                         {externalSuccess && <div className={styles.successMessage}>{externalSuccess}</div>}
                         {externalErrors.general && <div className={styles.errorMessage}>{externalErrors.general}</div>}
-
-                        <div className={styles.inputRow}>
-                            <div className={styles.inputGroup}>
-                                <input
-                                    name="firstName"
-                                    type="text"
-                                    placeholder=" "
-                                    className={`${styles.input} ${externalErrors.firstName ? styles.inputError : ''}`}
-                                    required
-                                    value={formData.firstName}
-                                    onChange={handleChange}
-                                    disabled={isLoading}
-                                />
-                                <label className={styles.label}>First Name</label>
-                            </div>
-                            <div className={styles.inputGroup}>
-                                <input
-                                    name="lastName"
-                                    type="text"
-                                    placeholder=" "
-                                    className={`${styles.input} ${externalErrors.lastName ? styles.inputError : ''}`}
-                                    required
-                                    value={formData.lastName}
-                                    onChange={handleChange}
-                                    disabled={isLoading}
-                                />
-                                <label className={styles.label}>Last Name</label>
-                            </div>
-                        </div>
 
                         <div className={styles.inputGroup}>
                             <input
@@ -198,4 +166,4 @@ function RegisterPageUI({
     );
 }
 
-export default RegisterPageUI;
+export default RegisterPage;
