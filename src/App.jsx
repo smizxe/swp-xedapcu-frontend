@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage/HomePage.jsx';
 import RegisterPageContainer from './pages/Auth/Register/RegisterPageContainer.jsx';
 import HelpPage from './pages/HelpPage/HelpPage.jsx';
 import AboutUsPage from './pages/AboutUsPage/AboutUsPage.jsx';
+import ProfilePage from './pages/Profiles/ProfilePage.jsx';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/register" element={<RegisterPageContainer />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/about" element={<AboutUsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>
   )
