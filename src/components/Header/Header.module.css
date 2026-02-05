@@ -248,11 +248,11 @@
 /* Dropdown Header */
 .dropdownHeader {
     padding: 16px;
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+    background: #ffffff;
 }
 
 .greeting {
-    color: white;
+    color: #000000;
     font-weight: 600;
     font-size: 0.95rem;
     margin: 0;
@@ -321,7 +321,6 @@
     right: 12px;
     width: 12px;
     height: 12px;
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
     transform: rotate(45deg);
     border-radius: 2px;
 }
