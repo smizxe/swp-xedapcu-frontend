@@ -1,0 +1,393 @@
+/* ===== Page Layout ===== */
+.pageWrapper {
+    max-width: 1280px;
+    margin: 28px auto;
+    padding: 0 24px 48px;
+}
+
+.pageHeader {
+    margin-bottom: 24px;
+}
+
+.pageTitle {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 0 0 4px;
+}
+
+.pageSubtitle {
+    color: #888;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* ===== Main Grid ===== */
+.mainGrid {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* ===== Left Panel ===== */
+.leftPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Balance card */
+.balanceCard {
+    background: #fff;
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    padding: 24px 20px;
+}
+
+.balanceLabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #999;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.balanceSpin {
+    display: block;
+    margin: 8px 0;
+}
+
+.balanceAmount {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.currency {
+    font-size: 22px;
+}
+
+.btnDeposit {
+    background: #fff !important;
+    border: 1px solid #d9d9d9 !important;
+    color: #1a1a1a !important;
+    border-radius: 6px !important;
+    font-weight: 600;
+    height: 38px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.btnDeposit:hover {
+    border-color: #2D5A27 !important;
+    color: #2D5A27 !important;
+}
+
+.btnRefresh {
+    background: #fff !important;
+    border: 1px solid #d9d9d9 !important;
+    color: #666 !important;
+    border-radius: 6px !important;
+    height: 38px;
+    transition: border-color 0.2s;
+}
+
+.btnRefresh:hover {
+    border-color: #2D5A27 !important;
+    color: #2D5A27 !important;
+}
+
+/* Stat cards */
+.statCard {
+    background: #fff;
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    padding: 16px 20px;
+}
+
+.statLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.statPositive {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2D5A27;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.statNegative {
+    font-size: 16px;
+    font-weight: 700;
+    color: #c0392b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.statRefund {
+    font-size: 16px;
+    font-weight: 700;
+    color: #6c6c6c;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ===== Right Panel ===== */
+
+.tableCard {
+    background: #fff;
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    padding: 24px;
+}
+
+.tableHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.tableTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tableTitleIcon {
+    color: #2D5A27;
+}
+
+.refreshBtn {
+    border-radius: 6px !important;
+    border-color: #d9d9d9 !important;
+    color: #666 !important;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.refreshBtn:hover {
+    border-color: #2D5A27 !important;
+    color: #2D5A27 !important;
+}
+
+/* Filters */
+.filterRow {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.filterSelect {
+    min-width: 200px;
+}
+
+.filterDate {
+    flex: 1;
+}
+
+/* Table */
+
+.typeCell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.iconUp {
+    color: #2D5A27;
+    font-size: 12px;
+}
+
+.iconDown {
+    color: #c0392b;
+    font-size: 12px;
+}
+
+.amountPositive {
+    font-weight: 700;
+    color: #2D5A27;
+}
+
+.amountNegative {
+    font-weight: 700;
+    color: #c0392b;
+}
+
+.balanceCell {
+    color: #555;
+}
+
+.balanceCellBold {
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.detailBtn {
+    color: #2D5A27 !important;
+    padding: 0 !important;
+    font-weight: 500;
+}
+
+.detailBtn:hover {
+    color: #1a3d17 !important;
+}
+
+/* ===== Deposit Modal ===== */
+.modalTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.depositContent {
+    padding: 8px 0;
+}
+
+.depositSubtitle {
+    color: #666;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.depositInput {
+    flex: 1 !important;
+    border-radius: 6px 0 0 6px !important;
+}
+
+.depositInputRow {
+    display: flex !important;
+    width: 100% !important;
+    margin-bottom: 16px;
+}
+
+.currencyTag {
+    border-left: none !important;
+    border-radius: 0 6px 6px 0 !important;
+    background: #f5f5f5 !important;
+    color: #555 !important;
+    cursor: default !important;
+    pointer-events: none;
+    font-weight: 600;
+    min-width: 56px;
+}
+
+.quickAmounts {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.quickBtn {
+    border-radius: 6px !important;
+    border-color: #d9d9d9 !important;
+    font-size: 13px;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.quickBtn:hover {
+    border-color: #2D5A27 !important;
+    color: #2D5A27 !important;
+}
+
+.quickBtnActive {
+    border-color: #2D5A27 !important;
+    color: #2D5A27 !important;
+    background: #e8f5e9 !important;
+    font-weight: 600;
+}
+
+.depositActions {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.btnConfirmDeposit {
+    flex: 1;
+    background: #2D5A27 !important;
+    border-color: #2D5A27 !important;
+    border-radius: 6px !important;
+    font-weight: 700;
+    height: 42px;
+}
+
+.btnConfirmDeposit:hover {
+    background: #1a3d17 !important;
+    border-color: #1a3d17 !important;
+}
+
+.btnCancelDeposit {
+    flex: 1;
+    border-radius: 6px !important;
+    height: 42px;
+}
+
+/* ===== Detail Modal ===== */
+.detailContent {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.detailRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #fafafa;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+}
+
+.detailLabel {
+    font-size: 13px;
+    color: #888;
+    font-weight: 500;
+}
+
+.detailValue {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    max-width: 60%;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+    .mainGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .filterRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filterSelect {
+        min-width: 100%;
+    }
+}
