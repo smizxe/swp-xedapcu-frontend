@@ -412,6 +412,64 @@
     transform: translateY(-2px);
 }
 
+/* =============================================
+   SCROLL ENTRANCE ANIMATION UTILITIES
+   ============================================= */
+
+.animateHidden {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animateHiddenScale {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animateHiddenLeft {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animateVisible {
+    opacity: 1 !important;
+    transform: translateY(0) translateX(0) scale(1) !important;
+}
+
+.delay100 {
+    transition-delay: 0.1s;
+}
+
+.delay200 {
+    transition-delay: 0.2s;
+}
+
+.delay300 {
+    transition-delay: 0.3s;
+}
+
+.delay400 {
+    transition-delay: 0.4s;
+}
+
+.delay500 {
+    transition-delay: 0.5s;
+}
+
+.delay600 {
+    transition-delay: 0.6s;
+}
+
+/* =============================================
+   END SCROLL ENTRANCE ANIMATION UTILITIES
+   ============================================= */
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .headerTitle {
