@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import Header from '../../components/Header/Header';
 import styles from './HelpPage.module.css';
+import useScrollAnimation from '../../hooks/useScrollAnimation';
+
+const cls = (...classes) => classes.filter(Boolean).join(' ');
 
 const HelpPage = () => {
     const [openFAQ, setOpenFAQ] = useState(null);
@@ -8,6 +11,59 @@ const HelpPage = () => {
     const toggleFAQ = (index) => {
         setOpenFAQ(openFAQ === index ? null : index);
     };
+
+    // Scroll animation refs
+    const [heroRef, heroVisible] = useScrollAnimation(0.1);
+    const [quickLinksRef, quickLinksVisible] = useScrollAnimation(0.15);
+    const [faqHeaderRef, faqHeaderVisible] = useScrollAnimation(0.2);
+    const [faq0Ref, faq0Visible] = useScrollAnimation(0.1);
+    const [faq1Ref, faq1Visible] = useScrollAnimation(0.1);
+    const [faq2Ref, faq2Visible] = useScrollAnimation(0.1);
+    const [contactHeaderRef, contactHeaderVisible] = useScrollAnimation(0.2);
+    const [contact0Ref, contact0Visible] = useScrollAnimation(0.1);
+    const [contact1Ref, contact1Visible] = useScrollAnimation(0.1);
+    const [contact2Ref, contact2Visible] = useScrollAnimation(0.1);
+    const [safetyHeaderRef, safetyHeaderVisible] = useScrollAnimation(0.2);
+    const [safety0Ref, safety0Visible] = useScrollAnimation(0.1);
+    const [safety1Ref, safety1Visible] = useScrollAnimation(0.1);
+    const [safety2Ref, safety2Visible] = useScrollAnimation(0.1);
+    const [safety3Ref, safety3Visible] = useScrollAnimation(0.1);
+    const [safety4Ref, safety4Visible] = useScrollAnimation(0.1);
+    const [safety5Ref, safety5Visible] = useScrollAnimation(0.1);
+    const [startedHeaderRef, startedHeaderVisible] = useScrollAnimation(0.2);
+    const [step0Ref, step0Visible] = useScrollAnimation(0.1);
+    const [step1Ref, step1Visible] = useScrollAnimation(0.1);
+    const [step2Ref, step2Visible] = useScrollAnimation(0.1);
+    const [ctaRef, ctaVisible] = useScrollAnimation(0.15);
+
+    const staggerDelays = [styles.delay100, styles.delay200, styles.delay300, styles.delay400, styles.delay500, styles.delay600];
+
+    const faqRefs = [
+        [faq0Ref, faq0Visible],
+        [faq1Ref, faq1Visible],
+        [faq2Ref, faq2Visible],
+    ];
+
+    const contactRefs = [
+        [contact0Ref, contact0Visible],
+        [contact1Ref, contact1Visible],
+        [contact2Ref, contact2Visible],
+    ];
+
+    const safetyRefs = [
+        [safety0Ref, safety0Visible],
+        [safety1Ref, safety1Visible],
+        [safety2Ref, safety2Visible],
+        [safety3Ref, safety3Visible],
+        [safety4Ref, safety4Visible],
+        [safety5Ref, safety5Visible],
+    ];
+
+    const stepRefs = [
+        [step0Ref, step0Visible],
+        [step1Ref, step1Visible],
+        [step2Ref, step2Visible],
+    ];
 
     const faqs = [
         {
@@ -124,9 +180,12 @@ const HelpPage = () => {
             {/* Header */}
             <Header variant="dark" />
             <section className={styles.hero}>
-                <div className={styles.heroContent}>
+                <div
+                    ref={heroRef}
+                    className={cls(styles.heroContent, styles.animateHidden, heroVisible && styles.animateVisible)}
+                >
                     <h1 className={styles.heroTitle}>How Can We Help?</h1>
-                    <p className={styles.heroSubtitle}>
+                    <p className={cls(styles.heroSubtitle, styles.delay200, heroVisible && styles.animateVisible)}>
                         Find answers to common questions or reach out to our support team
                     </p>
                 </div>
@@ -134,17 +193,20 @@ const HelpPage = () => {
 
             {/* Quick Links */}
             <section className={styles.quickLinks}>
-                <div className={styles.container}>
-                    <a href="#faq" className={styles.quickLink}>
+                <div
+                    ref={quickLinksRef}
+                    className={cls(styles.container, styles.animateHiddenLeft, quickLinksVisible && styles.animateVisible)}
+                >
+                    <a href="#faq" className={cls(styles.quickLink, staggerDelays[0])}>
                         <span>FAQ</span>
                     </a>
-                    <a href="#contact" className={styles.quickLink}>
+                    <a href="#contact" className={cls(styles.quickLink, staggerDelays[1])}>
                         <span>Contact</span>
                     </a>
-                    <a href="#safety" className={styles.quickLink}>
+                    <a href="#safety" className={cls(styles.quickLink, staggerDelays[2])}>
                         <span>Safety</span>
                     </a>
-                    <a href="#started" className={styles.quickLink}>
+                    <a href="#started" className={cls(styles.quickLink, staggerDelays[3])}>
                         <span>Get Started</span>
                     </a>
                 </div>
@@ -153,68 +215,88 @@ const HelpPage = () => {
             {/* FAQ Section */}
             <section id="faq" className={styles.faqSection}>
                 <div className={styles.container}>
-                    <div className={styles.sectionHeader}>
+                    <div
+                        ref={faqHeaderRef}
+                        className={cls(styles.sectionHeader, styles.animateHidden, faqHeaderVisible && styles.animateVisible)}
+                    >
                         <h2 className={styles.sectionTitle}>Frequently Asked Questions</h2>
                         <p className={styles.sectionSubtitle}>
                             Quick answers to questions you may have
                         </p>
                     </div>
 
-                    {faqs.map((category, categoryIndex) => (
-                        <div key={categoryIndex} className={styles.faqCategory}>
-                            <h3 className={styles.categoryTitle}>{category.category}</h3>
-                            <div className={styles.faqList}>
-                                {category.questions.map((faq, faqIndex) => {
-                                    const globalIndex = `${categoryIndex}-${faqIndex}`;
-                                    const isOpen = openFAQ === globalIndex;
+                    {faqs.map((category, categoryIndex) => {
+                        const [ref, visible] = faqRefs[categoryIndex];
+                        return (
+                            <div
+                                key={categoryIndex}
+                                ref={ref}
+                                className={cls(styles.faqCategory, styles.animateHidden, visible && styles.animateVisible, staggerDelays[categoryIndex])}
+                            >
+                                <h3 className={styles.categoryTitle}>{category.category}</h3>
+                                <div className={styles.faqList}>
+                                    {category.questions.map((faq, faqIndex) => {
+                                        const globalIndex = `${categoryIndex}-${faqIndex}`;
+                                        const isOpen = openFAQ === globalIndex;
 
-                                    return (
-                                        <div
-                                            key={faqIndex}
-                                            className={`${styles.faqItem} ${isOpen ? styles.faqItemOpen : ''}`}
-                                        >
-                                            <button
-                                                className={styles.faqQuestion}
-                                                onClick={() => toggleFAQ(globalIndex)}
+                                        return (
+                                            <div
+                                                key={faqIndex}
+                                                className={cls(styles.faqItem, isOpen ? styles.faqItemOpen : '')}
                                             >
-                                                <span>{faq.question}</span>
-                                                <span className={styles.faqToggle}>
-                                                    {isOpen ? '−' : '+'}
-                                                </span>
-                                            </button>
-                                            {isOpen && (
-                                                <div className={styles.faqAnswer}>
-                                                    {faq.answer}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                                <button
+                                                    className={styles.faqQuestion}
+                                                    onClick={() => toggleFAQ(globalIndex)}
+                                                >
+                                                    <span>{faq.question}</span>
+                                                    <span className={styles.faqToggle}>
+                                                        {isOpen ? '−' : '+'}
+                                                    </span>
+                                                </button>
+                                                {isOpen && (
+                                                    <div className={styles.faqAnswer}>
+                                                        {faq.answer}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </section>
 
             {/* Contact Support */}
             <section id="contact" className={styles.contactSection}>
                 <div className={styles.container}>
-                    <div className={styles.sectionHeader}>
+                    <div
+                        ref={contactHeaderRef}
+                        className={cls(styles.sectionHeader, styles.animateHidden, contactHeaderVisible && styles.animateVisible)}
+                    >
                         <h2 className={styles.sectionTitle}>Contact Support</h2>
                         <p className={styles.sectionSubtitle}>
-                            Can't find what you're looking for? We're here to help
+                            Can&apos;t find what you&apos;re looking for? We&apos;re here to help
                         </p>
                     </div>
 
                     <div className={styles.contactGrid}>
-                        {contactMethods.map((method, index) => (
-                            <div key={index} className={styles.contactCard}>
-                                <h3 className={styles.contactTitle}>{method.title}</h3>
-                                <p className={styles.contactDescription}>{method.description}</p>
-                                <p className={styles.contactInfo}>{method.contact}</p>
-                                <p className={styles.contactResponse}>{method.response}</p>
-                            </div>
-                        ))}
+                        {contactMethods.map((method, index) => {
+                            const [ref, visible] = contactRefs[index];
+                            return (
+                                <div
+                                    key={index}
+                                    ref={ref}
+                                    className={cls(styles.contactCard, styles.animateHidden, visible && styles.animateVisible, staggerDelays[index])}
+                                >
+                                    <h3 className={styles.contactTitle}>{method.title}</h3>
+                                    <p className={styles.contactDescription}>{method.description}</p>
+                                    <p className={styles.contactInfo}>{method.contact}</p>
+                                    <p className={styles.contactResponse}>{method.response}</p>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
@@ -222,7 +304,10 @@ const HelpPage = () => {
             {/* Safety Tips */}
             <section id="safety" className={styles.safetySection}>
                 <div className={styles.container}>
-                    <div className={styles.sectionHeader}>
+                    <div
+                        ref={safetyHeaderRef}
+                        className={cls(styles.sectionHeader, styles.animateHidden, safetyHeaderVisible && styles.animateVisible)}
+                    >
                         <h2 className={styles.sectionTitle}>Safety Tips</h2>
                         <p className={styles.sectionSubtitle}>
                             Stay safe while buying and selling on BikeHub
@@ -230,12 +315,19 @@ const HelpPage = () => {
                     </div>
 
                     <div className={styles.safetyGrid}>
-                        {safetyTips.map((tip, index) => (
-                            <div key={index} className={styles.safetyCard}>
-                                <h3 className={styles.safetyTitle}>{tip.title}</h3>
-                                <p className={styles.safetyTip}>{tip.tip}</p>
-                            </div>
-                        ))}
+                        {safetyTips.map((tip, index) => {
+                            const [ref, visible] = safetyRefs[index];
+                            return (
+                                <div
+                                    key={index}
+                                    ref={ref}
+                                    className={cls(styles.safetyCard, styles.animateHiddenScale, visible && styles.animateVisible, staggerDelays[index % 3])}
+                                >
+                                    <h3 className={styles.safetyTitle}>{tip.title}</h3>
+                                    <p className={styles.safetyTip}>{tip.tip}</p>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
@@ -243,37 +335,35 @@ const HelpPage = () => {
             {/* Getting Started */}
             <section id="started" className={styles.startedSection}>
                 <div className={styles.container}>
-                    <div className={styles.sectionHeader}>
+                    <div
+                        ref={startedHeaderRef}
+                        className={cls(styles.sectionHeader, styles.animateHidden, startedHeaderVisible && styles.animateVisible)}
+                    >
                         <h2 className={styles.sectionTitle}>Getting Started</h2>
                         <p className={styles.sectionSubtitle}>
-                            New to BikeHub? Here's how to begin
+                            New to BikeHub? Here&apos;s how to begin
                         </p>
                     </div>
 
                     <div className={styles.startedSteps}>
-                        <div className={styles.startedStep}>
-                            <div className={styles.stepNumber}>01</div>
-                            <h3 className={styles.stepTitle}>Create Your Account</h3>
-                            <p className={styles.stepDescription}>
-                                Sign up with your email and verify your account. It only takes a minute.
-                            </p>
-                        </div>
-
-                        <div className={styles.startedStep}>
-                            <div className={styles.stepNumber}>02</div>
-                            <h3 className={styles.stepTitle}>Browse or List</h3>
-                            <p className={styles.stepDescription}>
-                                Explore verified bicycles or create your own listing to sell.
-                            </p>
-                        </div>
-
-                        <div className={styles.startedStep}>
-                            <div className={styles.stepNumber}>03</div>
-                            <h3 className={styles.stepTitle}>Complete Your Transaction</h3>
-                            <p className={styles.stepDescription}>
-                                Buy or sell with confidence using our secure payment system.
-                            </p>
-                        </div>
+                        {[
+                            { num: '01', title: 'Create Your Account', desc: 'Sign up with your email and verify your account. It only takes a minute.' },
+                            { num: '02', title: 'Browse or List', desc: 'Explore verified bicycles or create your own listing to sell.' },
+                            { num: '03', title: 'Complete Your Transaction', desc: 'Buy or sell with confidence using our secure payment system.' },
+                        ].map((step, index) => {
+                            const [ref, visible] = stepRefs[index];
+                            return (
+                                <div
+                                    key={index}
+                                    ref={ref}
+                                    className={cls(styles.startedStep, styles.animateHidden, visible && styles.animateVisible, staggerDelays[index])}
+                                >
+                                    <div className={styles.stepNumber}>{step.num}</div>
+                                    <h3 className={styles.stepTitle}>{step.title}</h3>
+                                    <p className={styles.stepDescription}>{step.desc}</p>
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <div className={styles.startedCta}>
@@ -284,7 +374,10 @@ const HelpPage = () => {
 
             {/* CTA Section */}
             <section className={styles.cta}>
-                <div className={styles.ctaContent}>
+                <div
+                    ref={ctaRef}
+                    className={cls(styles.ctaContent, styles.animateHiddenScale, ctaVisible && styles.animateVisible)}
+                >
                     <h2 className={styles.ctaTitle}>Still Have Questions?</h2>
                     <p className={styles.ctaSubtitle}>
                         Our support team is ready to help you

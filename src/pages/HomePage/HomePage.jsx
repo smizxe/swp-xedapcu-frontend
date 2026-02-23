@@ -1,9 +1,38 @@
 import { useState } from 'react';
 import styles from './HomePage.module.css';
 import HeroSection from './HeroSection/HeroSection';
+import useScrollAnimation from '../../hooks/useScrollAnimation';
+
+const cls = (...classes) => classes.filter(Boolean).join(' ');
 
 const HomePage = () => {
     const [hoveredCard, setHoveredCard] = useState(null);
+
+    // Scroll animation refs
+    const [heroRef, heroVisible] = useScrollAnimation(0.1);
+    const [featuredHeaderRef, featuredHeaderVisible] = useScrollAnimation(0.2);
+    const [card0Ref, card0Visible] = useScrollAnimation(0.1);
+    const [card1Ref, card1Visible] = useScrollAnimation(0.1);
+    const [card2Ref, card2Visible] = useScrollAnimation(0.1);
+    const [howItWorksHeaderRef, howItWorksHeaderVisible] = useScrollAnimation(0.2);
+    const [step0Ref, step0Visible] = useScrollAnimation(0.1);
+    const [step1Ref, step1Visible] = useScrollAnimation(0.1);
+    const [step2Ref, step2Visible] = useScrollAnimation(0.1);
+    const [ctaRef, ctaVisible] = useScrollAnimation(0.15);
+
+    const cardRefs = [
+        [card0Ref, card0Visible],
+        [card1Ref, card1Visible],
+        [card2Ref, card2Visible],
+    ];
+
+    const stepRefs = [
+        [step0Ref, step0Visible],
+        [step1Ref, step1Visible],
+        [step2Ref, step2Visible],
+    ];
+
+    const staggerDelays = [styles.delay100, styles.delay200, styles.delay300, styles.delay400, styles.delay500];
 
     const featuredBikes = [
         {
@@ -55,12 +84,15 @@ const HomePage = () => {
             {/* Hero Section with Header and ReadyForFaster sharing one video background */}
             <HeroSection />
             {/* Hero Section */}
-            <section className={styles.hero}>
+            <section
+                ref={heroRef}
+                className={cls(styles.hero, styles.animateHidden, heroVisible && styles.animateVisible)}
+            >
                 <div className={styles.heroBackground}></div>
                 <div className={styles.heroContent}>
                     <div className={styles.heroText}>
                         <h1 className={styles.heroTitle}>
-                            Buy & Sell
+                            Buy &amp; Sell
                             <span className={styles.heroGradient}> Verified Bicycles</span>
                         </h1>
                         <p className={styles.heroSubtitle}>
@@ -91,7 +123,7 @@ const HomePage = () => {
                             </div>
                         </div>
                     </div>
-                    <div className={styles.heroImage}>
+                    <div className={cls(styles.heroImage, styles.animateHiddenRight, heroVisible && styles.animateVisible, styles.delay200)}>
                         <div className={styles.floatingCard}>
                             <img
                                 src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&h=600&fit=crop"
@@ -108,66 +140,97 @@ const HomePage = () => {
 
             {/* Featured Listings */}
             <section className={styles.featured}>
-                <div className={styles.sectionHeader}>
+                <div
+                    ref={featuredHeaderRef}
+                    className={cls(styles.sectionHeader, styles.animateHidden, featuredHeaderVisible && styles.animateVisible)}
+                >
                     <h2 className={styles.sectionTitle}>Featured Bicycles</h2>
                     <p className={styles.sectionSubtitle}>
                         Professionally inspected and verified by our expert team
                     </p>
                 </div>
                 <div className={styles.bikeGrid}>
-                    {featuredBikes.map((bike) => (
-                        <div
-                            key={bike.id}
-                            className={`${styles.bikeCard} ${hoveredCard === bike.id ? styles.bikeCardHovered : ''}`}
-                            onMouseEnter={() => setHoveredCard(bike.id)}
-                            onMouseLeave={() => setHoveredCard(null)}
-                        >
-                            {bike.verified && (
-                                <div className={styles.verifiedBadge}>
-                                    <span>✓ Verified</span>
+                    {featuredBikes.map((bike, index) => {
+                        const [ref, visible] = cardRefs[index];
+                        return (
+                            <div
+                                key={bike.id}
+                                ref={ref}
+                                className={cls(
+                                    styles.bikeCard,
+                                    hoveredCard === bike.id ? styles.bikeCardHovered : '',
+                                    styles.animateHidden,
+                                    visible && styles.animateVisible,
+                                    staggerDelays[index]
+                                )}
+                                onMouseEnter={() => setHoveredCard(bike.id)}
+                                onMouseLeave={() => setHoveredCard(null)}
+                            >
+                                {bike.verified && (
+                                    <div className={styles.verifiedBadge}>
+                                        <span>✓ Verified</span>
+                                    </div>
+                                )}
+                                <div className={styles.bikeImage}>
+                                    <img src={bike.image} alt={bike.name} />
                                 </div>
-                            )}
-                            <div className={styles.bikeImage}>
-                                <img src={bike.image} alt={bike.name} />
-                            </div>
-                            <div className={styles.bikeInfo}>
-                                <h3 className={styles.bikeName}>{bike.name}</h3>
-                                <div className={styles.bikeCondition}>{bike.condition}</div>
-                                <div className={styles.bikeFooter}>
-                                    <span className={styles.bikePrice}>{bike.price}</span>
-                                    <button className={styles.btnView}>View →</button>
+                                <div className={styles.bikeInfo}>
+                                    <h3 className={styles.bikeName}>{bike.name}</h3>
+                                    <div className={styles.bikeCondition}>{bike.condition}</div>
+                                    <div className={styles.bikeFooter}>
+                                        <span className={styles.bikePrice}>{bike.price}</span>
+                                        <button className={styles.btnView}>View →</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </section>
 
             {/* How It Works */}
             <section className={styles.howItWorks}>
-                <div className={styles.sectionHeader}>
+                <div
+                    ref={howItWorksHeaderRef}
+                    className={cls(styles.sectionHeader, styles.animateHidden, howItWorksHeaderVisible && styles.animateVisible)}
+                >
                     <h2 className={styles.sectionTitle}>How It Works</h2>
                     <p className={styles.sectionSubtitle}>
                         A seamless process from listing to verified sale
                     </p>
                 </div>
                 <div className={styles.stepsContainer}>
-                    {howItWorks.map((step, index) => (
-                        <div key={index} className={styles.stepCard}>
-                            <div className={styles.stepIcon}>{step.icon}</div>
-                            <h3 className={styles.stepTitle}>{step.title}</h3>
-                            <p className={styles.stepDescription}>{step.description}</p>
-                            {index < howItWorks.length - 1 && (
-                                <div className={styles.stepArrow}>→</div>
-                            )}
-                        </div>
-                    ))}
+                    {howItWorks.map((step, index) => {
+                        const [ref, visible] = stepRefs[index];
+                        return (
+                            <div
+                                key={index}
+                                ref={ref}
+                                className={cls(
+                                    styles.stepCard,
+                                    styles.animateHiddenScale,
+                                    visible && styles.animateVisible,
+                                    staggerDelays[index]
+                                )}
+                            >
+                                <div className={styles.stepIcon}>{step.icon}</div>
+                                <h3 className={styles.stepTitle}>{step.title}</h3>
+                                <p className={styles.stepDescription}>{step.description}</p>
+                                {index < howItWorks.length - 1 && (
+                                    <div className={styles.stepArrow}>→</div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 
             {/* CTA Section */}
             <section className={styles.cta}>
-                <div className={styles.ctaContent}>
+                <div
+                    ref={ctaRef}
+                    className={cls(styles.ctaContent, styles.animateHiddenScale, ctaVisible && styles.animateVisible)}
+                >
                     <h2 className={styles.ctaTitle}>Ready to Find Your Perfect Ride?</h2>
                     <p className={styles.ctaSubtitle}>
                         Join thousands of satisfied riders. Start buying or selling today.
@@ -207,4 +270,4 @@ const HomePage = () => {
     )
 }
 
-export default HomePage 
+export default HomePage
