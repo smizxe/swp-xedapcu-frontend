@@ -5,6 +5,7 @@ import RegisterPageContainer from './pages/Auth/Register/RegisterPageContainer.j
 import HelpPage from './pages/HelpPage/HelpPage.jsx';
 import AboutUsPage from './pages/AboutUsPage/AboutUsPage.jsx';
 import ProfilePage from './pages/Profiles/ProfilePage.jsx';
+import WalletPageContainer from './pages/Wallet/WalletPageContainer.jsx';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/about" element={<AboutUsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/wallet" element={<WalletPageContainer />} />
       </Routes>
     </Router>
   )

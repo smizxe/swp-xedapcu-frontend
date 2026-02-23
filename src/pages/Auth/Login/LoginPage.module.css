@@ -116,11 +116,9 @@
 /* Card */
 .card {
   background: #ffffff;
-  /* Trắng tinh khiết */
-  border-radius: 10px;
-  /* Bo góc nhẹ tạo cảm giác cứng cáp, chuyên nghiệp */
+  border-radius: 16px;
   padding: 40px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
   animation: floatUp 600ms ease both;
 }
 
@@ -128,12 +126,12 @@
   margin: 0 0 8px 0;
   font-size: 28px;
   font-weight: 800;
-  color: #000000;
+  color: #1A1A1A;
   text-transform: uppercase;
 }
 
 .cardHeader p {
-  color: #666666;
+  color: #4A4A4A;
   font-size: 14px;
 }
 
@@ -153,19 +151,18 @@
   width: 100%;
   padding: 16px;
   background: #f8f8f8;
-  /* Xám cực nhạt */
   border: 1px solid #e0e0e0;
-  color: #000000;
+  color: #1A1A1A;
   border-radius: 4px;
   outline: none;
   transition: all 0.2s ease;
 }
 
 .input:focus {
-  border-color: #000000;
-  /* Viền đen khi focus */
+  border-color: #2D5A27;
+  /* Viền xanh lá khi focus */
   background: #ffffff;
-  box-shadow: 0 0 0 1px #000000;
+  box-shadow: 0 0 0 1px #2D5A27;
 }
 
 .label {
@@ -183,7 +180,7 @@
   left: 10px;
   font-size: 12px;
   font-weight: 700;
-  color: #000000;
+  color: #2D5A27;
   background: #ffffff;
   padding: 0 6px;
 }
@@ -222,21 +219,21 @@
 }
 
 .submitButton {
-  background: #000000;
-  /* Đen hoàn toàn */
+  background: #2D5A27;
+  /* Emerald green */
   color: #ffffff;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   border: none;
   padding: 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .submitButton:hover {
-  background: #333333;
+  background: #1e3d1b;
 }
 
 .submitButton:disabled {
@@ -267,19 +264,16 @@
   justify-content: center;
   gap: 12px;
   width: 100%;
-  /* QUAN TRỌNG: Giúp nút dài bằng nút Sign In */
   padding: 14px;
-  /* Tăng padding để bằng với nút Sign In phía trên */
   background: #ffffff;
-  border: 1px solid #000000;
-  color: #000000;
+  border: 1px solid #e0e0e0;
+  color: #1A1A1A;
   font-weight: 600;
   font-size: 15px;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   box-sizing: border-box;
-  /* Đảm bảo padding không làm nút bị tràn */
 }
 
 .socialButton:hover {
@@ -293,7 +287,7 @@
 }
 
 .link {
-  color: #000000;
+  color: #2D5A27;
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
