@@ -21,6 +21,30 @@ export const API_ENDPOINTS = {
     REGISTER: '/api/auth/register',
     LOGOUT: '/auth/logout',
   },
+  // Post endpoints
+  POSTS: {
+    GET_ALL: '/api/posts',
+    SEARCH: '/api/posts/search',
+    MY_POSTS: '/api/posts/my-posts',
+    GET_BY_ID: (id) => `/api/posts/${id}`,
+    CREATE: '/api/posts',
+    UPDATE: (id) => `/api/posts/${id}`,
+    UPDATE_STATUS: (id) => `/api/posts/${id}/status`,
+    DELETE: (id) => `/api/posts/${id}`,
+  },
+  // Bicycle endpoints
+  BICYCLES: {
+    GET_ALL: '/api/bicycles',
+    MY_BICYCLES: '/api/bicycles/my-bicycles',
+    GET_BY_ID: (id) => `/api/bicycles/${id}`,
+    CREATE: '/api/bicycles',
+    UPDATE: (id) => `/api/bicycles/${id}`,
+    DELETE: (id) => `/api/bicycles/${id}`,
+  },
+  // Category endpoints
+  CATEGORIES: {
+    GET_ALL: '/api/categories',
+  },
 }
 // Log configuration in development
 if (API_CONFIG.IS_DEV) {
