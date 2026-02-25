@@ -5,7 +5,13 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import authService from '../../../services/authService';
 import styles from '../Login/LoginPage.module.css'; // Reuse login styles
 
-function RegisterPage() {
+function RegisterPage({
+    onSubmit,
+    onGoogleLogin,
+    isLoading = false,
+    externalErrors = {},
+    externalSuccess = ''
+}) {
     const navigate = useNavigate();
 
     const [showPassword, setShowPassword] = useState(false);
@@ -25,19 +31,7 @@ function RegisterPage() {
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
-        setIsLoading(true);
-
-        try {
-            await authService.register(formData);
-            setSuccess('Registration successful! Redirecting to login...');
-            setTimeout(() => navigate('/login'), 2000);
-        } catch (err) {
-            setError(err.response?.data || 'Registration failed. Please try again.');
-        } finally {
-            setIsLoading(false);
-        }
+        if (onSubmit) onSubmit(formData);
     };
 
     return (
@@ -76,11 +70,9 @@ function RegisterPage() {
                     </div>
 
                     <form className={styles.form} onSubmit={handleFormSubmit}>
-                        {/* Thông báo */}
-                        {error && <div className={styles.errorMessage}>{error}</div>}
-                        {success && <div className={styles.successMessage}>{success}</div>}
+                        {externalSuccess && <div className={styles.successMessage}>{externalSuccess}</div>}
+                        {externalErrors.general && <div className={styles.errorMessage}>{externalErrors.general}</div>}
 
-                        {/* Input Full Name */}
                         <div className={styles.inputGroup}>
                             <input
                                 id="fullName"

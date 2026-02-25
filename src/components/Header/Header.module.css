@@ -62,8 +62,8 @@
 }
 
 .navLinks a:hover {
-    color: #00d4ff;
-    /* Cyan highlight khi hover */
+    color: #2D5A27;
+    /* Green highlight khi hover */
 }
 
 /* Nút icon (Dấu hỏi) */
@@ -85,16 +85,16 @@
 }
 
 .btnSecondary:hover {
-    color: #00d4ff;
-    /* Cyan highlight khi hover */
+    color: #2D5A27;
+    /* Green highlight khi hover */
     transform: scale(1.1);
     /* Phóng to nhẹ icon */
 }
 
 /* Nút Get Started */
 .btnPrimary {
-    background: #000000;
-    /* Thường nút này sẽ để nền đen chữ trắng cho nổi bật */
+    background: #2D5A27;
+    /* Emerald green - nút nổi bật */
     color: #ffffff;
     border: none;
     padding: 0.6rem 1.2rem;
@@ -108,8 +108,8 @@
 }
 
 .btnPrimary:hover {
-    background: #333333;
-    /* Chuyển xám đậm khi hover */
+    background: #1e3d1b;
+    /* Xanh đậm hơn khi hover */
 }
 
 /* Hiệu ứng gạch chân hiện đại */
@@ -120,7 +120,7 @@
     left: 0;
     width: 0;
     height: 2px;
-    background: #00d4ff;
+    background: #2D5A27;
     transition: width 0.2s ease;
 }
 
@@ -154,12 +154,12 @@
 }
 
 .navbarDark .logoText {
-    color: #000000;
+    color: #1A1A1A;
     text-shadow: none;
 }
 
 .navbarDark .navLinks a {
-    color: #000000;
+    color: #1A1A1A;
     text-shadow: none;
 }
 
@@ -168,11 +168,11 @@
 }
 
 .navbarDark .navLinks a::after {
-    background: #000000;
+    background: #2D5A27;
 }
 
 .navbarDark .btnSecondary {
-    color: #000000;
+    color: #1A1A1A;
     filter: none;
 }
 
@@ -206,18 +206,18 @@
 }
 
 .userGreeting:hover .userGreetingText {
-    color: #00d4ff;
+    color: #A8E6CF;
     transform: scale(1.05);
 }
 
 /* Dark variant for user greeting */
 .navbarDark .userGreetingText {
-    color: #000000;
+    color: #1A1A1A;
     text-shadow: none;
 }
 
 .navbarDark .userGreeting:hover .userGreetingText {
-    color: #0099cc;
+    color: #2D5A27;
 }
 
 /* User Dropdown Menu */
@@ -248,11 +248,11 @@
 /* Dropdown Header */
 .dropdownHeader {
     padding: 16px;
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+    background: #ffffff;
 }
 
 .greeting {
-    color: white;
+    color: #1A1A1A;
     font-weight: 600;
     font-size: 0.95rem;
     margin: 0;
@@ -268,15 +268,15 @@
     border: none;
     text-align: left;
     font-size: 0.9rem;
-    color: #333;
+    color: #4A4A4A;
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
 }
 
 .dropdownItem:hover {
-    background: rgba(0, 212, 255, 0.1);
-    color: #0099cc;
+    background: rgba(45, 90, 39, 0.08);
+    color: #2D5A27;
     padding-left: 20px;
 }
 
@@ -321,7 +321,6 @@
     right: 12px;
     width: 12px;
     height: 12px;
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
     transform: rotate(45deg);
     border-radius: 2px;
 }

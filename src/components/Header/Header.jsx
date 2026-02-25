@@ -12,6 +12,7 @@ const Header = ({ variant = 'light' }) => {
     const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userEmail, setUserEmail] = useState('');
+    const [userId, setUserId] = useState(null);
 
     // Check authentication status on mount and when storage changes
     useEffect(() => {
@@ -28,8 +29,10 @@ const Header = ({ variant = 'light' }) => {
             setIsLoggedIn(authenticated);
             if (authenticated) {
                 setUserEmail(user.email);
+                setUserId(user.userId || user.id || 'me');
             } else {
-                setUserEmail(''); // Clear email if not authenticated
+                setUserEmail('');
+                setUserId(null);
             }
         };
 
@@ -75,8 +78,8 @@ const Header = ({ variant = 'light' }) => {
                 {/* Menu chính */}
                 <div className={styles.navLinks}>
                     <Link to="/browse">Browse</Link>
-                    <Link to="/sell">Sell Bike</Link>
                     <Link to="/verified">Verified</Link>
+                    <Link to="/marketplace">Market Place</Link>
                     <Link to="/about">About</Link>
 
                 </div>
@@ -136,9 +139,21 @@ const Header = ({ variant = 'light' }) => {
                                 </button>
                                 <button
                                     className={styles.dropdownItem}
+                                    onClick={() => navigate('/wallet')}
+                                >
+                                    My Wallet
+                                </button>
+                                <button
+                                    className={styles.dropdownItem}
                                     onClick={() => navigate('/orders')}
                                 >
                                     My Orders
+                                </button>
+                                <button
+                                    className={styles.dropdownItem}
+                                    onClick={() => navigate(`/${userId}/bicycles`)}
+                                >
+                                    My Bicycle
                                 </button>
                                 <div className={styles.dropdownDivider}></div>
                                 <button
