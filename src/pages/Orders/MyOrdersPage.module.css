@@ -1,0 +1,118 @@
+.pageWrapper {
+    min-height: 100vh;
+    background: #f7f8f5;
+}
+
+.pageContent {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 100px 24px 64px;
+}
+
+.pageTitle {
+    font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pageSubtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 32px;
+}
+
+.loadingWrapper {
+    display: flex;
+    justify-content: center;
+    padding: 80px 0;
+}
+
+/* Order List */
+.orderList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.orderCard {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e5e5e5;
+    padding: 20px 24px;
+    transition: all 250ms ease;
+}
+
+.orderCard:hover {
+    box-shadow: 0 4px 16px rgba(45, 90, 39, 0.08);
+    transform: translateY(-2px);
+}
+
+.orderHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.orderId {
+    font-weight: 700;
+    color: #2D5A27;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+}
+
+.orderBody {
+    margin-bottom: 16px;
+}
+
+.postTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.priceRow {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+    color: #666;
+}
+
+.priceRow strong {
+    color: #2D5A27;
+}
+
+.dateMeta {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 6px;
+}
+
+.orderActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btnComplete {
+    background: #2D5A27 !important;
+    border-color: #2D5A27 !important;
+}
+
+.btnComplete:hover {
+    background: #1a3d17 !important;
+    border-color: #1a3d17 !important;
+}
+
+@media (max-width: 600px) {
+    .priceRow {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

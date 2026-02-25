@@ -44,6 +44,23 @@ export const API_ENDPOINTS = {
   // Category endpoints
   CATEGORIES: {
     GET_ALL: '/api/categories',
+    CREATE: '/api/categories',
+    DELETE: (id) => `/api/categories/${id}`,
+  },
+  // User endpoints
+  USERS: {
+    ME: '/api/users/me',
+    GET_BY_EMAIL: (email) => `/api/users/${email}`,
+  },
+  // Order endpoints
+  ORDERS: {
+    DEPOSIT: '/api/orders/deposit',
+    MY_ORDERS: '/api/orders/my-orders',
+    MY_SALES: '/api/orders/my-sales',
+    GET_BY_ID: (id) => `/api/orders/${id}`,
+    CANCEL: (id) => `/api/orders/${id}/cancel`,
+    SCHEDULE_DELIVERY: (id) => `/api/orders/${id}/schedule-delivery`,
+    COMPLETE: (id) => `/api/orders/${id}/complete`,
   },
 }
 // Log configuration in development

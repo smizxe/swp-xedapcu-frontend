@@ -40,3 +40,13 @@ export const getBicycleById = async (id) => {
     const response = await api.get(API_ENDPOINTS.BICYCLES.GET_BY_ID(id));
     return response.data;
 };
+
+/**
+ * Update an existing bicycle.
+ * @param {number} id - bicycle ID
+ * @param {Object} data - { brand, frameMaterial, frameSize, groupset, wheelSize, conditionPercent, categoryId }
+ */
+export const updateBicycle = async (id, data) => {
+    const response = await api.put(API_ENDPOINTS.BICYCLES.UPDATE(id), data);
+    return response.data;
+};

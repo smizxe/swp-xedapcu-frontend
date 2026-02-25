@@ -145,9 +145,15 @@ const Header = ({ variant = 'light' }) => {
                                 </button>
                                 <button
                                     className={styles.dropdownItem}
-                                    onClick={() => navigate('/orders')}
+                                    onClick={() => navigate('/my-orders')}
                                 >
                                     My Orders
+                                </button>
+                                <button
+                                    className={styles.dropdownItem}
+                                    onClick={() => navigate('/my-sales')}
+                                >
+                                    My Sales
                                 </button>
                                 <button
                                     className={styles.dropdownItem}

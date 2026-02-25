@@ -12,6 +12,7 @@ import styles from './PostDetailPage.module.css';
 import Header from '../../../components/Header/Header';
 import { getPostById } from '../../../service/postService';
 import { isAuthenticated } from '../../../service/authService';
+import { createDeposit } from '../../../service/orderService';
 
 const STATUS_MAP = {
     ACTIVE: { label: 'Available', className: styles.statusActive },
@@ -50,12 +51,18 @@ function PostDetailPage() {
             .finally(() => setIsLoading(false));
     }, [postId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const handleDeposit = () => {
+    const handleDeposit = async () => {
         if (!isAuthenticated()) {
             message.warning('Please log in to place a deposit.');
             return;
         }
-        message.info('Deposit flow — coming soon!');
+        try {
+            await createDeposit(postId);
+            message.success('Deposit placed successfully!');
+            navigate('/my-orders');
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to place deposit.');
+        }
     };
 
     if (isLoading) {

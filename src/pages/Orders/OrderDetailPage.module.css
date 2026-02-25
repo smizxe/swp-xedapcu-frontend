@@ -1,0 +1,66 @@
+.pageWrapper {
+    min-height: 100vh;
+    background: #f7f8f5;
+}
+
+.pageContent {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 100px 24px 64px;
+}
+
+.btnBack {
+    margin-bottom: 20px;
+}
+
+.headerRow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.pageTitle {
+    font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.loadingWrapper {
+    display: flex;
+    justify-content: center;
+    padding: 120px 0;
+}
+
+.errorWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 0;
+    gap: 16px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e5e5e5;
+    padding: 24px;
+    margin-bottom: 16px;
+}
+
+.sectionTitle {
+    font-weight: 700;
+    color: #2D5A27;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+}
+
+.metaText {
+    color: #888;
+    font-size: 13px;
+}

@@ -21,7 +21,6 @@ function RegisterPage({
         fullName: '',
         phone: '',
     });
-    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 

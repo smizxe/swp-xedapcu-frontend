@@ -21,7 +21,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from '../../context/AuthContext';
-import bicycleService from '../../services/bicycleService';
+import { getMyBicycles } from '../../service/bicycleService';
 import styles from './SellerDashboard.module.css';
 
 const SellerDashboard = () => {
@@ -42,7 +42,7 @@ const SellerDashboard = () => {
     const fetchBicycles = async () => {
         try {
             setLoading(true);
-            const data = await bicycleService.getAllBicycles();
+            const data = await getMyBicycles();
             setBicycles(data);
             setStats({
                 totalListings: data.length,
