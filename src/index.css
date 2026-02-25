@@ -1,4 +1,64 @@
-* {
+/* =============================================================
+   Ekibdlo — Global Reset & Design Tokens
+   Source of truth: design-system/ekibdlo/MASTER.md
+   ============================================================= */
+
+/* Google Fonts — Barlow Condensed (Industrial Sans, single font system) */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+/* ─── Barlow Condensed — thay thế Trade Gothic W01 ──────────────
+   Barlow Condensed: condensed sans-serif, geometric, industrial feel.
+   Gần nhất với Trade Gothic có sẵn trên Google Fonts (miễn phí).
+   ──────────────────────────────────────────────────────────── */
+
+/* ─── Design Tokens (Global CSS Custom Properties) ──────────── */
+:root {
+  /* === White & Forest Emerald Palette === */
+  --color-primary: #064E3B;
+  --color-primary-light: #065F46;
+  --color-secondary: #334155;
+  --color-cta: #10B981;
+  --color-cta-hover: #34D399;
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-text: #1E293B;
+  --color-text-muted: #64748B;
+  --color-border: #E2E8F0;
+
+  /* === Liquid Glass === */
+  --color-glass: rgba(255, 255, 255, 0.75);
+  --color-glass-border: rgba(255, 255, 255, 0.3);
+
+  /* === Typography — Single Font System ===
+     Barlow Condensed được dùng cho TOÀN BỘ: Display, Heading, Body, UI, Labels.
+     Industrial / kỹ thuật hiện đại, không còn Serif. */
+  --font-display: 'Barlow Condensed', sans-serif;
+  /* H1, H2, H3 → weight 700 */
+  --font-body: 'Barlow Condensed', sans-serif;
+  /* Body, UI, Buttons */
+
+  /* === Shadows (Emerald-tinted) === */
+  --shadow-sm: 0 2px 8px rgba(6, 78, 59, 0.06);
+  --shadow-md: 0 4px 20px rgba(6, 78, 59, 0.08);
+  --shadow-lg: 0 12px 40px rgba(6, 78, 59, 0.10);
+  --shadow-xl: 0 24px 56px rgba(6, 78, 59, 0.12);
+  --shadow-emerald: 0 8px 28px rgba(16, 185, 129, 0.25);
+
+  /* === Gradients === */
+  --gradient-cta: linear-gradient(135deg, #064E3B 0%, #10B981 100%);
+  --gradient-emerald: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.4) 100%);
+
+  /* === Transitions === */
+  --transition-fast: all 150ms ease;
+  --transition-base: all 220ms ease;
+  --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Global Reset ───────────────────────────────────────────── */
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -9,7 +69,26 @@ html {
 }
 
 body {
-  font-family: "Trade Gothic W01", sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
+  font-size: 16px;
+  /* Barlow Condensed: condensed font cần tracking nhẹ để body text thoáng */
+  letter-spacing: 0.02em;
+  line-height: 1.65;
+  color: var(--color-text);
+  background: var(--color-bg);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
