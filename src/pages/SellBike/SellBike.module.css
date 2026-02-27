@@ -1,0 +1,105 @@
+.pageWrapper {
+    background: #ffffff;
+    min-height: 100vh;
+    padding: 3rem 0 5rem;
+}
+
+.container {
+    max-width: 800px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.backButton {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+.title {
+    font-weight: 900 !important;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem !important;
+}
+
+.subtitle {
+    color: #666666;
+}
+
+.formCard {
+    padding: 3rem !important;
+    border-radius: 0 !important;
+    border: 1px solid #e5e5e5 !important;
+    box-shadow: none !important;
+}
+
+.input {
+    border-radius: 0 !important;
+}
+
+.sliderBox {
+    background: #f8f8f8;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.sliderLabel {
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 1rem !important;
+    color: #000000;
+}
+
+.slider {
+    color: #000000 !important;
+}
+
+.slider .MuiSlider-thumb {
+    border-radius: 0 !important;
+    width: 16px;
+    height: 16px;
+}
+
+.slider .MuiSlider-track {
+    border-radius: 0 !important;
+}
+
+.slider .MuiSlider-rail {
+    border-radius: 0 !important;
+    background-color: #e5e5e5 !important;
+}
+
+.submitButton {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-radius: 0 !important;
+    padding: 1.25rem !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    letter-spacing: 1px !important;
+    margin-top: 1rem !important;
+}
+
+.submitButton:hover {
+    background: #333333 !important;
+}
+
+.submitButton:disabled {
+    background: #cccccc !important;
+}
+
+@media (max-width: 600px) {
+    .formCard {
+        padding: 1.5rem !important;
+    }
+
+    .title {
+        font-size: 2rem !important;
+    }
+}

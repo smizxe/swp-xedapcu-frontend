@@ -20,3 +20,13 @@ export const getAllCategories = async () => {
     const response = await api.get(API_ENDPOINTS.CATEGORIES.GET_ALL);
     return response.data;
 };
+
+export const createCategory = async (data) => {
+    const response = await api.post(API_ENDPOINTS.CATEGORIES.CREATE, data);
+    return response.data;
+};
+
+export const deleteCategory = async (id) => {
+    const response = await api.delete(API_ENDPOINTS.CATEGORIES.DELETE(id));
+    return response.data;
+};
