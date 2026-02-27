@@ -6,7 +6,7 @@ import HelpPage from './pages/HelpPage/HelpPage.jsx';
 import AboutUsPage from './pages/AboutUsPage/AboutUsPage.jsx';
 import ProfilePage from './pages/Profiles/ProfilePage.jsx';
 import WalletPageContainer from './pages/Wallet/WalletPageContainer.jsx';
-import MarketplaceContainer from './pages/Marketplace/MarketplacePage/MarketplaceContainer.jsx';
+import MarketplaceContainer from './pages/Marketplace/MarketPlacePage/MarketplaceContainer.jsx';
 import PostDetailPage from './pages/Marketplace/PostDetail/PostDetailPage.jsx';
 import BicyclePage from './pages/Bicycle/BicyclePage.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
