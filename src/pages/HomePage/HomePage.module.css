@@ -1,172 +1,915 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* =============================================================
+   Ekibdlo — HomePage CSS Module
+   Theme: White & Forest Emerald × Liquid Glass
+   Tokens: src/index.css (:root) — không định nghĩa lại ở đây
+   ============================================================= */
 
+/* Barlow Condensed — được import tại src/index.css; không cần re-import ở đây */
+
+/* ─── Tokens được định nghĩa global trong src/index.css (:root)
+   Tất cả var(--color-*), var(--font-*), var(--shadow-*) kế thừa từ đó.
+   ──────────────────────────────────────────────────────────── */
+
+
+/* ─── Base ──────────────────────────────────────────────────── */
 .homePage {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #ffffff;
+    background: var(--color-bg);
     min-height: 100vh;
-    color: #000000;
+    font-family: var(--font-body);
+    /* Barlow Condensed: 0.02em tracking cho body text thoáng hơn */
+    letter-spacing: 0.02em;
+    line-height: 1.65;
+    color: var(--color-text);
 }
 
-/* Navigation */
-.navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid #e5e5e5;
-    transition: all 0.3s ease;
-}
-
-.navContainer {
-    max-width: 1400px;
+.container {
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 1.25rem 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 0 2rem;
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 1.5rem;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-}
-
-.logoIcon {
-    font-size: 2rem;
-}
-
-.logoText {
-    color: #000000;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.navLinks {
-    display: flex;
-    gap: 3rem;
-}
-
-.navLinks a {
-    color: #000000;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
+/* =============================================================
+   BUY & SELL SECTION
+   ============================================================= */
+.buyAndSell {
     position: relative;
-}
-
-.navLinks a::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: #000000;
-    transition: width 0.3s ease;
-}
-
-.navLinks a:hover {
-    color: #666666;
-}
-
-.navLinks a:hover::after {
-    width: 100%;
-}
-
-.navActions {
-    display: flex;
-    gap: 1rem;
-}
-
-.btnSecondary {
-    padding: 0.75rem 1.75rem;
-    background: transparent;
-    border: 2px solid #000000;
-    color: #000000;
-    border-radius: 0;
-    font-weight: 700;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btnSecondary:hover {
-    background: #000000;
-    color: #ffffff;
-}
-
-.btnPrimary {
-    padding: 0.75rem 1.75rem;
-    background: #000000;
-    border: 2px solid #000000;
-    color: #ffffff;
-    border-radius: 0;
-    font-weight: 700;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btnPrimary:hover {
-    background: #333333;
-    border-color: #333333;
-}
-
-/* Hero Section */
-.hero {
-    position: relative;
-    padding: 4rem 3rem 6rem;
-    background: #ffffff;
+    padding: 6rem 0 5rem;
+    background: var(--color-surface);
     overflow: hidden;
 }
 
-.heroBackground {
+/* Decorative emerald blob */
+.blobDecor {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(180deg, #f8f8f8 0%, #ffffff 100%);
+    width: 700px;
+    height: 700px;
+    top: -200px;
+    right: -200px;
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+    pointer-events: none;
     z-index: 0;
+    animation: morphBlob 12s ease-in-out infinite;
 }
 
-.heroContent {
-    max-width: 1400px;
-    margin: 0 auto;
+@keyframes morphBlob {
+    0% {
+        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    }
+
+    50% {
+        border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    }
+
+    100% {
+        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    }
+}
+
+.buyAndSellGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6rem;
+    gap: 5rem;
     align-items: center;
     position: relative;
     z-index: 1;
 }
 
-.heroTitle {
-    font-size: 5rem;
-    font-weight: 900;
-    line-height: 0.95;
-    margin-bottom: 2rem;
-    letter-spacing: -2px;
-    text-transform: uppercase;
-    animation: fadeInUp 0.8s ease;
+/* ── Left Text ── */
+.buyAndSellText {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
-@keyframes fadeInUp {
+.eyebrow {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    /* Trade Gothic: wider tracking for eyebrow labels */
+    text-transform: uppercase;
+    color: var(--color-cta);
+    margin-bottom: 1rem;
+}
+
+.heroTitle {
+    font-family: var(--font-display);
+    /* Barlow Condensed — Industrial sans */
+    font-size: clamp(2.8rem, 5vw, 4.25rem);
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--color-text);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    /* Industrial look */
+}
+
+.heroAccent {
+    color: var(--color-primary);
+    position: relative;
+    display: inline-block;
+}
+
+.heroAccent::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 70%;
+    height: 3px;
+    background: var(--color-cta);
+    border-radius: 2px;
+}
+
+.heroSubtitle {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    line-height: 1.75;
+    letter-spacing: 0.02em;
+    margin-bottom: 2rem;
+    max-width: 480px;
+}
+
+.heroBullets {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-bottom: 2.5rem;
+}
+
+.bullet {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--color-text);
+}
+
+.bulletIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.heroButtons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ── Right Glass Image Card ── */
+.buyAndSellImage {
+    position: relative;
+}
+
+.glassImageCard {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    /* Liquid Glass effect */
+    background: var(--color-glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--color-glass-border);
+    box-shadow:
+        var(--shadow-xl),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glassImageCard img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 22px;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glassImageCard:hover img {
+    transform: scale(1.03);
+}
+
+/* Floating verified badge */
+.floatingVerifiedBadge {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--color-glass);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 12px;
+    padding: 0.7rem 1.25rem;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-md);
+}
+
+.verifiedCheckCircle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Floating stat pill */
+.floatingStatPill {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--color-glass);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.statStars {
+    display: flex;
+    gap: 2px;
+    color: var(--color-cta);
+}
+
+.statPillText {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    /* Trade Gothic UI tracking */
+    color: var(--color-text);
+}
+
+/* =============================================================
+   TRUST METRICS BAR
+   ============================================================= */
+.trustBar {
+    background: var(--color-primary);
+    padding: 3rem 0;
+}
+
+.trustGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+}
+
+.trustItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+}
+
+.trustValue {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+
+.trustLabel {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    /* Trade Gothic: wide tracking for uppercase labels */
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* =============================================================
+   FEATURED BICYCLES
+   ============================================================= */
+.featuredSection {
+    padding: 7rem 0 5rem;
+    background: var(--color-bg);
+}
+
+.sectionHeader {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.sectionTitle {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    /* Industrial heading */
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+}
+
+.sectionSubtitle {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+.bikeGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* ── Bicycle Card (Glass) ── */
+.bikeCard {
+    position: relative;
+    background: var(--color-glass);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow:
+        var(--shadow-sm),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bikeCard:hover,
+.bikeCardHovered {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow:
+        var(--shadow-xl),
+        0 4px 20px rgba(16, 185, 129, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Verified badge */
+.verifiedBadge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    background: rgba(6, 78, 59, 0.88);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    /* Trade Gothic badge: wider tracking */
+    text-transform: uppercase;
+}
+
+/* Image */
+.bikeImageWrap {
+    height: 240px;
+    overflow: hidden;
+    background: #f1f5f9;
+}
+
+.bikeImageWrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    display: block;
+}
+
+.bikeCard:hover .bikeImageWrap img {
+    transform: scale(1.06);
+}
+
+/* Body */
+.bikeBody {
+    padding: 1.5rem;
+}
+
+.bikeBrand {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    margin-bottom: 0.35rem;
+}
+
+.bikeName {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    /* Barlow Condensed: card title → 700 */
+    color: var(--color-text);
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 0.85rem;
+}
+
+.bikeMeta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.bikeConditionBadge {
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--color-primary);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    /* Trade Gothic condensed badge */
+    text-transform: uppercase;
+}
+
+.bikeRating {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--color-cta);
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.bikeFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.bikePrice {
+    font-family: var(--font-body);
+    font-size: 1.35rem;
+    font-weight: 700;
+    /* Barlow Condensed: price/stats → 700 */
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+}
+
+.bikeCurrency {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.featuredCta {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+/* =============================================================
+   HOW IT WORKS
+   ============================================================= */
+.howItWorksSection {
+    padding: 7rem 0;
+    background: var(--color-surface);
+}
+
+.stepsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    position: relative;
+}
+
+.stepCard {
+    position: relative;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stepCard:hover {
+    background: var(--color-surface);
+    transform: translateY(-4px);
+    box-shadow:
+        var(--shadow-lg),
+        0 0 0 1px rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.stepNumber {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: rgba(16, 185, 129, 0.12);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.03em;
+    user-select: none;
+}
+
+.stepIconWrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    transition: background 300ms ease;
+}
+
+.stepCard:hover .stepIconWrap {
+    background: rgba(16, 185, 129, 0.14);
+}
+
+.stepTitle {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    /* Barlow Condensed: step title → 700 */
+    color: var(--color-text);
+    margin-bottom: 0.85rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.stepDescription {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    line-height: 1.75;
+}
+
+/* Connector arrow between steps */
+.stepConnector {
+    position: absolute;
+    right: -1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    color: var(--color-cta);
+    box-shadow: var(--shadow-sm);
+}
+
+/* =============================================================
+   CTA SECTION
+   ============================================================= */
+.ctaSection {
+    padding: 5rem 0 7rem;
+    background: var(--color-bg);
+}
+
+.ctaCard {
+    position: relative;
+    background: var(--color-primary);
+    border-radius: 28px;
+    padding: 5rem 4rem;
+    text-align: center;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+}
+
+/* Emerald glass shimmer overlay */
+.ctaCard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+/* Top accent line */
+.ctaTopLine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-cta), var(--color-cta-hover), var(--color-cta));
+    border-radius: 28px 28px 0 0;
+}
+
+.ctaEyebrow {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    /* Trade Gothic: max tracking for CTA eyebrow */
+    text-transform: uppercase;
+    color: var(--color-cta);
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.ctaTitle {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    /* Industrial CTA */
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 1;
+}
+
+.ctaSubtitle {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
+}
+
+.ctaButtons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+
+.btnCtaOutline {
+    padding: 0.875rem 2rem;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 250ms ease;
+}
+
+.btnCtaOutline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #ffffff;
+}
+
+/* =============================================================
+   FOOTER
+   ============================================================= */
+.footer {
+    background: var(--color-primary);
+    padding: 4rem 0 0;
+    font-family: var(--font-body);
+}
+
+.footerInner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 2rem 3rem;
+    display: grid;
+    grid-template-columns: 1.4fr 2fr;
+    gap: 5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footerBrand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.footerLogo {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+
+.footerTagline {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.65;
+    max-width: 240px;
+}
+
+.footerLinks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.footerCol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.footerColTitle {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    /* Trade Gothic footer labels */
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.25rem;
+}
+
+.footerCol a {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    transition: color 200ms ease;
+}
+
+.footerCol a:hover {
+    color: var(--color-cta);
+}
+
+.footerBottom {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.footerBottom a {
+    color: rgba(255, 255, 255, 0.35);
+    text-decoration: none;
+    transition: color 200ms ease;
+}
+
+.footerBottom a:hover {
+    color: var(--color-cta);
+}
+
+.footerDivider {
+    opacity: 0.4;
+}
+
+/* =============================================================
+   SHARED BUTTON VARIANTS
+   ============================================================= */
+.btnPrimaryEmerald {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-cta) 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 700;
+    /* Barlow Condensed buttons → 700 */
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btnPrimaryEmerald:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(16, 185, 129, 0.40);
+}
+
+.btnOutlineEmerald {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: transparent;
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-primary);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 700;
+    /* Barlow Condensed buttons → 700 */
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 250ms ease;
+}
+
+.btnOutlineEmerald:hover {
+    background: rgba(6, 78, 59, 0.06);
+    border-color: var(--color-cta);
+    color: var(--color-primary-light);
+    transform: translateY(-1px);
+}
+
+.btnArrowIcon {
+    display: flex;
+    align-items: center;
+    transition: transform 250ms ease;
+}
+
+.btnPrimaryEmerald:hover .btnArrowIcon,
+.btnOutlineEmerald:hover .btnArrowIcon {
+    transform: translateX(3px);
+}
+
+.btnViewBike {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.1rem;
+    background: rgba(6, 78, 59, 0.06);
+    border: 1px solid rgba(6, 78, 59, 0.15);
+    color: var(--color-primary);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.74rem;
+    font-weight: 700;
+    /* Barlow Condensed buttons → 700 */
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 220ms ease;
+}
+
+.btnViewBike:hover {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+/* =============================================================
+   SCROLL ENTRANCE ANIMATIONS
+   ============================================================= */
+@keyframes entranceFadeUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(40px);
     }
 
     to {
@@ -175,125 +918,7 @@
     }
 }
 
-.heroGradient {
-    display: block;
-    color: #000000;
-    position: relative;
-}
-
-.heroGradient::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    width: 100px;
-    height: 6px;
-    background: #000000;
-}
-
-.heroSubtitle {
-    font-size: 1.15rem;
-    color: #666666;
-    margin-bottom: 3rem;
-    line-height: 1.7;
-    font-weight: 400;
-    max-width: 90%;
-    animation: fadeInUp 0.8s ease 0.2s backwards;
-}
-
-.heroButtons {
-    display: flex;
-    gap: 1.25rem;
-    margin-bottom: 4rem;
-    animation: fadeInUp 0.8s ease 0.4s backwards;
-}
-
-.btnHeroPrimary {
-    padding: 1.25rem 2.5rem;
-    background: #000000;
-    border: 2px solid #000000;
-    color: white;
-    border-radius: 0;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.btnHeroPrimary:hover {
-    background: #333333;
-    border-color: #333333;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-.btnArrow {
-    transition: transform 0.3s ease;
-    font-size: 1.25rem;
-}
-
-.btnHeroPrimary:hover .btnArrow {
-    transform: translateX(5px);
-}
-
-.btnHeroSecondary {
-    padding: 1.25rem 2.5rem;
-    background: transparent;
-    border: 2px solid #000000;
-    color: #000000;
-    border-radius: 0;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btnHeroSecondary:hover {
-    background: #000000;
-    color: #ffffff;
-    transform: translateY(-2px);
-}
-
-.heroStats {
-    display: flex;
-    gap: 4rem;
-    animation: fadeInUp 0.8s ease 0.6s backwards;
-}
-
-.stat {
-    display: flex;
-    flex-direction: column;
-}
-
-.statNumber {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: #000000;
-    letter-spacing: -1px;
-}
-
-.statLabel {
-    font-size: 0.8rem;
-    color: #999999;
-    margin-top: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-
-.heroImage {
-    position: relative;
-    animation: fadeInRight 1s ease;
-}
-
-@keyframes fadeInRight {
+@keyframes entranceFadeRight {
     from {
         opacity: 0;
         transform: translateX(50px);
@@ -305,480 +930,181 @@
     }
 }
 
-.floatingCard {
-    position: relative;
-    border-radius: 0;
-    overflow: hidden;
-    background: #f8f8f8;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+@keyframes entranceScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
-.floatingCard img {
-    width: 100%;
-    height: auto;
-    display: block;
+.animateHidden {
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.verificationBadge {
-    position: absolute;
-    bottom: 30px;
-    left: 30px;
-    background: #000000;
-    padding: 1rem 1.75rem;
-    color: #ffffff;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
+.animateHiddenRight {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.checkmark {
-    background: #ffffff;
-    color: #000000;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.875rem;
-    font-weight: 900;
+.animateHiddenScale {
+    opacity: 0;
+    transform: scale(0.93);
+    transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Trust Bar */
-.trustBar {
-    max-width: 1400px;
-    margin: 0 auto 6rem;
-    padding: 3rem;
-    display: flex;
-    justify-content: space-around;
-    background: #f8f8f8;
-    border-top: 1px solid #e5e5e5;
-    border-bottom: 1px solid #e5e5e5;
+.animateVisible {
+    opacity: 1 !important;
+    transform: none !important;
 }
 
-.trustItem {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-weight: 600;
-    color: #000000;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+/* Stagger delays */
+.delay100 {
+    transition-delay: 100ms;
 }
 
-.trustIcon {
-    font-size: 1.75rem;
+.delay200 {
+    transition-delay: 200ms;
 }
 
-/* Featured Section */
-.featured {
-    max-width: 1400px;
-    margin: 6rem auto;
-    padding: 0 3rem;
+.delay300 {
+    transition-delay: 300ms;
 }
 
-.sectionHeader {
-    text-align: center;
-    margin-bottom: 5rem;
+.delay400 {
+    transition-delay: 400ms;
 }
 
-.sectionTitle {
-    font-size: 3.5rem;
-    font-weight: 900;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: -1px;
-    color: #000000;
+.delay500 {
+    transition-delay: 500ms;
 }
 
-.sectionSubtitle {
-    font-size: 1.1rem;
-    color: #666666;
-    font-weight: 400;
-    max-width: 600px;
-    margin: 0 auto;
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .animateHidden,
+    .animateHiddenRight,
+    .animateHiddenScale {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .blobDecor {
+        animation: none;
+    }
 }
 
-.bikeGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-    gap: 2.5rem;
-}
-
-.bikeCard {
-    background: #ffffff;
-    border: 1px solid #e5e5e5;
-    overflow: hidden;
-    transition: all 0.4s ease;
-    cursor: pointer;
-    position: relative;
-}
-
-.bikeCard:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
-    border-color: #000000;
-}
-
-.verifiedBadge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: #000000;
-    color: white;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    z-index: 10;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.bikeImage {
-    height: 320px;
-    overflow: hidden;
-    background: #f8f8f8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.bikeImage img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
-}
-
-.bikeCard:hover .bikeImage img {
-    transform: scale(1.05);
-}
-
-.bikeInfo {
-    padding: 2rem;
-    background: #ffffff;
-}
-
-.bikeName {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: -0.5px;
-    color: #000000;
-}
-
-.bikeCondition {
-    color: #999999;
-    font-size: 0.85rem;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-
-.bikeFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e5e5;
-}
-
-.bikePrice {
-    font-size: 2rem;
-    font-weight: 900;
-    color: #000000;
-    letter-spacing: -1px;
-}
-
-.btnView {
-    padding: 0.75rem 1.5rem;
-    background: #000000;
-    border: none;
-    color: white;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
-}
-
-.btnView:hover {
-    background: #333333;
-    transform: translateX(3px);
-}
-
-/* How It Works */
-.howItWorks {
-    max-width: 1400px;
-    margin: 8rem auto;
-    padding: 0 3rem;
-}
-
-.stepsContainer {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3rem;
-    position: relative;
-}
-
-.stepCard {
-    background: #f8f8f8;
-    border: 1px solid #e5e5e5;
-    padding: 3.5rem 2.5rem;
-    text-align: center;
-    transition: all 0.4s ease;
-    position: relative;
-}
-
-.stepCard:hover {
-    background: #ffffff;
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-    border-color: #000000;
-}
-
-.stepIcon {
-    font-size: 4.5rem;
-    margin-bottom: 2rem;
-}
-
-.stepTitle {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-    letter-spacing: -0.5px;
-    color: #000000;
-}
-
-.stepDescription {
-    color: #666666;
-    line-height: 1.7;
-    font-weight: 400;
-}
-
-.stepArrow {
-    position: absolute;
-    right: -2.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 2rem;
-    color: #cccccc;
-}
-
-/* CTA Section */
-.cta {
-    max-width: 1400px;
-    margin: 8rem auto;
-    padding: 0 3rem;
-}
-
-.ctaContent {
-    background: #000000;
-    padding: 6rem 4rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.ctaContent::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: #ffffff;
-}
-
-.ctaTitle {
-    font-size: 3rem;
-    font-weight: 900;
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 1;
-    color: #ffffff;
-    text-transform: uppercase;
-    letter-spacing: -1px;
-}
-
-.ctaSubtitle {
-    font-size: 1.15rem;
-    margin-bottom: 3rem;
-    color: #cccccc;
-    position: relative;
-    z-index: 1;
-    font-weight: 400;
-}
-
-.ctaButtons {
-    display: flex;
-    gap: 1.25rem;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
-}
-
-.btnCtaPrimary {
-    padding: 1.25rem 2.75rem;
-    background: #ffffff;
-    border: 2px solid #ffffff;
-    color: #000000;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btnCtaPrimary:hover {
-    background: transparent;
-    color: #ffffff;
-    transform: translateY(-2px);
-}
-
-.btnCtaSecondary {
-    padding: 1.25rem 2.75rem;
-    background: transparent;
-    border: 2px solid #ffffff;
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btnCtaSecondary:hover {
-    background: #ffffff;
-    color: #000000;
-    transform: translateY(-2px);
-}
-
-/* Footer */
-.footer {
-    background: #f8f8f8;
-    border-top: 1px solid #e5e5e5;
-    padding: 5rem 3rem 3rem;
-    margin-top: 8rem;
-}
-
-.footerContent {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4rem;
-    margin-bottom: 3rem;
-}
-
-.footerSection h4 {
-    font-size: 1rem;
-    font-weight: 800;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #000000;
-}
-
-.footerSection p {
-    color: #666666;
-    line-height: 1.7;
-    font-weight: 400;
-}
-
-.footerSection a {
-    display: block;
-    color: #666666;
-    text-decoration: none;
-    margin-bottom: 1rem;
-    transition: color 0.3s ease;
-    font-weight: 500;
-}
-
-.footerSection a:hover {
-    color: #000000;
-}
-
-.footerBottom {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding-top: 3rem;
-    border-top: 1px solid #e5e5e5;
-    text-align: center;
-    color: #999999;
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Responsive Design */
+/* =============================================================
+   RESPONSIVE
+   ============================================================= */
 @media (max-width: 1024px) {
-    .heroContent {
+    .buyAndSellGrid {
         grid-template-columns: 1fr;
         gap: 3rem;
     }
 
-    .heroTitle {
-        font-size: 4rem;
+    .buyAndSellImage {
+        max-width: 560px;
+        margin: 0 auto;
     }
 
-    .navLinks {
-        display: none;
+    .bikeGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .trustGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem 3rem;
+    }
+
+    .footerInner {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .buyAndSell {
+        padding: 4rem 0 3.5rem;
+    }
+
+    .heroTitle {
+        font-size: 2.6rem;
     }
 
     .bikeGrid {
         grid-template-columns: 1fr;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
-    .stepsContainer {
+    .stepsGrid {
         grid-template-columns: 1fr;
-    }
-
-    .stepArrow {
-        display: none;
-    }
-
-    .footerContent {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-
-    .heroStats {
-        gap: 2rem;
-    }
-
-    .trustBar {
-        flex-wrap: wrap;
         gap: 1.5rem;
+    }
+
+    .stepConnector {
+        position: static;
+        transform: none;
+        margin: -0.75rem auto;
+        rotate: 90deg;
+    }
+
+    .ctaCard {
+        padding: 3.5rem 2rem;
+    }
+
+    .trustGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footerLinks {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 1.25rem;
+    }
+
+    .heroButtons {
+        flex-direction: column;
+    }
+
+    .btnPrimaryEmerald,
+    .btnOutlineEmerald {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .trustGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footerLinks {
+        grid-template-columns: 1fr;
     }
 
     .ctaButtons {
         flex-direction: column;
+        align-items: center;
     }
 
-    .navContainer {
-        padding: 1rem 1.5rem;
-    }
-
-    .hero {
-        padding: 3rem 1.5rem;
-    }
-
-    .featured,
-    .howItWorks,
-    .cta {
-        padding: 0 1.5rem;
+    .footerBottom {
+        flex-wrap: wrap;
+        justify-content: center;
     }
 }
