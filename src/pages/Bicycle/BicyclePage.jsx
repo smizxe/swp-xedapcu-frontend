@@ -35,7 +35,7 @@ function BicyclePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    /* modal */
+    /* modal — Add Bicycle */
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState(EMPTY_FORM);
     const [submitting, setSubmitting] = useState(false);
@@ -192,9 +192,11 @@ function BicyclePage() {
                         <h1>My Bicycles</h1>
                         <p>Manage your bicycle collection</p>
                     </div>
-                    <button className={styles.btnAdd} onClick={openModal}>
-                        + Add Bicycle
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button className={styles.btnAdd} onClick={openModal}>
+                            + Add Bicycle
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -320,6 +322,7 @@ function BicyclePage() {
                     </div>
                 </div>
             )}
+
         </div>
     );
 }

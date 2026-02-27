@@ -1,0 +1,484 @@
+/* =====================================================
+   CreateListingModal.module.css
+   Glass-card light · Ekibdlo Design System (MASTER.md)
+   ===================================================== */
+
+/* ── Overlay ─────────────────────────────────────── */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+    padding: 16px;
+    animation: overlayIn 220ms ease;
+}
+
+@keyframes overlayIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ── Modal shell ─────────────────────────────────── */
+.modal {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 24px;
+    padding: 36px 40px 32px;
+    box-shadow:
+        0 32px 64px rgba(15, 23, 42, 0.14),
+        0 8px 24px rgba(15, 23, 42, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Entry animation — shared for both steps */
+.step {
+    animation: stepIn 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes stepIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Modal header ────────────────────────────────── */
+.header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.headerLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.headerTitle {
+    font-family: var(--font-body);
+    font-size: 22px;
+    font-weight: 700;
+    color: #064E3B;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.headerSub {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748B;
+    letter-spacing: 0.03em;
+    margin: 0;
+}
+
+/* ── Step indicator ──────────────────────────────── */
+.stepIndicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stepDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: #E2E8F0;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stepDotActive {
+    background: #064E3B;
+    width: 22px;
+}
+
+.stepLine {
+    width: 20px;
+    height: 2px;
+    background: #E2E8F0;
+    border-radius: 2px;
+}
+
+/* ── Close button ────────────────────────────────── */
+.closeBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1.5px solid #E2E8F0;
+    background: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 200ms ease;
+    flex-shrink: 0;
+}
+
+.closeBtn:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+}
+
+.closeBtnIcon {
+    width: 14px;
+    height: 14px;
+    color: #64748B;
+}
+
+/* ── STEP 1: Bicycle grid ────────────────────────── */
+.bikeGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.bikeGrid::-webkit-scrollbar {
+    width: 4px;
+}
+
+.bikeGrid::-webkit-scrollbar-track {
+    background: #F1F5F9;
+    border-radius: 4px;
+}
+
+.bikeGrid::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+}
+
+.bikeCard {
+    position: relative;
+    padding: 16px;
+    border-radius: 14px;
+    border: 2px solid #E2E8F0;
+    background: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.bikeCard:hover {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 16px rgba(6, 78, 59, 0.08);
+    transform: translateY(-2px);
+}
+
+.bikeCardSelected {
+    border-color: #064E3B !important;
+    background: rgba(6, 78, 59, 0.04) !important;
+    box-shadow:
+        0 0 0 3px rgba(16, 185, 129, 0.18),
+        0 4px 16px rgba(6, 78, 59, 0.10) !important;
+    transform: translateY(-2px);
+}
+
+/* Check icon badge */
+.checkBadge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background: #064E3B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.checkIcon {
+    width: 12px;
+    height: 12px;
+    stroke: #ffffff;
+    stroke-width: 3;
+    fill: none;
+}
+
+.bikeBrand {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 700;
+    color: #064E3B;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+}
+
+.bikeSpec {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748B;
+    letter-spacing: 0.02em;
+    margin: 0 0 2px;
+}
+
+.bikeCategoryBadge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    color: #064E3B;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Empty state */
+.emptyBikes {
+    text-align: center;
+    padding: 40px 20px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: #64748B;
+}
+
+.emptyBikesIcon {
+    display: block;
+    margin: 0 auto 12px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.35;
+}
+
+/* ── STEP 2: Form ────────────────────────────────── */
+.selectedBikePill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(6, 78, 59, 0.05);
+    border: 1.5px solid rgba(6, 78, 59, 0.12);
+    margin-bottom: 24px;
+}
+
+.selectedBikeLabel {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    color: #064E3B;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.selectedBikeName {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E293B;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #334155;
+}
+
+.labelRequired {
+    color: #064E3B;
+    margin-left: 2px;
+}
+
+.input,
+.textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 400;
+    color: #1E293B;
+    transition: all 200ms ease;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.input:focus,
+.textarea:focus {
+    border-color: #10B981;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.10);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+    color: #94A3B8;
+    font-weight: 400;
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+.errorMsg {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: #DC2626;
+    font-weight: 500;
+    padding: 10px 14px;
+    background: rgba(220, 38, 38, 0.06);
+    border-radius: 8px;
+    border: 1px solid rgba(220, 38, 38, 0.15);
+    margin: 0;
+}
+
+/* ── Footer actions ──────────────────────────────── */
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #F1F5F9;
+}
+
+.btnBack {
+    height: 42px;
+    padding: 0 20px;
+    border-radius: 10px;
+    border: 1.5px solid #E2E8F0;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #64748B;
+    cursor: pointer;
+    transition: all 200ms ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btnBack:hover {
+    border-color: #CBD5E1;
+    color: #334155;
+    background: rgba(15, 23, 42, 0.03);
+}
+
+.btnNext,
+.btnSubmit {
+    height: 42px;
+    padding: 0 28px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #064E3B 0%, #10B981 100%);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.30);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btnNext:hover,
+.btnSubmit:hover {
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.40);
+    transform: translateY(-1px);
+}
+
+.btnNext:disabled,
+.btnSubmit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 600px) {
+    .modal {
+        padding: 24px 20px 20px;
+        border-radius: 20px;
+    }
+
+    .bikeGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .actions {
+        gap: 8px;
+    }
+
+    .btnNext,
+    .btnSubmit,
+    .btnBack {
+        flex: 1;
+        justify-content: center;
+    }
+}
