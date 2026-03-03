@@ -77,8 +77,8 @@ const Header = ({ variant = 'light' }) => {
 
                 {/* Menu chính */}
                 <div className={styles.navLinks}>
-                    <Link to="/browse">Browse</Link>
-                    <Link to="/verified">Verified</Link>
+                    <Link to="/marketplace">Browse</Link>
+                    <Link to="/marketplace">Verified</Link>
                     <Link to="/marketplace">Market Place</Link>
                     <Link to="/about">About</Link>
 
@@ -115,13 +115,21 @@ const Header = ({ variant = 'light' }) => {
                                 </span>
                             </div>
                         ) : (
-                            // Show User icon when not logged in
-                            <button
-                                className={styles.btnSecondary}
-                                onClick={handleUserIconClick}
-                            >
-                                <User />
-                            </button>
+                            // Show Login/Register buttons when not logged in
+                            <div className={styles.authButtons}>
+                                <button
+                                    className={styles.btnLoginText}
+                                    onClick={() => navigate('/login')}
+                                >
+                                    Log In
+                                </button>
+                                <button
+                                    className={styles.btnSignup}
+                                    onClick={() => navigate('/register')}
+                                >
+                                    Sign Up
+                                </button>
+                            </div>
                         )}
 
                         {/* Dropdown - Only show if logged in */}

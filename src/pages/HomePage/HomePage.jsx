@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styles from './HomePage.module.css';
 import HeroSection from './HeroSection/HeroSection';
 import useScrollAnimation from '../../hooks/useScrollAnimation';
+import { useNavigate } from 'react-router-dom';
 
 const cls = (...classes) => classes.filter(Boolean).join(' ');
 
@@ -40,6 +41,7 @@ const IconStar = () => (
 );
 
 const HomePage = () => {
+    const navigate = useNavigate();
     const [hoveredCard, setHoveredCard] = useState(null);
 
     // Scroll animation refs
@@ -162,11 +164,11 @@ const HomePage = () => {
                                 <div className={styles.bullet}><span className={styles.bulletIcon}><IconCheck /></span>30-day buyer protection guarantee</div>
                             </div>
                             <div className={styles.heroButtons}>
-                                <button className={styles.btnPrimaryEmerald}>
+                                <button className={styles.btnPrimaryEmerald} onClick={() => navigate('/marketplace')}>
                                     Explore Bikes
                                     <span className={styles.btnArrowIcon}><IconArrowRight /></span>
                                 </button>
-                                <button className={styles.btnOutlineEmerald}>
+                                <button className={styles.btnOutlineEmerald} onClick={() => navigate('/sell')}>
                                     Sell Your Bike
                                 </button>
                             </div>
@@ -276,7 +278,7 @@ const HomePage = () => {
                                                 <span className={styles.bikePrice}>{bike.price}</span>
                                                 <span className={styles.bikeCurrency}> ₫</span>
                                             </div>
-                                            <button className={styles.btnViewBike}>
+                                            <button className={styles.btnViewBike} onClick={() => navigate(`/bicycles/${bike.id}`)}>
                                                 View
                                                 <IconArrowRight />
                                             </button>
@@ -288,7 +290,7 @@ const HomePage = () => {
                     </div>
 
                     <div className={styles.featuredCta}>
-                        <button className={styles.btnOutlineEmerald}>
+                        <button className={styles.btnOutlineEmerald} onClick={() => navigate('/marketplace')}>
                             Browse All Bicycles
                             <IconArrowRight />
                         </button>
@@ -358,11 +360,11 @@ const HomePage = () => {
                             Join thousands of satisfied riders. Start browsing or list your bicycle today.
                         </p>
                         <div className={styles.ctaButtons}>
-                            <button className={styles.btnPrimaryEmerald}>
+                            <button className={styles.btnPrimaryEmerald} onClick={() => navigate('/marketplace')}>
                                 Browse Bicycles
                                 <IconArrowRight />
                             </button>
-                            <button className={styles.btnCtaOutline}>
+                            <button className={styles.btnCtaOutline} onClick={() => navigate('/sell')}>
                                 List Your Bike
                             </button>
                         </div>

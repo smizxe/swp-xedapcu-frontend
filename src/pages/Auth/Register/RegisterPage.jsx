@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import authService from '../../../services/authService';
+import { registerUser } from '../../../service/authService';
 import styles from '../Login/LoginPage.module.css'; // Reuse login styles
 
 function RegisterPage({

@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useAuth } from '../../../context/AuthContext';
-import authService from '../../../services/authService';
+import { loginUser } from '../../../service/authService';
 import styles from './LoginPage.module.css';
 
 function LoginPage() {
@@ -25,7 +25,7 @@ function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await authService.login(email, password);
+      const response = await loginUser(email, password);
       login(response); // Save to context + localStorage
       navigate(from, { replace: true });
     } catch (err) {
