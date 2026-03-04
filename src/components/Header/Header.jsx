@@ -115,21 +115,13 @@ const Header = ({ variant = 'light' }) => {
                                 </span>
                             </div>
                         ) : (
-                            // Show Login/Register buttons when not logged in
-                            <div className={styles.authButtons}>
-                                <button
-                                    className={styles.btnLoginText}
-                                    onClick={() => navigate('/login')}
-                                >
-                                    Log In
-                                </button>
-                                <button
-                                    className={styles.btnSignup}
-                                    onClick={() => navigate('/register')}
-                                >
-                                    Sign Up
-                                </button>
-                            </div>
+                            // Show User Icon when not logged in
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={handleUserIconClick}
+                            >
+                                <User />
+                            </button>
                         )}
 
                         {/* Dropdown - Only show if logged in */}
