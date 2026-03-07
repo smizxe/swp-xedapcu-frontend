@@ -21,8 +21,20 @@ export const AuthProvider = ({ children }) => {
         const storedUser = localStorage.getItem('user');
 
         if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
+            try {
+                const parsed = JSON.parse(storedUser);
+                if (parsed && typeof parsed === 'object') {
+                    setToken(storedToken);
+                    setUser(parsed);
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                }
+            } catch {
+                // storedUser is "undefined" or malformed — clear and recover
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            }
         }
         setLoading(false);
     }, []);

@@ -15,9 +15,11 @@ function RegisterPage({
     const navigate = useNavigate();
 
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        confirmPassword: '',
         fullName: '',
         phone: '',
     });
@@ -30,7 +32,7 @@ function RegisterPage({
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        if (onSubmit) onSubmit(formData);
+        if (onSubmit) await onSubmit(formData);
     };
 
     return (
@@ -87,6 +89,21 @@ function RegisterPage({
                             <label htmlFor="fullName" className={styles.label}>Full Name</label>
                         </div>
 
+                        {/* Input Phone */}
+                        <div className={styles.inputGroup}>
+                            <input
+                                id="phone"
+                                name="phone"
+                                type="tel"
+                                placeholder=" "
+                                className={styles.input}
+                                value={formData.phone}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                            />
+                            <label htmlFor="phone" className={styles.label}>Phone</label>
+                        </div>
+
                         {/* Input Email */}
                         <div className={styles.inputGroup}>
                             <input
@@ -101,21 +118,6 @@ function RegisterPage({
                                 disabled={isLoading}
                             />
                             <label htmlFor="email" className={styles.label}>Email</label>
-                        </div>
-
-                        {/* Input Phone */}
-                        <div className={styles.inputGroup}>
-                            <input
-                                id="phone"
-                                name="phone"
-                                type="tel"
-                                placeholder=" "
-                                className={styles.input}
-                                value={formData.phone}
-                                onChange={handleChange}
-                                disabled={isLoading}
-                            />
-                            <label htmlFor="phone" className={styles.label}>Phone (optional)</label>
                         </div>
 
                         {/* Input Password */}
@@ -140,6 +142,31 @@ function RegisterPage({
                                 disabled={isLoading}
                             >
                                 {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                            </button>
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div className={styles.inputGroup}>
+                            <input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                placeholder=" "
+                                className={`${styles.input} ${styles.passwordInput}`}
+                                required
+                                minLength={6}
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                            />
+                            <label htmlFor="confirmPassword" className={styles.label}>Confirm Password</label>
+                            <button
+                                type="button"
+                                className={styles.passwordToggle}
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                disabled={isLoading}
+                            >
+                                {showConfirmPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
                             </button>
                         </div>
 
