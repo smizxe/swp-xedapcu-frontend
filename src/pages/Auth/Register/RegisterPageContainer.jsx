@@ -15,14 +15,14 @@ function RegisterPageContainer() {
         setSuccessMessage('');
 
         // Client-side validations
-        if (formData.password !== formData.confirmPassword) {
-            setErrors({ confirmPassword: 'Passwords do not match' });
+        if (!formData.email || !formData.password || !formData.fullName) {
+            setErrors({ general: 'Please fill in all required fields.' });
             setIsLoading(false);
             return;
         }
 
-        if (!formData.agreeToTerms) {
-            setErrors({ general: 'You must agree to the terms and conditions' });
+        if (formData.password !== formData.confirmPassword) {
+            setErrors({ general: 'Passwords do not match.' });
             setIsLoading(false);
             return;
         }

@@ -17,7 +17,7 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const from = location.state?.from?.pathname || '/home';
+  const from = location.state?.from?.pathname || '/';
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();

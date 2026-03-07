@@ -107,15 +107,24 @@ function BicyclePage() {
         try {
             setSubmitting(true);
             const newBike = await createBicycle(form);
-            // The create response may not include categoryName, so enrich it locally
-            const selectedCat = categories.find((c) => c.id === form.categoryId);
+            console.log('[BicyclePage] createBicycle response:', newBike);
+
+            // Use loose equality (==) to handle string/number type mismatches from the API
+            // eslint-disable-next-line eqeqeq
+            const selectedCat = categories.find((c) => c.id == form.categoryId || c.categoryId == form.categoryId);
+
+            // Merge form data with API response as fallback so all fields are always present
+            const rawId = newBike?.bicycleId ?? newBike?.id ?? Date.now();
             const enrichedBike = {
+                ...form,
                 ...newBike,
-                categoryName: newBike.categoryName ?? selectedCat?.categoryName ?? '',
+                bicycleId: rawId,
+                categoryName: newBike?.categoryName ?? selectedCat?.categoryName ?? selectedCat?.name ?? '',
             };
             setBicycles((prev) => [enrichedBike, ...prev]);
             closeModal();
         } catch (err) {
+            console.error('[BicyclePage] createBicycle error:', err);
             const msg = err.response?.data?.message || err.message || 'Failed to add bicycle.';
             setFormError(msg);
         } finally {
