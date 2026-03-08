@@ -5,7 +5,7 @@ import { getAllPosts, searchPosts } from '../../../service/postService';
 import { getAllCategories } from '../../../service/categoryService';
 import { isAuthenticated } from '../../../service/authService';
 import { getMyBicycles } from '../../../service/bicycleService';
-import useLocalStorage from '../../../hooks/useLocalStorage';
+
 
 function MarketplaceContainer() {
     const [posts, setPosts] = useState([]);
@@ -15,8 +15,6 @@ function MarketplaceContainer() {
     const [currentPage, setCurrentPage] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
-    // localStorage listings
-    const [localListings] = useLocalStorage('marketplace_listings', []);
 
     // Add Post modal state
     const [showAddPost, setShowAddPost] = useState(false);
@@ -60,32 +58,42 @@ function MarketplaceContainer() {
                 data = await getAllPosts(page, PAGE_SIZE);
             }
 
-            // Handle both plain array and the backend’s paginated shape:
+            // Sort helper:
+            //  1. SOLD items always sink to the bottom
+            //  2. Within each group, apply the user's chosen sort (default: newest first from BE)
+            const applySort = (list) => {
+                let items = [...list];
+
+                if (sortBy === 'price_asc') {
+                    items.sort((a, b) => (a.price || 0) - (b.price || 0));
+                } else if (sortBy === 'price_desc') {
+                    items.sort((a, b) => (b.price || 0) - (a.price || 0));
+                } else {
+                    // newest first — sort by createdAt descending (BE already does this,
+                    // but re-applying ensures correctness after any client-side manipulation)
+                    items.sort(
+                        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+                    );
+                }
+
+                // Push SOLD items to the end, preserving their relative order
+                const active = items.filter((p) => p.status !== 'SOLD');
+                const sold = items.filter((p) => p.status === 'SOLD');
+                return [...active, ...sold];
+            };
+
+            // Handle both plain array and the backend's paginated shape:
             // { posts: [], totalItems: N, totalPages: N, currentPage: N }
             if (Array.isArray(data)) {
-                let filtered = [...data];
-
-                // Client-side sort
-                if (sortBy === 'price_asc') {
-                    filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
-                } else if (sortBy === 'price_desc') {
-                    filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
-                }
-
-                setApiPosts(filtered);
-                setTotalElements(filtered.length);
+                const sorted = applySort(data);
+                setApiPosts(sorted);
+                setTotalElements(sorted.length);
             } else {
                 // Paginated response — backend uses "posts" + "totalItems"
-                let items = data.posts || data.content || [];
-
-                if (sortBy === 'price_asc') {
-                    items = [...items].sort((a, b) => (a.price || 0) - (b.price || 0));
-                } else if (sortBy === 'price_desc') {
-                    items = [...items].sort((a, b) => (b.price || 0) - (a.price || 0));
-                }
-
-                setApiPosts(items);
-                setTotalElements(data.totalItems ?? data.totalElements ?? items.length);
+                const raw = data.posts || data.content || [];
+                const sorted = applySort(raw);
+                setApiPosts(sorted);
+                setTotalElements(data.totalItems ?? data.totalElements ?? sorted.length);
             }
         } catch (err) {
             message.error('Failed to load listings. Please try again.');
@@ -100,12 +108,10 @@ function MarketplaceContainer() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, sortBy]);
 
-    // Merge localStorage listings (priority) with API posts
+    // Sync displayed posts from API data
     useEffect(() => {
-        const merged = [...(localListings || []), ...apiPosts];
-        setPosts(merged);
-        setTotalElements(merged.length);
-    }, [localListings, apiPosts]);
+        setPosts(apiPosts);
+    }, [apiPosts]);
 
     const handleSearch = () => {
         setCurrentPage(0);
@@ -131,6 +137,11 @@ function MarketplaceContainer() {
         message.info(`Deposit flow for post #${postId} — coming soon!`);
     };
 
+    const handleAddPostSuccess = () => {
+        setCurrentPage(0);
+        fetchPosts(0, searchQuery, selectedCategory);
+    };
+
     return (
         <MarketplacePage
             posts={posts}
@@ -151,6 +162,7 @@ function MarketplaceContainer() {
             showAddPost={showAddPost}
             onToggleAddPost={setShowAddPost}
             myBicycles={myBicycles}
+            onAddPostSuccess={handleAddPostSuccess}
         />
     );
 }

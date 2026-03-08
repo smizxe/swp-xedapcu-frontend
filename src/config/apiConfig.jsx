@@ -62,6 +62,25 @@ export const API_ENDPOINTS = {
     SCHEDULE_DELIVERY: (id) => `/api/orders/${id}/schedule-delivery`,
     COMPLETE: (id) => `/api/orders/${id}/complete`,
   },
+  // Admin endpoints
+  ADMIN: {
+    GET_ALL_USERS: '/api/admin/users',
+    GET_USER_BY_EMAIL: (email) => `/api/admin/users/${email}`,
+    UPDATE_ROLE: (email) => `/api/admin/users/${email}/role`,
+    DELETE_USER: (email) => `/api/admin/users/${email}`,
+  },
+  // Inspection endpoints
+  INSPECTIONS: {
+    CREATE_BOOKING: '/api/inspections/bookings',
+    GET_ALL_BOOKINGS: '/api/inspections/bookings',
+    GET_MY_BOOKINGS: '/api/inspections/bookings/my-bookings',
+    ASSIGN_INSPECTOR: (bookingId) => `/api/inspections/bookings/${bookingId}/assign`,
+    CONFIRM_BOOKING: (bookingId) => `/api/inspections/bookings/${bookingId}/confirm`,
+    GET_MY_REQUESTS: '/api/inspections/requests/my-requests',
+    GET_POST_HISTORY: (postId) => `/api/inspections/posts/${postId}/history`,
+    SUBMIT_REPORT: (inspectionId) => `/api/inspections/${inspectionId}/report`,
+    GET_REPORT: (inspectionId) => `/api/inspections/${inspectionId}/report`,
+  },
 }
 // Log configuration in development
 if (API_CONFIG.IS_DEV) {

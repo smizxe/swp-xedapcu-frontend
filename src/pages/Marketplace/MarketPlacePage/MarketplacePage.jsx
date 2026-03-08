@@ -37,6 +37,7 @@ const MarketplacePage = ({
     showAddPost,
     onToggleAddPost,
     myBicycles = [],
+    onAddPostSuccess,
 }) => {
     const navigate = useNavigate();
 
@@ -275,6 +276,7 @@ const MarketplacePage = ({
                 isOpen={showAddPost}
                 onClose={() => onToggleAddPost(false)}
                 bicycles={myBicycles}
+                onSuccess={onAddPostSuccess}
             />
         </>
     );

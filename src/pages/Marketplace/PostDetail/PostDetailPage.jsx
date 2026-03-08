@@ -6,7 +6,6 @@ import {
     SafetyCertificateOutlined,
     UserOutlined,
     CalendarOutlined,
-    TagOutlined,
 } from '@ant-design/icons';
 import styles from './PostDetailPage.module.css';
 import Header from '../../../components/Header/Header';

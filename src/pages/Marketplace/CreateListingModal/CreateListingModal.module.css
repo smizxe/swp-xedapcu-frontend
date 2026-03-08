@@ -1,484 +1,679 @@
-/* =====================================================
-   CreateListingModal.module.css
-   Glass-card light · Ekibdlo Design System (MASTER.md)
-   ===================================================== */
+/* ═══════════════════════════════════════════════════════
+   CreateListingModal — Ekibdlo Design System
+   Eco-Luxury × Light Glass × Barlow Condensed
+   ═══════════════════════════════════════════════════════ */
 
-/* ── Overlay ─────────────────────────────────────── */
+/* ── Overlay ─────────────────────────────────────────── */
 .overlay {
     position: fixed;
     inset: 0;
     background: rgba(15, 23, 42, 0.55);
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1200;
+    z-index: 1000;
+    animation: fadeIn 200ms ease;
     padding: 16px;
-    animation: overlayIn 220ms ease;
 }
 
-@keyframes overlayIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
-/* ── Modal shell ─────────────────────────────────── */
+/* ── Modal shell ─────────────────────────────────────── */
 .modal {
     background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.65);
     border-radius: 24px;
-    padding: 36px 40px 32px;
-    box-shadow:
-        0 32px 64px rgba(15, 23, 42, 0.14),
-        0 8px 24px rgba(15, 23, 42, 0.07),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
     width: 100%;
-    max-width: 560px;
+    max-width: 580px;
     max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 32px 64px rgba(6, 78, 59, 0.12),
+        0 8px 24px rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    animation: slideUp 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Entry animation — shared for both steps */
-.step {
-    animation: stepIn 280ms cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes stepIn {
-    from {
-        opacity: 0;
-        transform: translateY(14px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ── Modal header ────────────────────────────────── */
+/* ── Header ──────────────────────────────────────────── */
 .header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 28px;
+    padding: 28px 28px 20px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    flex-shrink: 0;
 }
 
-.headerLeft {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
+.headerLeft { display: flex; flex-direction: column; gap: 8px; }
 
 .headerTitle {
     font-family: var(--font-body);
-    font-size: 22px;
+    font-size: 1.35rem;
     font-weight: 700;
-    color: #064E3B;
     letter-spacing: -0.01em;
-    line-height: 1.2;
+    color: var(--color-text, #1E293B);
     margin: 0;
+    line-height: 1.2;
 }
 
 .headerSub {
     font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 500;
-    color: #64748B;
-    letter-spacing: 0.03em;
+    font-size: 0.875rem;
+    color: var(--color-text-muted, #64748B);
     margin: 0;
+    font-weight: 400;
+    letter-spacing: 0.02em;
 }
 
-/* ── Step indicator ──────────────────────────────── */
+/* ── Step Indicator ──────────────────────────────────── */
 .stepIndicator {
     display: flex;
     align-items: center;
     gap: 6px;
+    margin-bottom: 4px;
 }
 
 .stepDot {
     width: 8px;
     height: 8px;
-    border-radius: 9999px;
+    border-radius: 50%;
     background: #E2E8F0;
-    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 300ms ease;
 }
 
-.stepDotActive {
-    background: #064E3B;
-    width: 22px;
-}
+.stepDotActive { background: var(--color-primary, #064E3B); }
+.stepDotDone   { background: var(--color-cta, #10B981); }
 
 .stepLine {
-    width: 20px;
+    width: 32px;
     height: 2px;
     background: #E2E8F0;
     border-radius: 2px;
+    transition: background 300ms ease;
 }
 
-/* ── Close button ────────────────────────────────── */
+.stepLineFilled { background: var(--color-cta, #10B981); }
+
+/* ── Close button ────────────────────────────────────── */
 .closeBtn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1.5px solid #E2E8F0;
-    background: rgba(255, 255, 255, 0.8);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted, #64748B);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 200ms ease;
     flex-shrink: 0;
+    transition: all 200ms ease;
 }
 
 .closeBtn:hover {
-    background: #F8FAFC;
-    border-color: #CBD5E1;
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
 }
 
-.closeBtnIcon {
-    width: 14px;
-    height: 14px;
-    color: #64748B;
+/* ── Step content scrollable area ────────────────────── */
+.step {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    animation: stepFade 250ms ease;
 }
 
-/* ── STEP 1: Bicycle grid ────────────────────────── */
+@keyframes stepFade {
+    from { opacity: 0; transform: translateX(8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Bike selection grid ─────────────────────────────── */
 .bikeGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 12px;
-    margin-bottom: 24px;
-    max-height: 360px;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-
-.bikeGrid::-webkit-scrollbar {
-    width: 4px;
-}
-
-.bikeGrid::-webkit-scrollbar-track {
-    background: #F1F5F9;
-    border-radius: 4px;
-}
-
-.bikeGrid::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
-    border-radius: 4px;
 }
 
 .bikeCard {
     position: relative;
     padding: 16px;
     border-radius: 14px;
-    border: 2px solid #E2E8F0;
+    border: 1.5px solid rgba(226, 232, 240, 0.8);
     background: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
 }
 
 .bikeCard:hover {
-    border-color: rgba(16, 185, 129, 0.4);
+    border-color: rgba(16, 185, 129, 0.3);
     background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 16px rgba(6, 78, 59, 0.08);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(6, 78, 59, 0.08);
 }
 
 .bikeCardSelected {
-    border-color: #064E3B !important;
-    background: rgba(6, 78, 59, 0.04) !important;
-    box-shadow:
-        0 0 0 3px rgba(16, 185, 129, 0.18),
-        0 4px 16px rgba(6, 78, 59, 0.10) !important;
-    transform: translateY(-2px);
+    border-color: var(--color-cta, #10B981) !important;
+    background: rgba(16, 185, 129, 0.06) !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
 }
 
-/* Check icon badge */
 .checkBadge {
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 22px;
-    height: 22px;
-    border-radius: 9999px;
-    background: #064E3B;
+    color: var(--color-cta, #10B981);
     display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: popIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes popIn {
-    from {
-        opacity: 0;
-        transform: scale(0.5);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.checkIcon {
-    width: 12px;
-    height: 12px;
-    stroke: #ffffff;
-    stroke-width: 3;
-    fill: none;
 }
 
 .bikeBrand {
     font-family: var(--font-body);
-    font-size: 15px;
     font-weight: 700;
-    color: #064E3B;
-    letter-spacing: 0.04em;
+    font-size: 0.875rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: var(--color-primary, #064E3B);
     margin: 0 0 6px;
 }
 
 .bikeSpec {
     font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 500;
-    color: #64748B;
-    letter-spacing: 0.02em;
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #64748B);
     margin: 0 0 2px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
 }
 
 .bikeCategoryBadge {
     display: inline-block;
     margin-top: 8px;
-    padding: 3px 10px;
+    padding: 2px 8px;
     border-radius: 999px;
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.2);
     font-family: var(--font-body);
-    font-size: 11px;
+    font-size: 0.72rem;
     font-weight: 600;
-    color: #064E3B;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
+    background: rgba(6, 78, 59, 0.08);
+    color: var(--color-primary, #064E3B);
+    border: 1px solid rgba(6, 78, 59, 0.15);
 }
 
-/* Empty state */
+/* ── Empty state ─────────────────────────────────────── */
 .emptyBikes {
     text-align: center;
-    padding: 40px 20px;
+    padding: 48px 24px;
+    color: var(--color-text-muted, #64748B);
     font-family: var(--font-body);
-    font-size: 14px;
-    color: #64748B;
 }
 
 .emptyBikesIcon {
     display: block;
-    margin: 0 auto 12px;
-    width: 40px;
-    height: 40px;
-    opacity: 0.35;
+    margin: 0 auto 16px;
+    color: #CBD5E1;
 }
 
-/* ── STEP 2: Form ────────────────────────────────── */
+/* ── Selected bike pill ──────────────────────────────── */
 .selectedBikePill {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    border-radius: 12px;
-    background: rgba(6, 78, 59, 0.05);
-    border: 1.5px solid rgba(6, 78, 59, 0.12);
-    margin-bottom: 24px;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(6, 78, 59, 0.06);
+    border: 1px solid rgba(6, 78, 59, 0.15);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-family: var(--font-body);
 }
 
 .selectedBikeLabel {
-    font-family: var(--font-body);
-    font-size: 12px;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: #064E3B;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: var(--color-primary, #064E3B);
 }
 
 .selectedBikeName {
-    font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 600;
-    color: #1E293B;
+    font-size: 0.875rem;
+    color: var(--color-text, #1E293B);
+    font-weight: 500;
 }
 
-.form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
+/* ── Form ────────────────────────────────────────────── */
+.form { display: flex; flex-direction: column; gap: 18px; }
 
-.fieldGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
+.fieldGroup { display: flex; flex-direction: column; gap: 7px; }
 
 .label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
     font-family: var(--font-body);
-    font-size: 12px;
+    font-size: 0.82rem;
     font-weight: 600;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: #334155;
+    color: var(--color-text, #1E293B);
 }
 
-.labelRequired {
-    color: #064E3B;
-    margin-left: 2px;
-}
+.labelRequired { color: #ef4444; }
 
-.input,
-.textarea {
+.input, .textarea {
     width: 100%;
-    padding: 12px 16px;
+    padding: 11px 14px;
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(8px);
-    border: 1.5px solid #E2E8F0;
-    border-radius: 12px;
+    border: 1.5px solid rgba(226, 232, 240, 0.9);
+    border-radius: 10px;
     font-family: var(--font-body);
-    font-size: 15px;
+    font-size: 0.9rem;
+    color: var(--color-text, #1E293B);
     font-weight: 400;
-    color: #1E293B;
+    letter-spacing: 0.02em;
     transition: all 200ms ease;
     box-sizing: border-box;
-    outline: none;
-}
-
-.input:focus,
-.textarea:focus {
-    border-color: #10B981;
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.10);
-}
-
-.input::placeholder,
-.textarea::placeholder {
-    color: #94A3B8;
-    font-weight: 400;
 }
 
 .textarea {
     resize: vertical;
     min-height: 90px;
+    line-height: 1.5;
 }
 
+.input:focus, .textarea:focus {
+    outline: none;
+    border-color: var(--color-cta, #10B981);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.input::placeholder, .textarea::placeholder {
+    color: var(--color-text-muted, #64748B);
+    opacity: 0.75;
+}
+
+/* ── Inspection Toggle Card ──────────────────────────── */
+.inspectionToggleCard {
+    margin-top: 4px;
+    border-radius: 16px;
+    border: 1.5px solid rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    transition: border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.inspectionToggleCard:has(.toggleOn) {
+    border-color: rgba(16, 185, 129, 0.35);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08), 0 4px 16px rgba(6, 78, 59, 0.08);
+}
+
+.inspectionToggleHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    cursor: pointer;
+    user-select: none;
+    gap: 12px;
+}
+
+.inspectionToggleLeft {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+}
+
+.inspectionIconWrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #064E3B 0%, #10B981 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(6, 78, 59, 0.25);
+}
+
+.inspectionToggleTitle {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    color: var(--color-text, #1E293B);
+    margin: 0 0 3px;
+}
+
+.inspectionToggleSub {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--color-text-muted, #64748B);
+    margin: 0;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.inspectionToggleRight {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* Toggle switch pill */
+.toggle {
+    width: 44px;
+    height: 24px;
+    border-radius: 12px;
+    background: #CBD5E1;
+    position: relative;
+    transition: background 250ms ease;
+    flex-shrink: 0;
+}
+
+.toggleOn { background: var(--color-cta, #10B981); }
+
+.toggleHandle {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggleOn .toggleHandle { transform: translateX(20px); }
+
+/* Chevron */
+.chevron {
+    color: var(--color-text-muted, #64748B);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chevronOpen { transform: rotate(180deg); }
+
+/* Slide-down reveal */
+.inspectionFields {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.inspectionFieldsOpen { grid-template-rows: 1fr; }
+
+.inspectionFieldsInner {
+    overflow: hidden;
+    padding: 0 18px;
+    transition: padding 350ms ease;
+}
+
+.inspectionFieldsOpen .inspectionFieldsInner {
+    padding: 0 18px 18px;
+}
+
+.inspectionGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-top: 4px;
+}
+
+.inspectionNote {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--color-primary, #064E3B);
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    padding: 9px 12px;
+    letter-spacing: 0.02em;
+    margin-top: 4px;
+}
+
+/* ── Error ───────────────────────────────────────────── */
 .errorMsg {
     font-family: var(--font-body);
-    font-size: 13px;
-    color: #DC2626;
-    font-weight: 500;
-    padding: 10px 14px;
-    background: rgba(220, 38, 38, 0.06);
+    font-size: 0.84rem;
+    color: #dc2626;
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.2);
     border-radius: 8px;
-    border: 1px solid rgba(220, 38, 38, 0.15);
+    padding: 10px 14px;
     margin: 0;
+    font-weight: 500;
 }
 
-/* ── Footer actions ──────────────────────────────── */
+/* ── Footer actions ──────────────────────────────────── */
 .actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 28px;
-    padding-top: 20px;
-    border-top: 1px solid #F1F5F9;
+    gap: 12px;
+    padding: 18px 28px 24px;
+    border-top: 1px solid rgba(226, 232, 240, 0.6);
+    flex-shrink: 0;
 }
 
 .btnBack {
-    height: 42px;
-    padding: 0 20px;
-    border-radius: 10px;
-    border: 1.5px solid #E2E8F0;
-    background: transparent;
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #64748B;
-    cursor: pointer;
-    transition: all 200ms ease;
     display: flex;
     align-items: center;
     gap: 6px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(226, 232, 240, 0.9);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted, #64748B);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.84rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 200ms ease;
+    margin-right: auto;
 }
 
 .btnBack:hover {
-    border-color: #CBD5E1;
-    color: #334155;
-    background: rgba(15, 23, 42, 0.03);
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(100, 116, 139, 0.4);
+    color: var(--color-text, #1E293B);
 }
 
-.btnNext,
-.btnSubmit {
-    height: 42px;
-    padding: 0 28px;
+.btnNext, .btnSubmit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 28px;
     border-radius: 10px;
     border: none;
     background: linear-gradient(135deg, #064E3B 0%, #10B981 100%);
+    color: #fff;
     font-family: var(--font-body);
-    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.07em;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #ffffff;
     cursor: pointer;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.30);
-    display: flex;
-    align-items: center;
-    gap: 6px;
 }
 
-.btnNext:hover,
-.btnSubmit:hover {
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.40);
+.btnNext:hover, .btnSubmit:hover {
     transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
 
-.btnNext:disabled,
-.btnSubmit:disabled {
-    opacity: 0.5;
+.btnNext:disabled, .btnSubmit:disabled {
+    opacity: 0.45;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-/* ── Responsive ──────────────────────────────────── */
-@media (max-width: 600px) {
-    .modal {
-        padding: 24px 20px 20px;
-        border-radius: 20px;
-    }
+/* ══ SUCCESS MODAL ════════════════════════════════════════ */
+.successOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    animation: fadeIn 200ms ease;
+    padding: 16px;
+}
 
-    .bikeGrid {
-        grid-template-columns: 1fr;
-    }
+.successModal {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 24px;
+    padding: 48px 40px 40px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 32px 64px rgba(6, 78, 59, 0.15), inset 0 1px 0 rgba(255,255,255,0.9);
+    animation: bounceIn 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-    .actions {
-        gap: 8px;
-    }
+@keyframes bounceIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
 
-    .btnNext,
-    .btnSubmit,
-    .btnBack {
-        flex: 1;
-        justify-content: center;
-    }
+.successIconWrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #064E3B 0%, #10B981 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.35);
+}
+
+.successIcon { color: #fff; }
+
+.successTitle {
+    font-family: var(--font-body);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--color-text, #1E293B);
+    margin: 0 0 12px;
+}
+
+.successText {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--color-text-muted, #64748B);
+    margin: 0 0 20px;
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.successInspectionBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: rgba(6, 78, 59, 0.07);
+    border: 1px solid rgba(6, 78, 59, 0.2);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-primary, #064E3B);
+    letter-spacing: 0.03em;
+    margin-bottom: 24px;
+}
+
+.successBtn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #064E3B 0%, #10B981 100%);
+    color: #fff;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    transition: all 250ms ease;
+}
+
+.successBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* ── Paid-by static badge ────────────────────────────── */
+.paidByBadge {
+    display: flex;
+    align-items: center;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(6, 78, 59, 0.2);
+    background: rgba(6, 78, 59, 0.06);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-primary, #064E3B);
+    letter-spacing: 0.04em;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* ── End-time read-only display ──────────────────────── */
+.endTimeDisplay {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text, #1E293B);
+    background: rgba(248, 250, 252, 0.9);
+    border-color: rgba(226, 232, 240, 0.6);
+    cursor: default;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 480px) {
+    .header { padding: 20px 18px 16px; }
+    .step   { padding: 18px; }
+    .actions { padding: 14px 18px 20px; }
+    .bikeGrid { grid-template-columns: 1fr 1fr; }
+    .inspectionGrid { grid-template-columns: 1fr; }
+    .successModal { padding: 36px 24px 28px; }
 }
