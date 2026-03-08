@@ -13,11 +13,13 @@ import BikeDetail from './pages/BikeDetail/BikeDetail.jsx';
 import BicyclePage from './pages/Bicycle/BicyclePage.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
 import CategoryManagement from './pages/Admin/CategoryManagement.jsx';
+import InspectionAdminPage from './pages/Admin/InspectionAdminPage.jsx';
 import SellerDashboard from './pages/Seller/SellerDashboard.jsx';
 import SellBike from './pages/SellBike/SellBike.jsx';
 import MyOrdersPage from './pages/Orders/MyOrdersPage.jsx';
 import MySalesPage from './pages/Orders/MySalesPage.jsx';
 import OrderDetailPage from './pages/Orders/OrderDetailPage.jsx';
+import InspectorDashboard from './pages/Inspector/InspectorDashboard.jsx';
 
 function App() {
   return (
@@ -37,11 +39,13 @@ function App() {
           <Route path="/:userId/bicycles" element={<BicyclePage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/categories" element={<CategoryManagement />} />
+          <Route path="/admin/inspections" element={<InspectionAdminPage />} />
           <Route path="/seller" element={<SellerDashboard />} />
           <Route path="/sell" element={<SellBike />} />
           <Route path="/my-orders" element={<MyOrdersPage />} />
           <Route path="/my-sales" element={<MySalesPage />} />
           <Route path="/orders/:orderId" element={<OrderDetailPage />} />
+          <Route path="/inspector" element={<InspectorDashboard />} />
         </Routes>
       </AuthProvider>
     </Router>
