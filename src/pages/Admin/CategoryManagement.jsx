@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import AdminTabs from '../../components/Admin/AdminTabs';
 import {
     Container,
     Box,
@@ -26,6 +29,9 @@ import categoryService from '../../services/categoryService';
 import styles from './CategoryManagement.module.css';
 
 const CategoryManagement = () => {
+    const navigate = useNavigate();
+    const { isAdmin, loading: authLoading } = useAuth();
+
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -34,8 +40,13 @@ const CategoryManagement = () => {
     const [success, setSuccess] = useState('');
 
     useEffect(() => {
+        if (authLoading) return;
+        if (!isAdmin) {
+            navigate('/');
+            return;
+        }
         fetchCategories();
-    }, []);
+    }, [isAdmin, authLoading, navigate]);
 
     const fetchCategories = async () => {
         try {
@@ -77,9 +88,22 @@ const CategoryManagement = () => {
         }
     };
 
+    if (authLoading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (!isAdmin) {
+        return null;
+    }
+
     return (
         <div className={styles.pageWrapper}>
             <Container maxWidth="md">
+                <AdminTabs />
                 {/* Header */}
                 <Box className={styles.header}>
                     <Typography variant="h3" className={styles.title}>

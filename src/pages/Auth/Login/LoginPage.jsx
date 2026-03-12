@@ -26,8 +26,18 @@ function LoginPage() {
 
     try {
       const response = await loginUser(email, password);
-      login(response); // Save to context + localStorage
-      navigate(from, { replace: true });
+      // authService already stores authToken in localStorage
+      login({
+        token: response.token,
+        user: { email: response.email, role: response.role, userId: response.userId },
+      });
+
+      const userRole = response.role;
+      if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     } catch (err) {
       setError(err.response?.data || 'Invalid email or password');
     } finally {

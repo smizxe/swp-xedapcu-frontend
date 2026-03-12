@@ -1,16 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Descriptions } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Spin, Button, Tag, message, Descriptions, Modal, DatePicker, Input } from 'antd';
+import {
+    ArrowLeftOutlined,
+    ScheduleOutlined,
+    CarOutlined,
+    CloseCircleOutlined,
+    CheckCircleOutlined,
+    WarningOutlined,
+} from '@ant-design/icons';
 import Header from '../../components/Header/Header';
-import { getOrderById } from '../../service/orderService';
+import { useAuth } from '../../context/AuthContext';
+import { getOrderById, cancelDeposit, completeOrder, scheduleDelivery, reportBuyerNoShow, reportSellerNoShow } from '../../service/orderService';
+import InspectionBookingModal from './InspectionBookingModal';
 import styles from './OrderDetailPage.module.css';
 
+const toIsoDateTime = (str) => (str ? str.replace(' ', 'T') : str);
+
 const STATUS_COLOR = {
-    DEPOSITED: 'processing',
-    DELIVERY_SCHEDULED: 'warning',
+    PENDING: 'processing',
+    DEPOSIT_PAID: 'processing',
+    IN_DELIVERY: 'warning',
     COMPLETED: 'success',
     CANCELLED: 'default',
+    REFUNDED: 'default',
 };
 
 const formatPrice = (v) => (v != null ? v.toLocaleString('vi-VN') : '—');
@@ -18,16 +31,87 @@ const formatPrice = (v) => (v != null ? v.toLocaleString('vi-VN') : '—');
 function OrderDetailPage() {
     const { orderId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    // Booking inspection modal
+    const [bookingOpen, setBookingOpen] = useState(false);
+
+    // Delivery modal
+    const [deliveryOpen, setDeliveryOpen] = useState(false);
+    const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryTime: null });
+
+    const fetchOrder = () => {
         setLoading(true);
         getOrderById(orderId)
             .then(setOrder)
             .catch(() => message.error('Failed to load order details.'))
             .finally(() => setLoading(false));
-    }, [orderId]);
+    };
+
+    useEffect(() => { fetchOrder(); }, [orderId]);
+
+    const isSeller = user && order?.seller && user.email === order.seller.email;
+    const isBuyer = user && order?.buyer && user.email === order.buyer.email;
+
+    const handleCancel = async () => {
+        try {
+            await cancelDeposit(orderId);
+            message.success('Deposit cancelled.');
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Cancel failed.');
+        }
+    };
+
+    const handleComplete = async () => {
+        try {
+            await completeOrder(orderId);
+            message.success('Order completed!');
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Complete failed.');
+        }
+    };
+
+    const handleReportBuyerNoShow = async () => {
+        try {
+            await reportBuyerNoShow(orderId);
+            message.success('Buyer no-show reported. Deposit transferred.');
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to report buyer no-show.');
+        }
+    };
+
+    const handleReportSellerNoShow = async () => {
+        try {
+            await reportSellerNoShow(orderId);
+            message.success('Seller no-show reported. Deposit refunded.');
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to report seller no-show.');
+        }
+    };
+
+    const handleScheduleDelivery = async () => {
+        if (!deliveryForm.deliveryAddress || !deliveryForm.deliveryTime) {
+            message.warning('Please fill in all delivery details.');
+            return;
+        }
+        try {
+            await scheduleDelivery(orderId, {
+                deliveryAddress: deliveryForm.deliveryAddress,
+                deliveryTime: deliveryForm.deliveryTime,
+            });
+            message.success('Delivery scheduled!');
+            setDeliveryOpen(false);
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to schedule delivery.');
+        }
+    };
 
     if (loading) {
         return (
@@ -100,7 +184,125 @@ function OrderDetailPage() {
                         <p className={styles.metaText}>{order.seller.email}</p>
                     </div>
                 )}
+
+                {/* Action Buttons */}
+                {(order.status === 'PENDING' || order.status === 'DEPOSIT_PAID') && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Actions</h3>
+                        <div className={styles.actionRow}>
+                            {isSeller && (
+                                <>
+                                    <Button
+                                        type="primary"
+                                        icon={<ScheduleOutlined />}
+                                        className={styles.btnPrimary}
+                                        onClick={() => setBookingOpen(true)}
+                                    >
+                                        Book Inspection
+                                    </Button>
+                                    <Button
+                                        icon={<CarOutlined />}
+                                        onClick={() => {
+                                            setDeliveryForm({ deliveryAddress: '', deliveryTime: null });
+                                            setDeliveryOpen(true);
+                                        }}
+                                    >
+                                        Schedule Delivery
+                                    </Button>
+                                </>
+                            )}
+                            {isBuyer && (
+                                <Button
+                                    danger
+                                    icon={<CloseCircleOutlined />}
+                                    onClick={handleCancel}
+                                >
+                                    Cancel Deposit
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {order.status === 'IN_DELIVERY' && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Actions</h3>
+                        <div className={styles.actionRow}>
+                            {isBuyer && (
+                                <>
+                                    <Button
+                                        type="primary"
+                                        icon={<CheckCircleOutlined />}
+                                        className={styles.btnPrimary}
+                                        onClick={handleComplete}
+                                    >
+                                        Confirm Received
+                                    </Button>
+                                    <Button
+                                        danger
+                                        icon={<WarningOutlined />}
+                                        onClick={handleReportSellerNoShow}
+                                    >
+                                        Report Seller No-Show
+                                    </Button>
+                                </>
+                            )}
+                            {isSeller && (
+                                <Button
+                                    danger
+                                    icon={<WarningOutlined />}
+                                    onClick={handleReportBuyerNoShow}
+                                >
+                                    Report Buyer No-Show
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {/* Schedule Delivery Modal */}
+            <Modal
+                title="Schedule Delivery"
+                open={deliveryOpen}
+                onOk={handleScheduleDelivery}
+                onCancel={() => setDeliveryOpen(false)}
+                okText="Confirm"
+                okButtonProps={{ className: styles.btnPrimary }}
+            >
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Delivery Address</label>
+                    <Input
+                        placeholder="Enter delivery address"
+                        value={deliveryForm.deliveryAddress}
+                        onChange={(e) => setDeliveryForm((prev) => ({ ...prev, deliveryAddress: e.target.value }))}
+                    />
+                </div>
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Delivery Date & Time</label>
+                    <DatePicker
+                        showTime
+                        style={{ width: '100%' }}
+                        format="YYYY-MM-DD HH:mm:ss"
+                        onChange={(_, dateStr) => setDeliveryForm((prev) => ({
+                            ...prev,
+                            deliveryTime: toIsoDateTime(Array.isArray(dateStr) ? dateStr[0] : dateStr),
+                        }))}
+                    />
+                </div>
+            </Modal>
+
+            {/* Inspection Booking Modal */}
+            <InspectionBookingModal
+                open={bookingOpen}
+                postId={order.postId || order.post?.postId}
+                onClose={() => setBookingOpen(false)}
+                onSuccess={() => {
+                    setBookingOpen(false);
+                    message.success('Inspection booked! Waiting for inspector assignment.');
+                    fetchOrder();
+                }}
+            />
         </div>
     );
 }

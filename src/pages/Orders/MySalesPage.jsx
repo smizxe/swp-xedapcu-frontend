@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Input } from 'antd';
-import {
-    ShopOutlined,
-    EyeOutlined,
-    CarOutlined,
-} from '@ant-design/icons';
+import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
-import { getMySales, scheduleDelivery } from '../../service/orderService';
+import { getMySales, scheduleDelivery, reportBuyerNoShow } from '../../service/orderService';
 import styles from './MySalesPage.module.css';
 
+// antd DatePicker showTime returns "YYYY-MM-DD HH:mm:ss", backend needs ISO "YYYY-MM-DDTHH:mm:ss"
+const toIsoDateTime = (str) => (str ? str.replace(' ', 'T') : str);
+
 const STATUS_COLOR = {
-    DEPOSITED: 'processing',
-    DELIVERY_SCHEDULED: 'warning',
+    PENDING: 'processing',
+    DEPOSIT_PAID: 'processing',
+    IN_DELIVERY: 'warning',
     COMPLETED: 'success',
     CANCELLED: 'default',
+    REFUNDED: 'default',
 };
 
 const formatPrice = (v) => (v != null ? v.toLocaleString('vi-VN') : '—');
@@ -25,7 +26,6 @@ function MySalesPage() {
     const [loading, setLoading] = useState(true);
     const [deliveryModal, setDeliveryModal] = useState({ open: false, orderId: null });
     const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryTime: null });
-
     const fetchSales = () => {
         setLoading(true);
         getMySales()
@@ -36,9 +36,19 @@ function MySalesPage() {
 
     useEffect(() => { fetchSales(); }, []);
 
-    const openDeliveryModal = (orderId) => {
-        setDeliveryModal({ open: true, orderId });
-        setDeliveryForm({ deliveryAddress: '', deliveryTime: null });
+    const openDeliveryModal = (order) => {
+        setDeliveryModal({ open: true, orderId: order.orderId });
+        setDeliveryForm({ deliveryAddress: order.deliveryAddress || '', deliveryTime: null });
+    };
+
+    const handleReportBuyerNoShow = async (orderId) => {
+        try {
+            await reportBuyerNoShow(orderId);
+            message.success('Buyer no-show reported. Deposit transferred.');
+            fetchSales();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to report buyer no-show.');
+        }
     };
 
     const handleSchedule = async () => {
@@ -49,7 +59,7 @@ function MySalesPage() {
         try {
             await scheduleDelivery(deliveryModal.orderId, {
                 deliveryAddress: deliveryForm.deliveryAddress,
-                deliveryTime: deliveryForm.deliveryTime,
+                deliveryTime: toIsoDateTime(deliveryForm.deliveryTime),
             });
             message.success('Delivery scheduled!');
             setDeliveryModal({ open: false, orderId: null });
@@ -101,14 +111,23 @@ function MySalesPage() {
                                     >
                                         Details
                                     </Button>
-                                    {order.status === 'DEPOSITED' && (
+                                    {(order.status === 'PENDING' || order.status === 'DEPOSIT_PAID') && (
                                         <Button
                                             type="primary"
                                             icon={<CarOutlined />}
                                             className={styles.btnSchedule}
-                                            onClick={() => openDeliveryModal(order.orderId)}
+                                            onClick={() => openDeliveryModal(order)}
                                         >
                                             Schedule Delivery
+                                        </Button>
+                                    )}
+                                    {order.status === 'IN_DELIVERY' && (
+                                        <Button
+                                            danger
+                                            icon={<WarningOutlined />}
+                                            onClick={() => handleReportBuyerNoShow(order.orderId)}
+                                        >
+                                            Buyer No-Show
                                         </Button>
                                     )}
                                 </div>
@@ -131,7 +150,7 @@ function MySalesPage() {
                     <Input
                         placeholder="Enter delivery address"
                         value={deliveryForm.deliveryAddress}
-                        onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryAddress: e.target.value })}
+                        onChange={(e) => setDeliveryForm((prev) => ({ ...prev, deliveryAddress: e.target.value }))}
                     />
                 </div>
                 <div className={styles.formGroup}>
@@ -139,10 +158,15 @@ function MySalesPage() {
                     <DatePicker
                         showTime
                         style={{ width: '100%' }}
-                        onChange={(_, dateStr) => setDeliveryForm({ ...deliveryForm, deliveryTime: dateStr })}
+                        format="YYYY-MM-DD HH:mm:ss"
+                        onChange={(_, dateStr) => setDeliveryForm((prev) => ({
+                            ...prev,
+                            deliveryTime: Array.isArray(dateStr) ? dateStr[0] : dateStr,
+                        }))}
                     />
                 </div>
             </Modal>
+
         </div>
     );
 }

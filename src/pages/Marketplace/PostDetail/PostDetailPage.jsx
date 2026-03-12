@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Button, Spin, message } from 'antd';
+import { Button, Spin, message, Modal, Input, Image } from 'antd';
 import {
     ArrowLeftOutlined,
     SafetyCertificateOutlined,
     UserOutlined,
     CalendarOutlined,
+    LeftOutlined,
+    RightOutlined,
 } from '@ant-design/icons';
 import styles from './PostDetailPage.module.css';
 import Header from '../../../components/Header/Header';
 import { getPostById } from '../../../service/postService';
+import { getPostImages } from '../../../service/imageService';
 import { isAuthenticated } from '../../../service/authService';
 import { createDeposit } from '../../../service/orderService';
 
@@ -41,8 +44,17 @@ function PostDetailPage() {
     const [post, setPost] = useState(location.state?.post || null);
     const [isLoading, setIsLoading] = useState(!post);
 
+    // Deposit Modal State
+    const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+    const [deliveryAddress, setDeliveryAddress] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Image gallery
+    const [postImages, setPostImages] = useState([]);
+    const [activeImgIdx, setActiveImgIdx] = useState(0);
+
     useEffect(() => {
-        if (post) return; // already have data from navigation state
+        if (post) return;
         setIsLoading(true);
         getPostById(postId)
             .then(setPost)
@@ -50,17 +62,43 @@ function PostDetailPage() {
             .finally(() => setIsLoading(false));
     }, [postId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const handleDeposit = async () => {
+    useEffect(() => {
+        if (!postId) return;
+        getPostImages(postId)
+            .then((res) => {
+                const imgs = res.data || [];
+                setPostImages(imgs);
+                // Start at thumbnail if exists
+                const thumbIdx = imgs.findIndex((i) => i.isThumbnail);
+                if (thumbIdx >= 0) setActiveImgIdx(thumbIdx);
+            })
+            .catch(() => {});
+    }, [postId]);
+
+    const handleDeposit = () => {
         if (!isAuthenticated()) {
             message.warning('Please log in to place a deposit.');
             return;
         }
+        setIsDepositModalOpen(true);
+    };
+
+    const confirmDeposit = async () => {
+        if (!deliveryAddress.trim()) {
+            message.warning('Please enter a delivery address.');
+            return;
+        }
+
+        setIsSubmitting(true);
         try {
-            await createDeposit(postId);
+            await createDeposit(postId, deliveryAddress);
             message.success('Deposit placed successfully!');
+            setIsDepositModalOpen(false);
             navigate('/my-orders');
         } catch (err) {
             message.error(err.response?.data || 'Failed to place deposit.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -112,6 +150,35 @@ function PostDetailPage() {
                     {/* ── Left: Image ── */}
                     <div className={styles.imagePanel}>
                         <div className={styles.mainImage}>
+                            {postImages.length > 0 ? (
+                                <>
+                                    <Image
+                                        src={postImages[activeImgIdx]?.imageUrl}
+                                        alt={post.title}
+                                        className={styles.mainImageImg}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        preview={{ mask: 'Click to zoom' }}
+                                    />
+                                    {postImages.length > 1 && (
+                                        <>
+                                            <button
+                                                className={`${styles.imgNav} ${styles.imgNavLeft}`}
+                                                onClick={() => setActiveImgIdx((prev) => (prev - 1 + postImages.length) % postImages.length)}
+                                            >
+                                                <LeftOutlined />
+                                            </button>
+                                            <button
+                                                className={`${styles.imgNav} ${styles.imgNavRight}`}
+                                                onClick={() => setActiveImgIdx((prev) => (prev + 1) % postImages.length)}
+                                            >
+                                                <RightOutlined />
+                                            </button>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <div className={styles.noImage}>No images</div>
+                            )}
 
                             <div className={styles.imageBadges}>
                                 <span className={`${styles.statusBadge} ${statusInfo.className}`}>
@@ -124,6 +191,21 @@ function PostDetailPage() {
                                 )}
                             </div>
                         </div>
+
+                        {/* Thumbnail strip */}
+                        {postImages.length > 1 && (
+                            <div className={styles.thumbStrip}>
+                                {postImages.map((img, idx) => (
+                                    <div
+                                        key={img.imageId}
+                                        className={`${styles.thumbItem} ${idx === activeImgIdx ? styles.thumbActive : ''}`}
+                                        onClick={() => setActiveImgIdx(idx)}
+                                    >
+                                        <img src={img.imageUrl} alt="" />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* ── Right: Info ── */}
@@ -252,6 +334,26 @@ function PostDetailPage() {
                     </div>
                 </div>
             </div>
+
+            <Modal
+                title="Confirm Deposit & Delivery Details"
+                open={isDepositModalOpen}
+                onOk={confirmDeposit}
+                onCancel={() => setIsDepositModalOpen(false)}
+                okText="Confirm & Deposit"
+                cancelText="Cancel"
+                confirmLoading={isSubmitting}
+            >
+                <p style={{ marginBottom: 16 }}>
+                    To proceed with the deposit, please provide your delivery address. The seller will use this to deliver the bicycle to you.
+                </p>
+                <Input.TextArea
+                    placeholder="Enter your full delivery address (e.g. 123 Street Name, District, City)"
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    autoSize={{ minRows: 3, maxRows: 5 }}
+                />
+            </Modal>
         </div>
     );
 }

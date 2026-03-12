@@ -13,6 +13,7 @@ const Header = ({ variant = 'light' }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userEmail, setUserEmail] = useState('');
     const [userId, setUserId] = useState(null);
+    const [userRole, setUserRole] = useState(null);
 
     // Check authentication status on mount and when storage changes
     useEffect(() => {
@@ -30,9 +31,11 @@ const Header = ({ variant = 'light' }) => {
             if (authenticated) {
                 setUserEmail(user.email);
                 setUserId(user.userId || user.id || 'me');
+                setUserRole(user.role);
             } else {
                 setUserEmail('');
                 setUserId(null);
+                setUserRole(null);
             }
         };
 
@@ -131,36 +134,49 @@ const Header = ({ variant = 'light' }) => {
                                     <p className={styles.greeting}>{userEmail}</p>
                                 </div>
                                 <div className={styles.dropdownDivider}></div>
-                                <button
-                                    className={styles.dropdownItem}
-                                    onClick={() => navigate('/profile')}
-                                >
-                                    My Profile
-                                </button>
-                                <button
-                                    className={styles.dropdownItem}
-                                    onClick={() => navigate('/wallet')}
-                                >
-                                    My Wallet
-                                </button>
-                                <button
-                                    className={styles.dropdownItem}
-                                    onClick={() => navigate('/my-orders')}
-                                >
-                                    My Orders
-                                </button>
-                                <button
-                                    className={styles.dropdownItem}
-                                    onClick={() => navigate('/my-sales')}
-                                >
-                                    My Sales
-                                </button>
-                                <button
-                                    className={styles.dropdownItem}
-                                    onClick={() => navigate(`/${userId}/bicycles`)}
-                                >
-                                    My Bicycle
-                                </button>
+
+                                {userRole === 'ADMIN' || userRole === 'ROLE_ADMIN' ? (
+                                    <button
+                                        className={styles.dropdownItem}
+                                        onClick={() => navigate('/admin')}
+                                    >
+                                        Admin Dashboard
+                                    </button>
+                                ) : (
+                                    <>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate('/profile')}
+                                        >
+                                            My Profile
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate('/wallet')}
+                                        >
+                                            My Wallet
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate('/my-orders')}
+                                        >
+                                            My Orders
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate('/my-sales')}
+                                        >
+                                            My Sales
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate(`/${userId}/bicycles`)}
+                                        >
+                                            My Bicycle
+                                        </button>
+                                    </>
+                                )}
+
                                 <div className={styles.dropdownDivider}></div>
                                 <button
                                     className={styles.dropdownItemLogout}

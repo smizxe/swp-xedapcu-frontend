@@ -61,6 +61,28 @@ export const API_ENDPOINTS = {
     CANCEL: (id) => `/api/orders/${id}/cancel`,
     SCHEDULE_DELIVERY: (id) => `/api/orders/${id}/schedule-delivery`,
     COMPLETE: (id) => `/api/orders/${id}/complete`,
+    REPORT_BUYER_NO_SHOW: (id) => `/api/orders/${id}/report-buyer-no-show`,
+    REPORT_SELLER_NO_SHOW: (id) => `/api/orders/${id}/report-seller-no-show`,
+  },
+  // Wallet endpoints
+  WALLET: {
+    BALANCE: '/api/wallet/balance',
+    WITHDRAW: '/api/wallet/withdraw',
+    TRANSACTIONS: '/api/wallet/transactions',
+  },
+  // Payment endpoints
+  PAYMENT: {
+    CREATE_DEPOSIT_URL: '/api/payment/create-deposit-url',
+    VNPAY_RETURN: '/api/payment/vnpay-return',
+  },
+  // Image endpoints
+  IMAGES: {
+    UPLOAD: (postId) => `/api/posts/${postId}/images`,
+    GET_ALL: (postId) => `/api/posts/${postId}/images`,
+    THUMBNAIL: (postId) => `/api/posts/${postId}/images/thumbnail`,
+    SET_THUMBNAIL: (postId, imageId) => `/api/posts/${postId}/images/${imageId}/thumbnail`,
+    DELETE: (postId, imageId) => `/api/posts/${postId}/images/${imageId}`,
+    DELETE_ALL: (postId) => `/api/posts/${postId}/images`,
   },
   // Admin endpoints
   ADMIN: {

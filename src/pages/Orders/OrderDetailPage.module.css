@@ -64,3 +64,32 @@
     color: #888;
     font-size: 13px;
 }
+
+.actionRow {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.btnPrimary {
+    background: #2D5A27 !important;
+    border-color: #2D5A27 !important;
+}
+
+.btnPrimary:hover {
+    background: #1a3d17 !important;
+    border-color: #1a3d17 !important;
+}
+
+.formGroup {
+    margin-bottom: 16px;
+}
+
+.formLabel {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #1a1a1a;
+    font-size: 13px;
+}

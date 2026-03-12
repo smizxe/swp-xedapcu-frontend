@@ -16,8 +16,14 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-export const createDeposit = async (postId) => {
-    const response = await api.post(API_ENDPOINTS.ORDERS.DEPOSIT, null, {
+export const createDeposit = async (postId, deliveryAddress) => {
+    // Note: Once the backend team updates the API to use @RequestBody DepositRequest,
+    // the params: { postId } can be removed. Leaving it here for backward compatibility.
+    const payload = {
+        postId,
+        deliveryAddress: deliveryAddress || ''
+    };
+    const response = await api.post(API_ENDPOINTS.ORDERS.DEPOSIT, payload, {
         params: { postId },
     });
     return response.data;
@@ -50,5 +56,15 @@ export const scheduleDelivery = async (orderId, data) => {
 
 export const completeOrder = async (orderId) => {
     const response = await api.post(API_ENDPOINTS.ORDERS.COMPLETE(orderId));
+    return response.data;
+};
+
+export const reportBuyerNoShow = async (orderId) => {
+    const response = await api.post(API_ENDPOINTS.ORDERS.REPORT_BUYER_NO_SHOW(orderId));
+    return response.data;
+};
+
+export const reportSellerNoShow = async (orderId) => {
+    const response = await api.post(API_ENDPOINTS.ORDERS.REPORT_SELLER_NO_SHOW(orderId));
     return response.data;
 };

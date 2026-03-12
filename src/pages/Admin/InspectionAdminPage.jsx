@@ -1,19 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
-import styles from './InspectionAdminPage.module.css';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import {
     getAllBookings,
     assignInspector,
     getAllUsers,
 } from '../../service/inspectionService';
+import styles from './InspectionAdminPage.module.css';
 import {
     Shield, ClipboardList, User, Calendar, MapPin,
     Clock, CheckCircle, AlertCircle, Loader, X, UserCheck
 } from 'lucide-react';
+import AdminTabs from '../../components/Admin/AdminTabs';
 
 /* ── Status badge ──────────────────────────────────────── */
 const STATUS_CONFIG = {
-    PENDING:   { label: 'Pending',   cls: 'badgePending',   icon: AlertCircle },
-    ASSIGNED:  { label: 'Assigned',  cls: 'badgeAssigned',  icon: Clock },
+    PENDING: { label: 'Pending', cls: 'badgePending', icon: AlertCircle },
+    ASSIGNED: { label: 'Assigned', cls: 'badgeAssigned', icon: Clock },
     CONFIRMED: { label: 'Confirmed', cls: 'badgeConfirmed', icon: CheckCircle },
     COMPLETED: { label: 'Completed', cls: 'badgeCompleted', icon: CheckCircle },
 };
@@ -168,13 +171,16 @@ function StatCard({ label, value, icon: Icon, accent }) {
 
 /* ── Main page ──────────────────────────────────────────── */
 export default function InspectionAdminPage() {
-    const [bookings, setBookings]     = useState([]);
+    const navigate = useNavigate();
+    const { isAdmin, loading: authLoading } = useAuth();
+
+    const [bookings, setBookings] = useState([]);
     const [inspectors, setInspectors] = useState([]);
-    const [loading, setLoading]       = useState(true);
-    const [error, setError]           = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [assignTarget, setAssignTarget] = useState(null);
-    const [assigning, setAssigning]   = useState(false);
-    const [filter, setFilter]         = useState('ALL');
+    const [assigning, setAssigning] = useState(false);
+    const [filter, setFilter] = useState('ALL');
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -200,7 +206,14 @@ export default function InspectionAdminPage() {
         }
     }, []);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => {
+        if (authLoading) return;
+        if (!isAdmin) {
+            navigate('/');
+            return;
+        }
+        fetchData();
+    }, [isAdmin, authLoading, navigate, fetchData]);
 
     const handleAssign = async (bookingId, inspectorId) => {
         if (!inspectorId) return;
@@ -226,8 +239,24 @@ export default function InspectionAdminPage() {
         completed: bookings.filter((b) => b.status === 'COMPLETED').length,
     };
 
+    if (authLoading) {
+        return (
+            <div className={styles.page} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <Loader size={32} className={styles.spin} />
+            </div>
+        );
+    }
+
+    if (!isAdmin) {
+        return null;
+    }
+
     return (
         <div className={styles.page}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', paddingLeft: '24px', paddingRight: '24px' }}>
+                <AdminTabs />
+            </div>
+
             {/* Hero header */}
             <div className={styles.pageHeader}>
                 <div className={styles.pageHeaderLeft}>

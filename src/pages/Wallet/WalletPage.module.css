@@ -87,6 +87,22 @@
     color: #2D5A27 !important;
 }
 
+.btnWithdraw {
+    background: #fff !important;
+    border: 1px solid #d9d9d9 !important;
+    color: #1a1a1a !important;
+    border-radius: 6px !important;
+    font-weight: 600;
+    height: 38px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.btnWithdraw:hover {
+    border-color: #c0392b !important;
+    color: #c0392b !important;
+}
+
 .btnRefresh {
     background: #fff !important;
     border: 1px solid #d9d9d9 !important;
@@ -99,6 +115,19 @@
 .btnRefresh:hover {
     border-color: #2D5A27 !important;
     color: #2D5A27 !important;
+}
+
+/* Form group for modals */
+.formGroup {
+    margin-bottom: 16px;
+}
+
+.formLabel {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
 }
 
 /* Stat cards */

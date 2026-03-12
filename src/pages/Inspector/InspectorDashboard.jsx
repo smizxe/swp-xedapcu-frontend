@@ -8,7 +8,7 @@ import {
 import InspectionReportModal from './InspectionReportModal';
 import {
     Shield, ClipboardList, CheckCircle, Clock, AlertCircle,
-    Calendar, MapPin, Loader, ChevronRight, FileText
+    Calendar, MapPin, Loader, ChevronRight, FileText, User
 } from 'lucide-react';
 
 /* ── Status badge ──────────────────────────────────────── */
@@ -56,6 +56,11 @@ function BookingCard({ booking, onConfirm, confirming }) {
                     <div className={styles.metaRow}><MapPin size={13} /><span>{booking.location}</span></div>
                 )}
             </div>
+            {booking.requester && (
+                <div className={styles.metaRow}><User size={13} />
+                    <span>Booked by: {booking.requester.fullName || booking.requester.email}</span>
+                </div>
+            )}
             {booking.paidBy && (
                 <div className={styles.paidByBadge}>Fee paid by: {booking.paidBy}</div>
             )}
@@ -94,6 +99,21 @@ function RequestCard({ req, onReport }) {
             {req.inspectionFee && (
                 <div className={styles.feePill}>
                     Fee: <strong>{Number(req.inspectionFee).toLocaleString()} VND</strong> (paid by {req.paidBy})
+                </div>
+            )}
+            {req.booking && (
+                <div className={styles.cardMeta}>
+                    {req.booking.bookingDate && (
+                        <div className={styles.metaRow}><Calendar size={13} /><span>{req.booking.bookingDate}</span></div>
+                    )}
+                    {req.booking.startTime && (
+                        <div className={styles.metaRow}><Clock size={13} />
+                            <span>{req.booking.startTime}{req.booking.endTime ? ` - ${req.booking.endTime}` : ''}</span>
+                        </div>
+                    )}
+                    {req.booking.location && (
+                        <div className={styles.metaRow}><MapPin size={13} /><span>{req.booking.location}</span></div>
+                    )}
                 </div>
             )}
 

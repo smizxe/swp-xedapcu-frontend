@@ -6,16 +6,19 @@ import {
     EyeOutlined,
     CloseCircleOutlined,
     CheckCircleOutlined,
+    WarningOutlined,
 } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
-import { getMyOrders, cancelDeposit, completeOrder } from '../../service/orderService';
+import { getMyOrders, cancelDeposit, completeOrder, reportSellerNoShow } from '../../service/orderService';
 import styles from './MyOrdersPage.module.css';
 
 const STATUS_COLOR = {
-    DEPOSITED: 'processing',
-    DELIVERY_SCHEDULED: 'warning',
+    PENDING: 'processing',
+    DEPOSIT_PAID: 'processing',
+    IN_DELIVERY: 'warning',
     COMPLETED: 'success',
     CANCELLED: 'default',
+    REFUNDED: 'default',
 };
 
 const formatPrice = (v) => (v != null ? v.toLocaleString('vi-VN') : '—');
@@ -52,6 +55,16 @@ function MyOrdersPage() {
             fetchOrders();
         } catch (err) {
             message.error(err.response?.data || 'Complete failed.');
+        }
+    };
+
+    const handleReportSellerNoShow = async (orderId) => {
+        try {
+            await reportSellerNoShow(orderId);
+            message.success('Seller no-show reported. Deposit refunded.');
+            fetchOrders();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to report seller no-show.');
         }
     };
 
@@ -99,7 +112,7 @@ function MyOrdersPage() {
                                     >
                                         Details
                                     </Button>
-                                    {order.status === 'DEPOSITED' && (
+                                    {(order.status === 'PENDING' || order.status === 'DEPOSIT_PAID') && (
                                         <Button
                                             danger
                                             icon={<CloseCircleOutlined />}
@@ -108,15 +121,24 @@ function MyOrdersPage() {
                                             Cancel Deposit
                                         </Button>
                                     )}
-                                    {order.status === 'DELIVERY_SCHEDULED' && (
-                                        <Button
-                                            type="primary"
-                                            icon={<CheckCircleOutlined />}
-                                            className={styles.btnComplete}
-                                            onClick={() => handleComplete(order.orderId)}
-                                        >
-                                            Confirm Received
-                                        </Button>
+                                    {order.status === 'IN_DELIVERY' && (
+                                        <>
+                                            <Button
+                                                type="primary"
+                                                icon={<CheckCircleOutlined />}
+                                                className={styles.btnComplete}
+                                                onClick={() => handleComplete(order.orderId)}
+                                            >
+                                                Confirm Received
+                                            </Button>
+                                            <Button
+                                                danger
+                                                icon={<WarningOutlined />}
+                                                onClick={() => handleReportSellerNoShow(order.orderId)}
+                                            >
+                                                Seller No-Show
+                                            </Button>
+                                        </>
                                     )}
                                 </div>
                             </div>

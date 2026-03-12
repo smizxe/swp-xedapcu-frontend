@@ -20,6 +20,9 @@ import MyOrdersPage from './pages/Orders/MyOrdersPage.jsx';
 import MySalesPage from './pages/Orders/MySalesPage.jsx';
 import OrderDetailPage from './pages/Orders/OrderDetailPage.jsx';
 import InspectorDashboard from './pages/Inspector/InspectorDashboard.jsx';
+import OAuth2Redirect from './pages/Auth/OAuth2Redirect.jsx';
+import MyPostsPage from './pages/MyPosts/MyPostsPage.jsx';
+import VnPayReturn from './pages/Wallet/VnPayReturn.jsx';
 
 function App() {
   return (
@@ -28,11 +31,13 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginContainer />} />
+          <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
           <Route path="/register" element={<RegisterPageContainer />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/about" element={<AboutUsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/wallet" element={<WalletPageContainer />} />
+          <Route path="/payment/vnpay-return" element={<VnPayReturn />} />
           <Route path="/marketplace" element={<MarketplaceContainer />} />
           <Route path="/marketplace/:postId" element={<PostDetailPage />} />
           <Route path="/bicycles/:id" element={<BikeDetail />} />
@@ -44,6 +49,7 @@ function App() {
           <Route path="/sell" element={<SellBike />} />
           <Route path="/my-orders" element={<MyOrdersPage />} />
           <Route path="/my-sales" element={<MySalesPage />} />
+          <Route path="/my-posts" element={<MyPostsPage />} />
           <Route path="/orders/:orderId" element={<OrderDetailPage />} />
           <Route path="/inspector" element={<InspectorDashboard />} />
         </Routes>

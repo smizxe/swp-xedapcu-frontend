@@ -7,6 +7,7 @@ import {
     Select,
     Modal,
     InputNumber,
+    Input,
     Space,
     Spin,
     Tooltip,
@@ -18,7 +19,7 @@ import {
     EyeOutlined,
     ArrowUpOutlined,
     ArrowDownOutlined,
-    DollarCircleOutlined,
+    BankOutlined,
 } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
 import styles from './WalletPage.module.css';
@@ -28,32 +29,38 @@ const { Option } = Select;
 
 const TRANSACTION_TYPES = [
     { value: 'DEPOSIT', label: 'Deposit', color: '#2D5A27', bg: '#e8f5e9' },
-    { value: 'CONTRACT_DEPOSIT', label: 'Contract Deposit', color: '#c0392b', bg: '#fdecea' },
-    { value: 'MILESTONE', label: 'Milestone Payment', color: '#c0392b', bg: '#fdecea' },
-    { value: 'CORRECTION_FEE', label: 'Correction Fee', color: '#c0392b', bg: '#fdecea' },
+    { value: 'WITHDRAW', label: 'Withdraw', color: '#c0392b', bg: '#fdecea' },
+    { value: 'ORDER_DEPOSIT', label: 'Order Deposit', color: '#c0392b', bg: '#fdecea' },
+    { value: 'ORDER_PAYMENT', label: 'Order Payment', color: '#c0392b', bg: '#fdecea' },
     { value: 'REFUND', label: 'Refund', color: '#2D5A27', bg: '#e8f5e9' },
+    { value: 'COMPENSATION', label: 'Compensation', color: '#2D5A27', bg: '#e8f5e9' },
 ];
+
+const STATUS_COLOR = {
+    PENDING: 'processing',
+    COMPLETED: 'success',
+    FAILED: 'error',
+    CANCELLED: 'default',
+};
 
 const formatCurrency = (amount) => {
     if (amount === undefined || amount === null) return '—';
-    const abs = Math.abs(amount);
+    const abs = Math.abs(Number(amount));
     const formatted = abs.toLocaleString('vi-VN') + ' đ';
-    return amount < 0 ? `-${formatted}` : `+${formatted}`;
-};
-
-const formatVND = (amount) => {
-    if (!amount && amount !== 0) return '—';
-    return Math.abs(amount).toLocaleString('vi-VN') + ' VND';
+    return Number(amount) < 0 ? `-${formatted}` : `+${formatted}`;
 };
 
 const getTypeInfo = (type) =>
-    TRANSACTION_TYPES.find((t) => t.value === type) || { label: type, color: '#666', bg: '#f0f0f0' };
+    TRANSACTION_TYPES.find((t) => t.value === type) || { label: type || 'Unknown', color: '#666', bg: '#f0f0f0' };
+
+const isPositiveType = (type) => ['DEPOSIT', 'REFUND', 'COMPENSATION'].includes(type);
 
 const WalletPage = ({
     walletData,
     transactions = [],
     isLoading = false,
     onDeposit,
+    onWithdraw,
     onRefresh,
 }) => {
     const [filterType, setFilterType] = useState(null);
@@ -61,17 +68,19 @@ const WalletPage = ({
     const [depositOpen, setDepositOpen] = useState(false);
     const [depositAmount, setDepositAmount] = useState(null);
     const [depositLoading, setDepositLoading] = useState(false);
+    const [withdrawOpen, setWithdrawOpen] = useState(false);
+    const [withdrawAmount, setWithdrawAmount] = useState(null);
+    const [withdrawBank, setWithdrawBank] = useState('');
+    const [withdrawLoading, setWithdrawLoading] = useState(false);
     const [detailOpen, setDetailOpen] = useState(false);
     const [selectedTx, setSelectedTx] = useState(null);
 
     const currentBalance = walletData?.balance ?? 0;
-    const totalDeposit = walletData?.totalDeposit ?? 0;
-    const totalPayment = walletData?.totalPayment ?? 0;
-    const totalRefund = walletData?.totalRefund ?? 0;
 
-    // Filter logic
+    // Filter logic — use transactionType from backend response
     const filteredTx = transactions.filter((tx) => {
-        const matchType = filterType ? tx.type === filterType : true;
+        const txType = tx.transactionType || tx.type;
+        const matchType = filterType ? txType === filterType : true;
         const matchDate = dateRange
             ? new Date(tx.createdAt) >= dateRange[0].toDate() &&
             new Date(tx.createdAt) <= dateRange[1].toDate()
@@ -91,6 +100,19 @@ const WalletPage = ({
         }
     };
 
+    const handleWithdraw = async () => {
+        if (!withdrawAmount || withdrawAmount <= 0 || !withdrawBank.trim()) return;
+        setWithdrawLoading(true);
+        try {
+            if (onWithdraw) await onWithdraw(withdrawAmount, withdrawBank.trim());
+            setWithdrawOpen(false);
+            setWithdrawAmount(null);
+            setWithdrawBank('');
+        } finally {
+            setWithdrawLoading(false);
+        }
+    };
+
     const handleViewDetail = (record) => {
         setSelectedTx(record);
         setDetailOpen(true);
@@ -98,16 +120,17 @@ const WalletPage = ({
 
     const columns = [
         {
-            title: 'Transaction Type',
-            dataIndex: 'type',
-            key: 'type',
-            width: 220,
+            title: 'Type',
+            dataIndex: 'transactionType',
+            key: 'transactionType',
+            width: 200,
             render: (type, record) => {
-                const info = getTypeInfo(type);
-                const isPositive = record.amount >= 0;
+                const txType = type || record.type;
+                const info = getTypeInfo(txType);
+                const positive = isPositiveType(txType);
                 return (
                     <span className={styles.typeCell}>
-                        {isPositive ? (
+                        {positive ? (
                             <ArrowUpOutlined className={styles.iconUp} />
                         ) : (
                             <ArrowDownOutlined className={styles.iconDown} />
@@ -132,35 +155,26 @@ const WalletPage = ({
             title: 'Amount',
             dataIndex: 'amount',
             key: 'amount',
-            width: 130,
-            render: (amount) => (
-                <span
-                    className={amount >= 0 ? styles.amountPositive : styles.amountNegative}
-                >
-                    {formatCurrency(amount)}
-                </span>
-            ),
+            width: 160,
+            render: (amount, record) => {
+                const txType = record.transactionType || record.type;
+                const positive = isPositiveType(txType);
+                return (
+                    <span className={positive ? styles.amountPositive : styles.amountNegative}>
+                        {positive ? '+' : '-'}{Math.abs(Number(amount)).toLocaleString('vi-VN')} đ
+                    </span>
+                );
+            },
         },
         {
-            title: 'Balance Before',
-            dataIndex: 'balanceBefore',
-            key: 'balanceBefore',
-            width: 140,
-            render: (val) => (
-                <span className={styles.balanceCell}>
-                    {val?.toLocaleString('vi-VN')} đ
-                </span>
-            ),
-        },
-        {
-            title: 'Balance After',
-            dataIndex: 'balanceAfter',
-            key: 'balanceAfter',
-            width: 140,
-            render: (val) => (
-                <span className={styles.balanceCellBold}>
-                    {val?.toLocaleString('vi-VN')} đ
-                </span>
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            width: 120,
+            render: (status) => (
+                <Tag color={STATUS_COLOR[status] || 'default'}>
+                    {status || 'N/A'}
+                </Tag>
             ),
         },
         {
@@ -173,13 +187,12 @@ const WalletPage = ({
                 const d = new Date(val);
                 return (
                     <span style={{ whiteSpace: 'nowrap' }}>
-                        {d.toLocaleString('en-US', {
+                        {d.toLocaleString('vi-VN', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit',
-                            second: '2-digit',
                         })}
                     </span>
                 );
@@ -237,6 +250,14 @@ const WalletPage = ({
                                 Deposit
                             </Button>
                             <Button
+                                className={styles.btnWithdraw}
+                                icon={<BankOutlined />}
+                                onClick={() => setWithdrawOpen(true)}
+                                block
+                            >
+                                Withdraw
+                            </Button>
+                            <Button
                                 className={styles.btnRefresh}
                                 icon={<ReloadOutlined />}
                                 onClick={onRefresh}
@@ -244,28 +265,6 @@ const WalletPage = ({
                             >
                                 Refresh
                             </Button>
-                        </div>
-
-                        {/* Stats */}
-                        <div className={styles.statCard}>
-                            <div className={styles.statLabel}>Total Deposit</div>
-                            <div className={styles.statPositive}>
-                                <ArrowUpOutlined /> {formatVND(totalDeposit)}
-                            </div>
-                        </div>
-
-                        <div className={styles.statCard}>
-                            <div className={styles.statLabel}>Total Payment</div>
-                            <div className={styles.statNegative}>
-                                <ArrowDownOutlined /> {formatVND(totalPayment)}
-                            </div>
-                        </div>
-
-                        <div className={styles.statCard}>
-                            <div className={styles.statLabel}>Total Refund</div>
-                            <div className={styles.statRefund}>
-                                <DollarCircleOutlined /> {formatVND(totalRefund)}
-                            </div>
                         </div>
                     </div>
 
@@ -312,15 +311,15 @@ const WalletPage = ({
                             <Table
                                 columns={columns}
                                 dataSource={filteredTx}
-                                rowKey={(r) => r.id || Math.random()}
+                                rowKey={(r) => r.transactionId || r.id || Math.random()}
                                 loading={isLoading}
                                 pagination={{
-                                    pageSize: 8,
+                                    pageSize: 10,
                                     showSizeChanger: false,
                                     showTotal: (total) => `${total} transaction(s)`,
                                 }}
                                 className={styles.txTable}
-                                scroll={{ x: 900 }}
+                                scroll={{ x: 750 }}
                             />
                         </div>
                     </div>
@@ -331,7 +330,7 @@ const WalletPage = ({
             <Modal
                 title={
                     <span className={styles.modalTitle}>
-                        <WalletOutlined /> Top Up Wallet
+                        <WalletOutlined /> Top Up Wallet (VNPay)
                     </span>
                 }
                 open={depositOpen}
@@ -341,16 +340,15 @@ const WalletPage = ({
                 centered
             >
                 <div className={styles.depositContent}>
-                    <p className={styles.depositSubtitle}>Enter the amount you want to deposit into your wallet</p>
+                    <p className={styles.depositSubtitle}>Enter the amount to deposit via VNPay. You will be redirected to VNPay to complete the payment.</p>
 
-                    {/* Input row: number field + VND label flush together */}
                     <Space.Compact className={styles.depositInputRow}>
                         <InputNumber
                             className={styles.depositInput}
                             placeholder="Enter amount (VND)"
                             value={depositAmount}
                             onChange={setDepositAmount}
-                            min={1000}
+                            min={10000}
                             step={10000}
                             controls={false}
                             formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -361,7 +359,7 @@ const WalletPage = ({
 
                     {/* Quick-select amounts */}
                     <div className={styles.quickAmounts}>
-                        {[50000, 100000, 200000, 500000].map((amt) => (
+                        {[50000, 100000, 200000, 500000, 1000000].map((amt) => (
                             <Button
                                 key={amt}
                                 className={`${styles.quickBtn} ${depositAmount === amt ? styles.quickBtnActive : ''}`}
@@ -372,19 +370,81 @@ const WalletPage = ({
                         ))}
                     </div>
 
-                    {/* Action buttons side by side */}
                     <div className={styles.depositActions}>
                         <Button
                             type="primary"
                             className={styles.btnConfirmDeposit}
                             loading={depositLoading}
                             onClick={handleDeposit}
+                            disabled={!depositAmount || depositAmount < 10000}
                         >
-                            Confirm Deposit
+                            Pay with VNPay
                         </Button>
                         <Button
                             className={styles.btnCancelDeposit}
                             onClick={() => { setDepositOpen(false); setDepositAmount(null); }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Withdraw Modal */}
+            <Modal
+                title={
+                    <span className={styles.modalTitle}>
+                        <BankOutlined /> Withdraw Funds
+                    </span>
+                }
+                open={withdrawOpen}
+                onCancel={() => { setWithdrawOpen(false); setWithdrawAmount(null); setWithdrawBank(''); }}
+                footer={null}
+                centered
+            >
+                <div className={styles.depositContent}>
+                    <p className={styles.depositSubtitle}>Enter the amount and your bank account to withdraw.</p>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Amount (VND)</label>
+                        <Space.Compact className={styles.depositInputRow}>
+                            <InputNumber
+                                className={styles.depositInput}
+                                placeholder="Enter amount"
+                                value={withdrawAmount}
+                                onChange={setWithdrawAmount}
+                                min={10000}
+                                step={10000}
+                                controls={false}
+                                formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={(v) => v.replace(/,/g, '')}
+                            />
+                            <Button className={styles.currencyTag} disabled>VND</Button>
+                        </Space.Compact>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Bank Account</label>
+                        <Input
+                            placeholder="e.g. Vietcombank - 1234567890 - Nguyen Van A"
+                            value={withdrawBank}
+                            onChange={(e) => setWithdrawBank(e.target.value)}
+                        />
+                    </div>
+
+                    <div className={styles.depositActions}>
+                        <Button
+                            type="primary"
+                            className={styles.btnConfirmDeposit}
+                            loading={withdrawLoading}
+                            onClick={handleWithdraw}
+                            disabled={!withdrawAmount || withdrawAmount < 10000 || !withdrawBank.trim()}
+                        >
+                            Confirm Withdraw
+                        </Button>
+                        <Button
+                            className={styles.btnCancelDeposit}
+                            onClick={() => { setWithdrawOpen(false); setWithdrawAmount(null); setWithdrawBank(''); }}
                         >
                             Cancel
                         </Button>
@@ -403,13 +463,12 @@ const WalletPage = ({
                 {selectedTx && (
                     <div className={styles.detailContent}>
                         {[
-                            { label: 'Transaction Type', value: getTypeInfo(selectedTx.type).label },
+                            { label: 'Transaction ID', value: selectedTx.transactionId || selectedTx.id || '—' },
+                            { label: 'Type', value: getTypeInfo(selectedTx.transactionType || selectedTx.type).label },
                             { label: 'Amount', value: formatCurrency(selectedTx.amount) },
-                            { label: 'Balance Before', value: `${selectedTx.balanceBefore?.toLocaleString('en-US')} đ` },
-                            { label: 'Balance After', value: `${selectedTx.balanceAfter?.toLocaleString('en-US')} đ` },
-                            { label: 'Time', value: new Date(selectedTx.createdAt).toLocaleString('en-US') },
-                            { label: 'Transaction ID', value: selectedTx.id || '—' },
-                            { label: 'Note', value: selectedTx.note || '—' },
+                            { label: 'Status', value: selectedTx.status || '—' },
+                            { label: 'Time', value: selectedTx.createdAt ? new Date(selectedTx.createdAt).toLocaleString('vi-VN') : '—' },
+                            ...(selectedTx.bankAccount ? [{ label: 'Bank Account', value: selectedTx.bankAccount }] : []),
                         ].map(({ label, value }) => (
                             <div key={label} className={styles.detailRow}>
                                 <span className={styles.detailLabel}>{label}</span>

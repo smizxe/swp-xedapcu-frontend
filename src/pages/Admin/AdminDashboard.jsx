@@ -12,10 +12,11 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useAuth } from '../../context/AuthContext';
 import adminService from '../../services/adminService';
 import Header from '../../components/Header/Header';
+import AdminTabs from '../../components/Admin/AdminTabs';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, loading: authLoading } = useAuth();
 
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -27,12 +28,13 @@ const AdminDashboard = () => {
     const [selectedRole, setSelectedRole] = useState('');
 
     useEffect(() => {
+        if (authLoading) return;
         if (!isAdmin) {
-            navigate('/home');
+            navigate('/');
             return;
         }
         fetchUsers();
-    }, [isAdmin, navigate]);
+    }, [isAdmin, authLoading, navigate]);
 
     const fetchUsers = async () => {
         try {
@@ -94,6 +96,14 @@ const AdminDashboard = () => {
         }
     };
 
+    if (authLoading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
     if (!isAdmin) {
         return null;
     }
@@ -103,6 +113,8 @@ const AdminDashboard = () => {
             <Header />
 
             <Container maxWidth="lg" sx={{ py: 4 }}>
+                <AdminTabs />
+
                 {/* Header */}
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
                     <Box>
