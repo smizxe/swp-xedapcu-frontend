@@ -72,5 +72,6 @@ export const getReport = async (inspectionId) => {
 // ── Admin: get inspectors list ───────────────────────────
 export const getAllUsers = async () => {
     const response = await api.get(API_ENDPOINTS.ADMIN.GET_ALL_USERS);
-    return response.data;
+    // Backend returns a Spring Page object: { content: [...], totalElements, ... }
+    return Array.isArray(response.data) ? response.data : (response.data?.content || []);
 };

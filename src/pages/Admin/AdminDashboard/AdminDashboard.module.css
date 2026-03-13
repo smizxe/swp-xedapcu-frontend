@@ -1,0 +1,96 @@
+.glassCard {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glassCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(6, 78, 59, 0.06); /* Emerald tint */
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.cardInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.cardTitle {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    font-family: inherit !important;
+}
+
+.cardSubtitle {
+    font-size: 13px !important;
+    color: #94a3b8 !important;
+    font-family: inherit !important;
+}
+
+.iconWrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(6, 78, 59, 0.05); /* Emerald tint */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #064E3B;
+}
+
+.cardBody {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.cardValue {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    font-family: inherit !important;
+    line-height: 1 !important;
+}
+
+.trend {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.trendUp {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.trendDown {
+    background: rgba(239, 68, 68, 0.1);
+    color: #DC2626;
+}
+
+.chartPlaceholder {
+    margin-top: 32px;
+}

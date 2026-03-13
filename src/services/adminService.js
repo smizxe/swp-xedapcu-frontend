@@ -7,7 +7,8 @@ const adminService = {
      */
     getAllUsers: async () => {
         const response = await api.get('/admin/users');
-        return response.data;
+        // Backend returns a Spring Page object: { content: [...], totalElements, ... }
+        return Array.isArray(response.data) ? response.data : (response.data?.content || []);
     },
 
     /**
