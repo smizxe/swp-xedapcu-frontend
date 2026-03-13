@@ -1,0 +1,117 @@
+/* ═══════════════════════════════════════════════════════
+   CategoryManagement — Ekibdlo Design System
+   ═══════════════════════════════════════════════════════ */
+
+.pageWrapper {
+    background: transparent;
+    min-height: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #0f172a;
+    font-family: inherit !important;
+}
+
+.addButton {
+    background: linear-gradient(135deg, #064E3B 0%, #10B981 100%) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    font-family: inherit !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+}
+
+.addButton:hover {
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35) !important;
+    transform: translateY(-1px);
+}
+
+.tableCard {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 16px !important;
+    padding: 1rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+}
+
+.tableHeader {
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: #064E3B !important;
+    font-family: inherit !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    background: rgba(209, 250, 229, 0.4) !important;
+}
+
+.tableRow:hover {
+    background: rgba(209, 250, 229, 0.1);
+}
+
+.categoryName {
+    font-weight: 600 !important;
+    color: #1E293B !important;
+    font-family: inherit !important;
+}
+
+.deleteButton {
+    color: #DC2626 !important;
+}
+
+.deleteButton:hover {
+    background: rgba(220, 38, 38, 0.1) !important;
+}
+
+.dialog {
+    border-radius: 16px !important;
+    backdrop-filter: blur(10px) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+}
+
+.dialogTitle {
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: inherit !important;
+    color: #064E3B !important;
+}
+
+.cancelButton {
+    color: #64748B !important;
+    font-weight: 600 !important;
+    font-family: inherit !important;
+}
+
+.confirmButton {
+    background: #064E3B !important;
+    color: #ffffff !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    font-family: inherit !important;
+}
+
+.confirmButton:hover {
+    background: #043428 !important;
+}
+
+@media (max-width: 600px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import AdminTabs from '../../components/Admin/AdminTabs';
+import { useAuth } from '../../../context/AuthContext';
+// Removed AdminTabs
 import {
     Container,
     Box,
@@ -25,7 +25,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import categoryService from '../../services/categoryService';
+import categoryService from '../../../services/categoryService';
 import styles from './CategoryManagement.module.css';
 
 const CategoryManagement = () => {
@@ -103,7 +103,7 @@ const CategoryManagement = () => {
     return (
         <div className={styles.pageWrapper}>
             <Container maxWidth="md">
-                <AdminTabs />
+
                 {/* Header */}
                 <Box className={styles.header}>
                     <Typography variant="h3" className={styles.title}>

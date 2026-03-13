@@ -11,9 +11,9 @@ import MarketplaceContainer from './pages/Marketplace/MarketPlacePage/Marketplac
 import PostDetailPage from './pages/Marketplace/PostDetail/PostDetailPage.jsx';
 import BikeDetail from './pages/BikeDetail/BikeDetail.jsx';
 import BicyclePage from './pages/Bicycle/BicyclePage.jsx';
-import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
-import CategoryManagement from './pages/Admin/CategoryManagement.jsx';
-import InspectionAdminPage from './pages/Admin/InspectionAdminPage.jsx';
+import AdminDashboard from './pages/Admin/AdminDashboard/AdminDashboard.jsx';
+import CategoryManagement from './pages/Admin/CategoryManagement/CategoryManagement.jsx';
+import InspectionAdminPage from './pages/Admin/InspectionAdminPage/InspectionAdminPage.jsx';
 import SellerDashboard from './pages/Seller/SellerDashboard.jsx';
 import SellBike from './pages/SellBike/SellBike.jsx';
 import MyOrdersPage from './pages/Orders/MyOrdersPage.jsx';
@@ -23,6 +23,8 @@ import InspectorDashboard from './pages/Inspector/InspectorDashboard.jsx';
 import OAuth2Redirect from './pages/Auth/OAuth2Redirect.jsx';
 import MyPostsPage from './pages/MyPosts/MyPostsPage.jsx';
 import VnPayReturn from './pages/Wallet/VnPayReturn.jsx';
+import DashboardLayout from './layouts/DashboardLayout/DashboardLayout.jsx';
+import UsersManagement from './pages/Admin/UsersManagement/UsersManagement.jsx';
 
 function App() {
   return (
@@ -42,16 +44,23 @@ function App() {
           <Route path="/marketplace/:postId" element={<PostDetailPage />} />
           <Route path="/bicycles/:id" element={<BikeDetail />} />
           <Route path="/:userId/bicycles" element={<BicyclePage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/categories" element={<CategoryManagement />} />
-          <Route path="/admin/inspections" element={<InspectionAdminPage />} />
+          <Route path="/admin" element={<DashboardLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="categories" element={<CategoryManagement />} />
+            <Route path="inspections" element={<InspectionAdminPage />} />
+            <Route path="users" element={<UsersManagement />} />
+          </Route>
+
+          <Route path="/inspector" element={<DashboardLayout />}>
+            <Route index element={<InspectorDashboard />} />
+          </Route>
+
           <Route path="/seller" element={<SellerDashboard />} />
           <Route path="/sell" element={<SellBike />} />
           <Route path="/my-orders" element={<MyOrdersPage />} />
           <Route path="/my-sales" element={<MySalesPage />} />
           <Route path="/my-posts" element={<MyPostsPage />} />
           <Route path="/orders/:orderId" element={<OrderDetailPage />} />
-          <Route path="/inspector" element={<InspectorDashboard />} />
         </Routes>
       </AuthProvider>
     </Router>

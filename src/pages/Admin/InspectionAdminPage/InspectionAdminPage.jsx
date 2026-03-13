@@ -1,17 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 import {
     getAllBookings,
     assignInspector,
     getAllUsers,
-} from '../../service/inspectionService';
+} from '../../../service/inspectionService';
 import styles from './InspectionAdminPage.module.css';
 import {
     Shield, ClipboardList, User, Calendar, MapPin,
     Clock, CheckCircle, AlertCircle, Loader, X, UserCheck
 } from 'lucide-react';
-import AdminTabs from '../../components/Admin/AdminTabs';
+// Removed AdminTabs
 
 /* ── Status badge ──────────────────────────────────────── */
 const STATUS_CONFIG = {
@@ -63,24 +63,28 @@ function AssignModal({ booking, inspectors, onConfirm, onClose, loading }) {
                         {inspectors.length === 0 && (
                             <p className={styles.noInspectors}>No inspectors found. Assign INSPECTOR role to a user first.</p>
                         )}
-                        {inspectors.map((u) => (
-                            <div
-                                key={u.userId}
-                                className={`${styles.inspectorItem} ${selectedId === u.userId ? styles.inspectorItemSelected : ''}`}
-                                onClick={() => setSelectedId(u.userId)}
-                            >
-                                <div className={styles.inspectorAvatar}>
-                                    {(u.fullName || u.email || '?')[0].toUpperCase()}
+                        {inspectors.map((u) => {
+                            // Use email as unique key since userId may be null in some edge cases
+                            const uid = u.userId ?? u.email;
+                            return (
+                                <div
+                                    key={u.email}
+                                    className={`${styles.inspectorItem} ${selectedId === uid ? styles.inspectorItemSelected : ''}`}
+                                    onClick={() => setSelectedId(uid)}
+                                >
+                                    <div className={styles.inspectorAvatar}>
+                                        {(u.fullName || u.email || '?')[0].toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p className={styles.inspectorName}>{u.fullName || '—'}</p>
+                                        <p className={styles.inspectorEmail}>{u.email}</p>
+                                    </div>
+                                    {selectedId === uid && (
+                                        <CheckCircle size={16} className={styles.inspectorCheck} />
+                                    )}
                                 </div>
-                                <div>
-                                    <p className={styles.inspectorName}>{u.fullName || '—'}</p>
-                                    <p className={styles.inspectorEmail}>{u.email}</p>
-                                </div>
-                                {selectedId === u.userId && (
-                                    <CheckCircle size={16} className={styles.inspectorCheck} />
-                                )}
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -88,7 +92,11 @@ function AssignModal({ booking, inspectors, onConfirm, onClose, loading }) {
                     <button className={styles.assignCancelBtn} onClick={onClose}>Cancel</button>
                     <button
                         className={styles.assignConfirmBtn}
-                        onClick={() => onConfirm(booking.bookingId, selectedId)}
+                        onClick={() => {
+                            // Find the inspector and get their numeric userId for the API call
+                            const inspector = inspectors.find(u => (u.userId ?? u.email) === selectedId);
+                            onConfirm(booking.bookingId, inspector?.userId);
+                        }}
                         disabled={!selectedId || loading}
                     >
                         {loading ? <><Loader size={14} className={styles.spin} /> Assigning…</> : 'Assign Inspector'}
@@ -253,10 +261,6 @@ export default function InspectionAdminPage() {
 
     return (
         <div className={styles.page}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', paddingLeft: '24px', paddingRight: '24px' }}>
-                <AdminTabs />
-            </div>
-
             {/* Hero header */}
             <div className={styles.pageHeader}>
                 <div className={styles.pageHeaderLeft}>
