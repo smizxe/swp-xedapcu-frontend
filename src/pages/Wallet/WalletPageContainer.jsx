@@ -7,7 +7,8 @@ import WalletPage from './WalletPage';
 
 const WalletPageContainer = () => {
     const { user } = useAuth();
-    const userId = user?.userId;
+    // AuthContext stores user from 'user' key, but login (authService) stores userId in 'userId' key
+    const userId = user?.userId || Number(localStorage.getItem('userId')) || null;
 
     const [walletData, setWalletData] = useState(null);
     const [transactions, setTransactions] = useState([]);

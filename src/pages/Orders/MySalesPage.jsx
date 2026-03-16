@@ -111,7 +111,12 @@ function MySalesPage() {
                                     >
                                         Details
                                     </Button>
-                                    {(order.status === 'PENDING' || order.status === 'DEPOSIT_PAID') && (
+                                    {order.status === 'PENDING' && (
+                                        <Tag color="warning" style={{ marginLeft: 4 }}>
+                                            Awaiting Buyer Payment
+                                        </Tag>
+                                    )}
+                                    {order.status === 'DEPOSIT_PAID' && (
                                         <Button
                                             type="primary"
                                             icon={<CarOutlined />}

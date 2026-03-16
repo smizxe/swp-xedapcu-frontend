@@ -96,7 +96,14 @@ function PostDetailPage() {
             setIsDepositModalOpen(false);
             navigate('/my-orders');
         } catch (err) {
-            message.error(err.response?.data || 'Failed to place deposit.');
+            const errMsg = err.response?.data || 'Failed to place deposit.';
+            if (typeof errMsg === 'string' && errMsg.toLowerCase().includes('insufficient balance')) {
+                message.error('Insufficient wallet balance for deposit. Redirecting to wallet...');
+                setIsDepositModalOpen(false);
+                setTimeout(() => navigate('/wallet'), 1500);
+            } else {
+                message.error(errMsg);
+            }
         } finally {
             setIsSubmitting(false);
         }

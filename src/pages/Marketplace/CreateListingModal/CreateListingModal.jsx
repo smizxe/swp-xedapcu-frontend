@@ -1,13 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './CreateListingModal.module.css';
 import { createPost } from '../../../service/postService';
 import { createInspectionBooking } from '../../../service/inspectionService';
+import { uploadImage } from '../../../service/imageService';
 import {
-    X, ArrowRight, ArrowLeft, Bike, CheckCircle, Shield,
-    Calendar, Clock, MapPin, ChevronDown
+    X,
+    ArrowRight,
+    ArrowLeft,
+    Bike,
+    CheckCircle,
+    Shield,
+    Calendar,
+    Clock,
+    MapPin,
+    ChevronDown,
+    Camera,
+    ImagePlus,
+    Trash2,
+    Star,
 } from 'lucide-react';
 
-/* ── Step indicator ────────────────────────────────────── */
 function StepIndicator({ current }) {
     return (
         <div className={styles.stepIndicator}>
@@ -18,7 +30,6 @@ function StepIndicator({ current }) {
     );
 }
 
-/* ── STEP 1: Pick a bicycle ─────────────────────────────── */
 function StepPickBike({ bicycles, selectedId, onSelect }) {
     if (bicycles.length === 0) {
         return (
@@ -29,17 +40,20 @@ function StepPickBike({ bicycles, selectedId, onSelect }) {
             </div>
         );
     }
+
     return (
         <div className={styles.bikeGrid}>
             {bicycles.map((bike) => {
                 const id = bike.bicycleId ?? bike.id;
                 const isSelected = selectedId === id;
+
                 return (
                     <div
                         key={id}
                         className={`${styles.bikeCard} ${isSelected ? styles.bikeCardSelected : ''}`}
                         onClick={() => onSelect(id)}
-                        role="button" tabIndex={0}
+                        role="button"
+                        tabIndex={0}
                         onKeyDown={(e) => e.key === 'Enter' && onSelect(id)}
                         aria-pressed={isSelected}
                     >
@@ -65,15 +79,28 @@ function StepPickBike({ bicycles, selectedId, onSelect }) {
     );
 }
 
-/* ── STEP 2: Fill in listing details + inspection toggle ─── */
-/* Hour options 07:00–18:00 for the time selects */
 const HOUR_OPTIONS = Array.from({ length: 12 }, (_, i) => {
-    const h = i + 7; // 7 to 18
-    const label = `${String(h).padStart(2, '0')}:00`;
+    const hour = i + 7;
+    const label = `${String(hour).padStart(2, '0')}:00`;
     return { value: label, label };
 });
 
-function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionToggle, inspectionEnabled, inspectionForm, onInspectionChange, error }) {
+function StepFillDetails({
+    bicycles,
+    selectedId,
+    form,
+    onChange,
+    onInspectionToggle,
+    inspectionEnabled,
+    inspectionForm,
+    onInspectionChange,
+    error,
+    imageFiles,
+    thumbnailIndex,
+    onPickImages,
+    onRemoveImage,
+    onSetThumbnail,
+}) {
     const selectedBike = bicycles.find((b) => (b.bicycleId ?? b.id) === selectedId);
 
     return (
@@ -95,20 +122,27 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
                         Title <span className={styles.labelRequired}>*</span>
                     </label>
                     <input
-                        id="listing-title" name="title" type="text"
+                        id="listing-title"
+                        name="title"
+                        type="text"
                         className={styles.input}
-                        placeholder="e.g. Trek Domane SL 6 — Like New"
-                        value={form.title} onChange={onChange} autoFocus required
+                        placeholder="e.g. Trek Domane SL 6 - Like New"
+                        value={form.title}
+                        onChange={onChange}
+                        autoFocus
+                        required
                     />
                 </div>
 
                 <div className={styles.fieldGroup}>
                     <label className={styles.label} htmlFor="listing-description">Description</label>
                     <textarea
-                        id="listing-description" name="description"
+                        id="listing-description"
+                        name="description"
                         className={styles.textarea}
-                        placeholder="Describe the bicycle's condition, history, included accessories…"
-                        value={form.description} onChange={onChange}
+                        placeholder="Describe the bicycle's condition, history, included accessories..."
+                        value={form.description}
+                        onChange={onChange}
                     />
                 </div>
 
@@ -117,14 +151,82 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
                         Price (VND) <span className={styles.labelRequired}>*</span>
                     </label>
                     <input
-                        id="listing-price" name="price" type="number"
-                        min={0} step={50000} className={styles.input}
+                        id="listing-price"
+                        name="price"
+                        type="number"
+                        min={0}
+                        step={50000}
+                        className={styles.input}
                         placeholder="e.g. 12000000"
-                        value={form.price} onChange={onChange} required
+                        value={form.price}
+                        onChange={onChange}
+                        required
                     />
                 </div>
 
-                {/* ── Professional Inspection Toggle ──────────── */}
+                <div className={styles.fieldGroup}>
+                    <label className={styles.label}>
+                        <Camera size={13} /> Photos
+                    </label>
+                    <div className={styles.imagePickerCard}>
+                        <button
+                            type="button"
+                            className={styles.imagePickerBtn}
+                            onClick={onPickImages}
+                        >
+                            <ImagePlus size={18} />
+                            Add Images
+                        </button>
+                        <p className={styles.imagePickerHint}>
+                            Images stay in this form and will be uploaded right after the post is created.
+                        </p>
+
+                        {imageFiles.length > 0 ? (
+                            <div className={styles.imageGrid}>
+                                {imageFiles.map((image, index) => (
+                                    <div key={image.id} className={styles.imageCard}>
+                                        <img
+                                            src={image.previewUrl}
+                                            alt={image.file.name}
+                                            className={styles.imagePreview}
+                                        />
+                                        <div className={styles.imageMeta}>
+                                            <span className={styles.imageName} title={image.file.name}>
+                                                {image.file.name}
+                                            </span>
+                                            <span className={styles.imageSize}>
+                                                {(image.file.size / (1024 * 1024)).toFixed(2)} MB
+                                            </span>
+                                        </div>
+                                        <div className={styles.imageActionsRow}>
+                                            <button
+                                                type="button"
+                                                className={`${styles.imageActionBtn} ${thumbnailIndex === index ? styles.imageActionBtnActive : ''}`}
+                                                onClick={() => onSetThumbnail(index)}
+                                            >
+                                                <Star size={14} />
+                                                {thumbnailIndex === index ? 'Thumbnail' : 'Set Cover'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={styles.imageDeleteBtn}
+                                                onClick={() => onRemoveImage(index)}
+                                            >
+                                                <Trash2 size={14} />
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className={styles.imageEmptyState}>
+                                No images selected yet. You can still publish without photos.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 <div className={styles.inspectionToggleCard}>
                     <div className={styles.inspectionToggleHeader} onClick={onInspectionToggle}>
                         <div className={styles.inspectionToggleLeft}>
@@ -149,17 +251,17 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
                         </div>
                     </div>
 
-                    {/* Slide-down booking fields */}
                     <div className={`${styles.inspectionFields} ${inspectionEnabled ? styles.inspectionFieldsOpen : ''}`}>
                         <div className={styles.inspectionFieldsInner}>
-                            {/* Date + Fee badge row */}
                             <div className={styles.inspectionGrid}>
                                 <div className={styles.fieldGroup}>
                                     <label className={styles.label} htmlFor="booking-date">
                                         <Calendar size={13} /> Inspection Date
                                     </label>
                                     <input
-                                        id="booking-date" name="bookingDate" type="date"
+                                        id="booking-date"
+                                        name="bookingDate"
+                                        type="date"
                                         className={styles.input}
                                         value={inspectionForm.bookingDate}
                                         onChange={onInspectionChange}
@@ -177,7 +279,6 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
                                 </div>
                             </div>
 
-                            {/* Time row */}
                             <div className={styles.inspectionGrid}>
                                 <div className={styles.fieldGroup}>
                                     <label className={styles.label} htmlFor="start-time">
@@ -190,8 +291,8 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
                                         onChange={(e) => onInspectionChange(e, 'startTime')}
                                     >
                                         <option value="">-- Select --</option>
-                                        {HOUR_OPTIONS.map((o) => (
-                                            <option key={o.value} value={o.value}>{o.label}</option>
+                                        {HOUR_OPTIONS.map((option) => (
+                                            <option key={option.value} value={option.value}>{option.label}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -204,7 +305,7 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
                                         id="end-time"
                                         className={`${styles.input} ${styles.endTimeDisplay}`}
                                     >
-                                        {inspectionForm.endTime || '—'}
+                                        {inspectionForm.endTime || '-'}
                                     </div>
                                 </div>
                             </div>
@@ -214,7 +315,9 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
                                     <MapPin size={13} /> Inspection Location
                                 </label>
                                 <input
-                                    id="location" name="location" type="text"
+                                    id="location"
+                                    name="location"
+                                    type="text"
                                     className={styles.input}
                                     placeholder="e.g. 123 Nguyen Trai, District 1, HCMC"
                                     value={inspectionForm.location}
@@ -229,7 +332,6 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
                         </div>
                     </div>
                 </div>
-                {/* ─────────────────────────────────────────────── */}
 
                 {error && <p className={styles.errorMsg}>{error}</p>}
             </form>
@@ -237,7 +339,6 @@ function StepFillDetails({ bicycles, selectedId, form, onChange, onInspectionTog
     );
 }
 
-/* ── Success Modal ──────────────────────────────────────── */
 function SuccessModal({ withInspection, onClose }) {
     return (
         <div className={styles.successOverlay} onClick={onClose}>
@@ -253,7 +354,7 @@ function SuccessModal({ withInspection, onClose }) {
                         </p>
                         <div className={styles.successInspectionBadge}>
                             <Shield size={15} />
-                            Inspection Requested — Admin will assign an inspector shortly
+                            Inspection Requested - Admin will assign an inspector shortly
                         </div>
                     </>
                 ) : (
@@ -269,9 +370,14 @@ function SuccessModal({ withInspection, onClose }) {
     );
 }
 
-/* ── Main component ─────────────────────────────────────── */
 const EMPTY_FORM = { title: '', description: '', price: '' };
-const EMPTY_INSPECTION = { bookingDate: '', startTime: '', endTime: '', location: '', paidBy: 'SELLER' };
+const EMPTY_INSPECTION = {
+    bookingDate: '',
+    startTime: '',
+    endTime: '',
+    location: '',
+    paidBy: 'SELLER',
+};
 
 function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
     const [step, setStep] = useState(1);
@@ -283,8 +389,16 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
     const [submitting, setSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [submittedWithInspection, setSubmittedWithInspection] = useState(false);
+    const [imageFiles, setImageFiles] = useState([]);
+    const [thumbnailIndex, setThumbnailIndex] = useState(0);
+    const fileInputRef = useRef(null);
+
+    const clearImagePreviews = () => {
+        imageFiles.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    };
 
     const reset = () => {
+        clearImagePreviews();
         setStep(1);
         setSelectedBicycleId(null);
         setForm(EMPTY_FORM);
@@ -292,14 +406,33 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
         setInspectionForm(EMPTY_INSPECTION);
         setFormError('');
         setShowSuccess(false);
+        setImageFiles([]);
+        setThumbnailIndex(0);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
-    const handleClose = () => { reset(); onClose(); };
-    const handleOverlayClick = (e) => { if (e.target === e.currentTarget) handleClose(); };
+    useEffect(() => () => {
+        imageFiles.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    }, [imageFiles]);
+
+    const handleClose = () => {
+        reset();
+        onClose();
+    };
+
+    const handleOverlayClick = (e) => {
+        if (e.target === e.currentTarget) {
+            handleClose();
+        }
+    };
 
     const handleChange = (e) => {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-        if (formError) setFormError('');
+        if (formError) {
+            setFormError('');
+        }
     };
 
     const handleInspectionChange = (e, fieldOverride) => {
@@ -307,25 +440,96 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
         const value = e.target.value;
 
         if (field === 'startTime') {
-            // Auto-compute endTime = startTime + 1 hour, capped at 18:00
             const startHour = parseInt(value.split(':')[0], 10);
             const endHour = Math.min(startHour + 1, 18);
             const endTime = `${String(endHour).padStart(2, '0')}:00`;
             setInspectionForm((prev) => ({ ...prev, startTime: value, endTime }));
-        } else {
-            setInspectionForm((prev) => ({ ...prev, [field]: value }));
+            return;
+        }
+
+        setInspectionForm((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const goNext = () => {
+        if (selectedBicycleId) {
+            setFormError('');
+            setStep(2);
         }
     };
 
-    const goNext = () => { if (selectedBicycleId) { setFormError(''); setStep(2); } };
-    const goBack = () => { setFormError(''); setStep(1); };
+    const goBack = () => {
+        setFormError('');
+        setStep(1);
+    };
+
+    const handlePickImages = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImagesSelected = (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) {
+            return;
+        }
+
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        const hasInvalidFile = files.some(
+            (file) => !validImageTypes.includes(file.type) || file.size > 10 * 1024 * 1024
+        );
+
+        if (hasInvalidFile) {
+            setFormError('Only JPG, PNG, or WebP images up to 10MB are allowed.');
+            e.target.value = '';
+            return;
+        }
+
+        setImageFiles((prev) => [
+            ...prev,
+            ...files.map((file) => ({
+                id: `${file.name}-${file.size}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
+                file,
+                previewUrl: URL.createObjectURL(file),
+            })),
+        ]);
+        setFormError('');
+        e.target.value = '';
+    };
+
+    const handleRemoveImage = (indexToRemove) => {
+        setImageFiles((prev) => {
+            const nextImages = [...prev];
+            const [removedImage] = nextImages.splice(indexToRemove, 1);
+            if (removedImage) {
+                URL.revokeObjectURL(removedImage.previewUrl);
+            }
+            return nextImages;
+        });
+
+        setThumbnailIndex((prev) => {
+            if (indexToRemove === prev) {
+                return 0;
+            }
+            if (indexToRemove < prev) {
+                return prev - 1;
+            }
+            return prev;
+        });
+    };
 
     const handleSubmit = async () => {
-        if (!form.title.trim()) { setFormError('Title is required.'); return; }
-        if (!form.price || Number(form.price) <= 0) { setFormError('Please enter a valid price.'); return; }
+        if (!form.title.trim()) {
+            setFormError('Title is required.');
+            return;
+        }
+
+        if (!form.price || Number(form.price) <= 0) {
+            setFormError('Please enter a valid price.');
+            return;
+        }
 
         setSubmitting(true);
         setFormError('');
+
         try {
             const postResult = await createPost({
                 bicycleId: selectedBicycleId,
@@ -334,15 +538,28 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
                 price: Number(form.price),
             });
 
-            // BE returns: { message: "...", post: { postId: ... } }
-            const postId = postResult?.post?.postId
-                ?? postResult?.postId
-                ?? postResult?.id;
+            const postId =
+                postResult?.post?.postId ??
+                postResult?.postId ??
+                postResult?.id;
+
+            if (!postId) {
+                throw new Error('Could not retrieve post ID after creating the post.');
+            }
+
+            if (imageFiles.length > 0) {
+                const coverImage = imageFiles[thumbnailIndex] ?? imageFiles[0];
+                const uploadQueue = [
+                    coverImage,
+                    ...imageFiles.filter((_, index) => index !== thumbnailIndex),
+                ];
+
+                for (let index = 0; index < uploadQueue.length; index += 1) {
+                    await uploadImage(postId, uploadQueue[index].file, index === 0);
+                }
+            }
 
             if (inspectionEnabled && inspectionForm.bookingDate) {
-                if (!postId) {
-                    throw new Error('Could not retrieve post ID to book inspection.');
-                }
                 await createInspectionBooking({
                     postId,
                     bookingDate: inspectionForm.bookingDate,
@@ -356,8 +573,6 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
             setSubmittedWithInspection(inspectionEnabled);
             setShowSuccess(true);
 
-            // Only refresh marketplace if NO inspection — post with inspection
-            // should not appear until inspected & approved.
             if (!inspectionEnabled) {
                 onSuccess?.();
             }
@@ -373,20 +588,24 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
         }
     };
 
-    const handleSuccessClose = () => { reset(); onClose(); };
+    const handleSuccessClose = () => {
+        reset();
+        onClose();
+    };
 
-    if (!isOpen) return null;
+    if (!isOpen) {
+        return null;
+    }
 
     const stepTitles = {
         1: { title: 'Choose a Bicycle', sub: 'Select the bicycle you want to list for sale' },
-        2: { title: 'Listing Details', sub: 'Add title, description, price and optional inspection' },
+        2: { title: 'Listing Details', sub: 'Add title, description, price, photos and optional inspection' },
     };
 
     return (
         <>
             <div className={styles.overlay} onClick={handleOverlayClick} role="dialog" aria-modal="true">
                 <div className={styles.modal}>
-                    {/* Header */}
                     <div className={styles.header}>
                         <div className={styles.headerLeft}>
                             <StepIndicator current={step} />
@@ -398,8 +617,16 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
                         </button>
                     </div>
 
-                    {/* Step content */}
                     <div className={styles.step} key={step}>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            multiple
+                            className={styles.hiddenInput}
+                            onChange={handleImagesSelected}
+                        />
+
                         {step === 1 ? (
                             <StepPickBike
                                 bicycles={bicycles}
@@ -413,15 +640,19 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
                                 form={form}
                                 onChange={handleChange}
                                 inspectionEnabled={inspectionEnabled}
-                                onInspectionToggle={() => setInspectionEnabled((v) => !v)}
+                                onInspectionToggle={() => setInspectionEnabled((value) => !value)}
                                 inspectionForm={inspectionForm}
                                 onInspectionChange={handleInspectionChange}
                                 error={formError}
+                                imageFiles={imageFiles}
+                                thumbnailIndex={thumbnailIndex}
+                                onPickImages={handlePickImages}
+                                onRemoveImage={handleRemoveImage}
+                                onSetThumbnail={setThumbnailIndex}
                             />
                         )}
                     </div>
 
-                    {/* Footer */}
                     <div className={styles.actions}>
                         {step === 2 && (
                             <button className={styles.btnBack} onClick={goBack}>
@@ -434,14 +665,13 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
                             </button>
                         ) : (
                             <button className={styles.btnSubmit} onClick={handleSubmit} disabled={submitting}>
-                                {submitting ? 'Saving…' : 'Publish Listing'}
+                                {submitting ? 'Saving...' : 'Publish Listing'}
                             </button>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Success Modal */}
             {showSuccess && (
                 <SuccessModal withInspection={submittedWithInspection} onClose={handleSuccessClose} />
             )}

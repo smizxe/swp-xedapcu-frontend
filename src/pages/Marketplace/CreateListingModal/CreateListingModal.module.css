@@ -261,6 +261,10 @@
 
 .fieldGroup { display: flex; flex-direction: column; gap: 7px; }
 
+.hiddenInput {
+    display: none;
+}
+
 .label {
     display: flex;
     align-items: center;
@@ -307,6 +311,158 @@
 .input::placeholder, .textarea::placeholder {
     color: var(--color-text-muted, #64748B);
     opacity: 0.75;
+}
+
+.imagePickerCard {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1.5px solid rgba(226, 232, 240, 0.85);
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.imagePickerBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    align-self: flex-start;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(6, 78, 59, 0.16);
+    background: rgba(6, 78, 59, 0.08);
+    color: var(--color-primary, #064E3B);
+    font-family: var(--font-body);
+    font-size: 0.84rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 200ms ease;
+}
+
+.imagePickerBtn:hover {
+    background: rgba(6, 78, 59, 0.12);
+    border-color: rgba(6, 78, 59, 0.3);
+}
+
+.imagePickerHint {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    color: var(--color-text-muted, #64748B);
+    line-height: 1.5;
+}
+
+.imageGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.imageCard {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    background: rgba(248, 250, 252, 0.9);
+}
+
+.imagePreview {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 10px;
+    background: #e2e8f0;
+}
+
+.imageMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.imageName {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text, #1E293B);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.imageSize {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #64748B);
+}
+
+.imageActionsRow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.imageActionBtn,
+.imageDeleteBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 200ms ease;
+}
+
+.imageActionBtn {
+    border: 1px solid rgba(6, 78, 59, 0.14);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-primary, #064E3B);
+}
+
+.imageActionBtn:hover {
+    border-color: rgba(6, 78, 59, 0.28);
+    background: rgba(6, 78, 59, 0.08);
+}
+
+.imageActionBtnActive {
+    border-color: rgba(16, 185, 129, 0.36);
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+}
+
+.imageDeleteBtn {
+    border: 1px solid rgba(239, 68, 68, 0.18);
+    background: rgba(254, 242, 242, 0.92);
+    color: #dc2626;
+}
+
+.imageDeleteBtn:hover {
+    border-color: rgba(239, 68, 68, 0.32);
+    background: rgba(254, 226, 226, 0.95);
+}
+
+.imageEmptyState {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px dashed rgba(148, 163, 184, 0.6);
+    background: rgba(248, 250, 252, 0.8);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    color: var(--color-text-muted, #64748B);
+    text-align: center;
 }
 
 /* ── Inspection Toggle Card ──────────────────────────── */

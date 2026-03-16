@@ -186,7 +186,14 @@ function OrderDetailPage() {
                 )}
 
                 {/* Action Buttons */}
-                {(order.status === 'PENDING' || order.status === 'DEPOSIT_PAID') && (
+                {order.status === 'PENDING' && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Actions</h3>
+                        <Tag color="warning">Awaiting deposit payment from buyer</Tag>
+                    </div>
+                )}
+
+                {order.status === 'DEPOSIT_PAID' && (
                     <div className={styles.card}>
                         <h3 className={styles.sectionTitle}>Actions</h3>
                         <div className={styles.actionRow}>
