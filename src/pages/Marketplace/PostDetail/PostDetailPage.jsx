@@ -8,12 +8,13 @@ import {
     CalendarOutlined,
     LeftOutlined,
     RightOutlined,
+    EditOutlined,
 } from '@ant-design/icons';
 import styles from './PostDetailPage.module.css';
 import Header from '../../../components/Header/Header';
 import { getPostById } from '../../../service/postService';
 import { getPostImages } from '../../../service/imageService';
-import { isAuthenticated } from '../../../service/authService';
+import { getCurrentUser, isAuthenticated } from '../../../service/authService';
 import { createDeposit } from '../../../service/orderService';
 
 const STATUS_MAP = {
@@ -135,6 +136,9 @@ function PostDetailPage() {
 
     const statusInfo = STATUS_MAP[post.status] || STATUS_MAP.PENDING;
     const condition = post.bicycle?.conditionPercent;
+    const currentUserEmail = getCurrentUser()?.email?.toLowerCase() || '';
+    const sellerEmail = post.seller?.email?.toLowerCase() || '';
+    const isOwnPost = currentUserEmail && sellerEmail && currentUserEmail === sellerEmail;
 
     return (
         <div className={styles.pageWrapper}>
@@ -320,16 +324,38 @@ function PostDetailPage() {
 
                         {/* Actions */}
                         <div className={styles.actionRow}>
-                            <Button
-                                id="btn-place-deposit"
-                                type="primary"
-                                className={styles.btnDeposit}
-                                disabled={post.status !== 'ACTIVE'}
-                                onClick={handleDeposit}
-                                icon={<UserOutlined />}
-                            >
-                                {post.status === 'ACTIVE' ? 'Place Deposit' : statusInfo.label}
-                            </Button>
+                            {isOwnPost ? (
+                                <>
+                                    <Button
+                                        type="primary"
+                                        className={styles.btnDeposit}
+                                        onClick={() => navigate('/my-posts', { state: { editPostId: post.postId } })}
+                                        icon={<EditOutlined />}
+                                    >
+                                        Edit Post
+                                    </Button>
+                                    {!post.isInspected && (
+                                        <Button
+                                            className={styles.btnManage}
+                                            icon={<SafetyCertificateOutlined />}
+                                            onClick={() => navigate('/my-posts', { state: { verifyPostId: post.postId } })}
+                                        >
+                                            Request Verify
+                                        </Button>
+                                    )}
+                                </>
+                            ) : (
+                                <Button
+                                    id="btn-place-deposit"
+                                    type="primary"
+                                    className={styles.btnDeposit}
+                                    disabled={post.status !== 'ACTIVE'}
+                                    onClick={handleDeposit}
+                                    icon={<UserOutlined />}
+                                >
+                                    {post.status === 'ACTIVE' ? 'Place Deposit' : statusInfo.label}
+                                </Button>
+                            )}
                             <Button
                                 className={styles.btnBack}
                                 icon={<ArrowLeftOutlined />}

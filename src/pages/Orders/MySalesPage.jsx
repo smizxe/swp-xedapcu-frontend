@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Input } from 'antd';
-import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined } from '@ant-design/icons';
+import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
-import { getMySales, scheduleDelivery, reportBuyerNoShow } from '../../service/orderService';
+import { getMySales, scheduleDelivery, reportBuyerNoShow, cancelBySeller } from '../../service/orderService';
 import styles from './MySalesPage.module.css';
 
 // antd DatePicker showTime returns "YYYY-MM-DD HH:mm:ss", backend needs ISO "YYYY-MM-DDTHH:mm:ss"
@@ -26,15 +26,21 @@ function MySalesPage() {
     const [loading, setLoading] = useState(true);
     const [deliveryModal, setDeliveryModal] = useState({ open: false, orderId: null });
     const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryTime: null });
-    const fetchSales = () => {
+    const fetchSales = useCallback(() => {
         setLoading(true);
         getMySales()
             .then(setOrders)
             .catch(() => message.error('Failed to load sales.'))
             .finally(() => setLoading(false));
-    };
+    }, []);
 
-    useEffect(() => { fetchSales(); }, []);
+    useEffect(() => {
+        const timerId = window.setTimeout(() => {
+            fetchSales();
+        }, 0);
+
+        return () => window.clearTimeout(timerId);
+    }, [fetchSales]);
 
     const openDeliveryModal = (order) => {
         setDeliveryModal({ open: true, orderId: order.orderId });
@@ -49,6 +55,25 @@ function MySalesPage() {
         } catch (err) {
             message.error(err.response?.data || 'Failed to report buyer no-show.');
         }
+    };
+
+    const handleSellerCancel = (orderId) => {
+        Modal.confirm({
+            title: 'Cancel this sale?',
+            content: 'Buyer will be refunded and your account will receive a violation record.',
+            okText: 'Cancel Sale',
+            okButtonProps: { danger: true },
+            cancelText: 'Keep Sale',
+            onOk: async () => {
+                try {
+                    await cancelBySeller(orderId);
+                    message.success('Sale cancelled. Buyer refunded and violation recorded.');
+                    fetchSales();
+                } catch (err) {
+                    message.error(err.response?.data || 'Failed to cancel sale.');
+                }
+            },
+        });
     };
 
     const handleSchedule = async () => {
@@ -117,23 +142,41 @@ function MySalesPage() {
                                         </Tag>
                                     )}
                                     {order.status === 'DEPOSIT_PAID' && (
-                                        <Button
-                                            type="primary"
-                                            icon={<CarOutlined />}
-                                            className={styles.btnSchedule}
-                                            onClick={() => openDeliveryModal(order)}
-                                        >
-                                            Schedule Delivery
-                                        </Button>
+                                        <>
+                                            <Button
+                                                type="primary"
+                                                icon={<CarOutlined />}
+                                                className={styles.btnSchedule}
+                                                onClick={() => openDeliveryModal(order)}
+                                            >
+                                                Schedule Delivery
+                                            </Button>
+                                            <Button
+                                                danger
+                                                icon={<CloseCircleOutlined />}
+                                                onClick={() => handleSellerCancel(order.orderId)}
+                                            >
+                                                Cancel Order
+                                            </Button>
+                                        </>
                                     )}
                                     {order.status === 'IN_DELIVERY' && (
-                                        <Button
-                                            danger
-                                            icon={<WarningOutlined />}
-                                            onClick={() => handleReportBuyerNoShow(order.orderId)}
-                                        >
-                                            Buyer No-Show
-                                        </Button>
+                                        <>
+                                            <Button
+                                                danger
+                                                icon={<WarningOutlined />}
+                                                onClick={() => handleReportBuyerNoShow(order.orderId)}
+                                            >
+                                                Buyer No-Show
+                                            </Button>
+                                            <Button
+                                                danger
+                                                icon={<CloseCircleOutlined />}
+                                                onClick={() => handleSellerCancel(order.orderId)}
+                                            >
+                                                Cancel Order
+                                            </Button>
+                                        </>
                                     )}
                                 </div>
                             </div>

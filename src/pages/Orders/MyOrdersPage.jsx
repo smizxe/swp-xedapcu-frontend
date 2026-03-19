@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Empty } from 'antd';
+import { Spin, Button, Tag, message, Empty, Modal } from 'antd';
 import {
     ShoppingOutlined,
     EyeOutlined,
@@ -28,24 +28,39 @@ function MyOrdersPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchOrders = () => {
+    const fetchOrders = useCallback(() => {
         setLoading(true);
         getMyOrders()
             .then(setOrders)
             .catch(() => message.error('Failed to load orders.'))
             .finally(() => setLoading(false));
-    };
+    }, []);
 
-    useEffect(() => { fetchOrders(); }, []);
+    useEffect(() => {
+        const timerId = window.setTimeout(() => {
+            fetchOrders();
+        }, 0);
+
+        return () => window.clearTimeout(timerId);
+    }, [fetchOrders]);
 
     const handleCancel = async (orderId) => {
-        try {
-            await cancelDeposit(orderId);
-            message.success('Deposit cancelled.');
-            fetchOrders();
-        } catch (err) {
-            message.error(err.response?.data || 'Cancel failed.');
-        }
+        Modal.confirm({
+            title: 'Cancel this order?',
+            content: 'If you cancel now, your deposit will be forfeited and transferred to the seller.',
+            okText: 'Cancel Order',
+            okButtonProps: { danger: true },
+            cancelText: 'Keep Order',
+            onOk: async () => {
+                try {
+                    await cancelDeposit(orderId);
+                    message.success('Order cancelled. Deposit forfeited.');
+                    fetchOrders();
+                } catch (err) {
+                    message.error(err.response?.data || 'Cancel failed.');
+                }
+            },
+        });
     };
 
     const handleComplete = async (orderId) => {
@@ -112,13 +127,13 @@ function MyOrdersPage() {
                                     >
                                         Details
                                     </Button>
-                                    {(order.status === 'PENDING' || order.status === 'DEPOSIT_PAID') && (
+                                    {order.status === 'DEPOSIT_PAID' && (
                                         <Button
                                             danger
                                             icon={<CloseCircleOutlined />}
                                             onClick={() => handleCancel(order.orderId)}
                                         >
-                                            Cancel Deposit
+                                            Cancel Order
                                         </Button>
                                     )}
                                     {order.status === 'IN_DELIVERY' && (

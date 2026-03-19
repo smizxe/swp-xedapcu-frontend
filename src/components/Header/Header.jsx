@@ -170,9 +170,15 @@ const Header = ({ variant = 'light' }) => {
                                         </button>
                                         <button
                                             className={styles.dropdownItem}
+                                            onClick={() => navigate('/my-posts')}
+                                        >
+                                            My Posts
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
                                             onClick={() => navigate(`/${userId}/bicycles`)}
                                         >
-                                            My Bicycle
+                                            My Bicycles
                                         </button>
                                     </>
                                 )}

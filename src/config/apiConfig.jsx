@@ -59,6 +59,7 @@ export const API_ENDPOINTS = {
     MY_SALES: '/api/orders/my-sales',
     GET_BY_ID: (id) => `/api/orders/${id}`,
     CANCEL: (id) => `/api/orders/${id}/cancel`,
+    SELLER_CANCEL: (id) => `/api/orders/${id}/seller-cancel`,
     SCHEDULE_DELIVERY: (id) => `/api/orders/${id}/schedule-delivery`,
     COMPLETE: (id) => `/api/orders/${id}/complete`,
     REPORT_BUYER_NO_SHOW: (id) => `/api/orders/${id}/report-buyer-no-show`,

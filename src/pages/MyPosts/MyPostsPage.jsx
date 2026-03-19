@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Empty, Popconfirm } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Spin, Button, Tag, message, Empty, Popconfirm, Modal, Input } from 'antd';
 import {
     FileTextOutlined,
     EyeOutlined,
@@ -10,57 +10,118 @@ import {
     StopOutlined,
     CheckCircleOutlined,
     PictureOutlined,
+    SafetyCertificateOutlined,
+    SendOutlined,
 } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
 import ImageUploadModal from '../../components/ImageUpload/ImageUploadModal';
-import { getMyPosts, deletePost, updatePostStatus } from '../../service/postService';
+import InspectionBookingModal from '../Orders/InspectionBookingModal';
+import { getMyPosts, deletePost, updatePost, updatePostStatus } from '../../service/postService';
 import styles from './MyPostsPage.module.css';
 
 const STATUS_COLOR = {
-    DRAFT:    'default',
-    PENDING:  'warning',
+    DRAFT: 'default',
+    PENDING: 'warning',
     APPROVED: 'success',
     REJECTED: 'error',
-    SOLD:     'purple',
-    HIDDEN:   'default',
+    SOLD: 'purple',
+    HIDDEN: 'default',
 };
 
 const STATUS_LABEL = {
-    DRAFT:    'Bản nháp',
-    PENDING:  'Chờ duyệt',
-    APPROVED: 'Đã duyệt',
-    REJECTED: 'Từ chối',
-    SOLD:     'Đã bán',
-    HIDDEN:   'Ẩn',
+    DRAFT: 'Draft',
+    PENDING: 'Pending Review',
+    APPROVED: 'Approved',
+    REJECTED: 'Rejected',
+    SOLD: 'Sold',
+    HIDDEN: 'Hidden',
 };
 
-const formatPrice = (v) => (v != null ? Number(v).toLocaleString('vi-VN') : '—');
+const formatPrice = (value) => (value != null ? Number(value).toLocaleString('vi-VN') : '—');
+
+const canRequestReview = (status) => status === 'DRAFT' || status === 'REJECTED';
 
 export default function MyPostsPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionId, setActionId] = useState(null);
     const [imageModal, setImageModal] = useState({ open: false, postId: null });
+    const [verifyModal, setVerifyModal] = useState({ open: false, postId: null });
+    const [editModal, setEditModal] = useState({ open: false, post: null });
+    const [editForm, setEditForm] = useState({ title: '', description: '', price: '' });
+    const [savingEdit, setSavingEdit] = useState(false);
 
-    const fetchPosts = () => {
+    const fetchPosts = useCallback(() => {
         setLoading(true);
         getMyPosts()
             .then(setPosts)
-            .catch(() => message.error('Không thể tải danh sách bài đăng.'))
+            .catch(() => message.error('Failed to load your posts.'))
             .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
+        const timerId = window.setTimeout(() => {
+            fetchPosts();
+        }, 0);
+
+        return () => window.clearTimeout(timerId);
+    }, [fetchPosts]);
+
+    useEffect(() => {
+        if (loading) return;
+
+        const editPostId = location.state?.editPostId;
+        const verifyPostId = location.state?.verifyPostId;
+
+        if (!editPostId && !verifyPostId) return;
+
+        const targetId = editPostId ?? verifyPostId;
+        const targetPost = posts.find((post) => post.postId === targetId);
+
+        if (!targetPost) {
+            message.warning('The selected post could not be found.');
+            navigate(location.pathname, { replace: true });
+            return;
+        }
+
+        if (editPostId) {
+            openEditModal(targetPost);
+        } else {
+            openVerifyModal(targetPost);
+        }
+
+        navigate(location.pathname, { replace: true });
+    }, [loading, location.pathname, location.state, navigate, posts]);
+
+    const openEditModal = (post) => {
+        setEditModal({ open: true, post });
+        setEditForm({
+            title: post.title || '',
+            description: post.description || '',
+            price: post.price ?? '',
+        });
     };
 
-    useEffect(() => { fetchPosts(); }, []);
+    const closeEditModal = () => {
+        setEditModal({ open: false, post: null });
+        setEditForm({ title: '', description: '', price: '' });
+        setSavingEdit(false);
+    };
+
+    const openVerifyModal = (post) => {
+        setVerifyModal({ open: true, postId: post.postId });
+    };
 
     const handleDelete = async (postId) => {
         setActionId(postId);
         try {
             await deletePost(postId);
-            message.success('Đã xóa bài đăng.');
+            message.success('Post deleted.');
             fetchPosts();
         } catch (err) {
-            message.error(err.response?.data || 'Xóa thất bại.');
+            message.error(err.response?.data || 'Delete failed.');
         } finally {
             setActionId(null);
         }
@@ -71,12 +132,63 @@ export default function MyPostsPage() {
         setActionId(postId);
         try {
             await updatePostStatus(postId, nextStatus);
-            message.success(nextStatus === 'HIDDEN' ? 'Đã ẩn bài.' : 'Đã hiện lại bài.');
+            message.success(nextStatus === 'HIDDEN' ? 'Post hidden.' : 'Post visible again.');
             fetchPosts();
         } catch (err) {
-            message.error(err.response?.data || 'Cập nhật thất bại.');
+            message.error(err.response?.data || 'Status update failed.');
         } finally {
             setActionId(null);
+        }
+    };
+
+    const handleRequestReview = async (postId) => {
+        setActionId(postId);
+        try {
+            await updatePostStatus(postId, 'PENDING');
+            message.success('Review request submitted.');
+            fetchPosts();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to submit review request.');
+        } finally {
+            setActionId(null);
+        }
+    };
+
+    const handleSaveEdit = async () => {
+        const targetPost = editModal.post;
+        const title = editForm.title.trim();
+        const description = editForm.description.trim();
+        const price = Number(editForm.price);
+
+        if (!targetPost?.postId || !targetPost?.bicycle?.bicycleId) {
+            message.error('This post is missing bicycle information.');
+            return;
+        }
+
+        if (!title) {
+            message.warning('Please enter a post title.');
+            return;
+        }
+
+        if (!Number.isFinite(price) || price <= 0) {
+            message.warning('Please enter a valid price.');
+            return;
+        }
+
+        setSavingEdit(true);
+        try {
+            await updatePost(targetPost.postId, {
+                bicycleId: targetPost.bicycle.bicycleId,
+                title,
+                description,
+                price,
+            });
+            message.success('Post updated.');
+            closeEditModal();
+            fetchPosts();
+        } catch (err) {
+            message.error(err.response?.data || 'Update failed.');
+            setSavingEdit(false);
         }
     };
 
@@ -87,15 +199,17 @@ export default function MyPostsPage() {
                 <div className={styles.pageHeader}>
                     <div>
                         <h1 className={styles.pageTitle}><FileTextOutlined /> My Posts</h1>
-                        <p className={styles.pageSubtitle}>Quản lý các bài đăng xe của bạn.</p>
+                        <p className={styles.pageSubtitle}>
+                            Manage your marketplace posts separately from your bicycles.
+                        </p>
                     </div>
                     <Button
                         type="primary"
                         icon={<PlusOutlined />}
                         className={styles.btnCreate}
-                        onClick={() => navigate('/sell')}
+                        onClick={() => navigate('/marketplace')}
                     >
-                        Đăng xe mới
+                        Create New Post
                     </Button>
                 </div>
 
@@ -103,15 +217,15 @@ export default function MyPostsPage() {
                     <div className={styles.loadingWrapper}><Spin size="large" /></div>
                 ) : posts.length === 0 ? (
                     <div className={styles.emptyWrapper}>
-                        <Empty description="Bạn chưa có bài đăng nào." />
+                        <Empty description="You do not have any posts yet." />
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
                             className={styles.btnCreate}
-                            onClick={() => navigate('/sell')}
+                            onClick={() => navigate('/marketplace')}
                             style={{ marginTop: 16 }}
                         >
-                            Đăng xe ngay
+                            Go Create One
                         </Button>
                     </div>
                 ) : (
@@ -123,7 +237,7 @@ export default function MyPostsPage() {
                                         <span className={styles.postId}>Post #{post.postId}</span>
                                         {post.isInspected && (
                                             <span className={styles.inspectedBadge}>
-                                                <CheckCircleOutlined /> Đã kiểm định
+                                                <CheckCircleOutlined /> Verified
                                             </span>
                                         )}
                                     </div>
@@ -133,7 +247,7 @@ export default function MyPostsPage() {
                                 </div>
 
                                 <div className={styles.postBody}>
-                                    <h3 className={styles.postTitle}>{post.title || 'Không có tiêu đề'}</h3>
+                                    <h3 className={styles.postTitle}>{post.title || 'Untitled Post'}</h3>
                                     {post.bicycle && (
                                         <p className={styles.bikeInfo}>
                                             {post.bicycle.brand} · {post.bicycle.frameSize} · {post.bicycle.conditionPercent}%
@@ -155,14 +269,14 @@ export default function MyPostsPage() {
                                         icon={<EyeOutlined />}
                                         onClick={() => navigate(`/marketplace/${post.postId}`)}
                                     >
-                                        Xem
+                                        View
                                     </Button>
                                     <Button
                                         size="small"
                                         icon={<EditOutlined />}
-                                        onClick={() => navigate(`/sell?edit=${post.postId}`)}
+                                        onClick={() => openEditModal(post)}
                                     >
-                                        Sửa
+                                        Edit
                                     </Button>
                                     <Button
                                         size="small"
@@ -171,6 +285,25 @@ export default function MyPostsPage() {
                                     >
                                         Photos
                                     </Button>
+                                    {canRequestReview(post.status) && (
+                                        <Button
+                                            size="small"
+                                            icon={<SendOutlined />}
+                                            loading={actionId === post.postId}
+                                            onClick={() => handleRequestReview(post.postId)}
+                                        >
+                                            Request Review
+                                        </Button>
+                                    )}
+                                    {!post.isInspected && post.status !== 'SOLD' && (
+                                        <Button
+                                            size="small"
+                                            icon={<SafetyCertificateOutlined />}
+                                            onClick={() => openVerifyModal(post)}
+                                        >
+                                            Request Verify
+                                        </Button>
+                                    )}
                                     {(post.status === 'APPROVED' || post.status === 'HIDDEN') && (
                                         <Button
                                             size="small"
@@ -178,15 +311,15 @@ export default function MyPostsPage() {
                                             loading={actionId === post.postId}
                                             onClick={() => handleHide(post.postId, post.status)}
                                         >
-                                            {post.status === 'HIDDEN' ? 'Hiện lại' : 'Ẩn bài'}
+                                            {post.status === 'HIDDEN' ? 'Show Post' : 'Hide Post'}
                                         </Button>
                                     )}
                                     <Popconfirm
-                                        title="Xóa bài đăng?"
-                                        description="Bạn chắc chắn muốn xóa? Hành động này không thể hoàn tác."
+                                        title="Delete this post?"
+                                        description="This action cannot be undone."
                                         onConfirm={() => handleDelete(post.postId)}
-                                        okText="Xóa"
-                                        cancelText="Hủy"
+                                        okText="Delete"
+                                        cancelText="Cancel"
                                         okButtonProps={{ danger: true }}
                                     >
                                         <Button
@@ -195,7 +328,7 @@ export default function MyPostsPage() {
                                             icon={<DeleteOutlined />}
                                             loading={actionId === post.postId}
                                         >
-                                            Xóa
+                                            Delete
                                         </Button>
                                     </Popconfirm>
                                 </div>
@@ -210,6 +343,60 @@ export default function MyPostsPage() {
                 postId={imageModal.postId}
                 onClose={() => setImageModal({ open: false, postId: null })}
             />
+
+            <InspectionBookingModal
+                open={verifyModal.open}
+                postId={verifyModal.postId}
+                onClose={() => setVerifyModal({ open: false, postId: null })}
+                onSuccess={() => {
+                    setVerifyModal({ open: false, postId: null });
+                    fetchPosts();
+                }}
+            />
+
+            <Modal
+                title="Edit Post"
+                open={editModal.open}
+                onOk={handleSaveEdit}
+                onCancel={closeEditModal}
+                okText="Save Changes"
+                cancelText="Cancel"
+                confirmLoading={savingEdit}
+            >
+                <div className={styles.editFormGroup}>
+                    <label className={styles.editLabel}>Post Title</label>
+                    <Input
+                        value={editForm.title}
+                        placeholder="Enter post title"
+                        onChange={(event) => setEditForm((prev) => ({ ...prev, title: event.target.value }))}
+                    />
+                </div>
+
+                <div className={styles.editFormGroup}>
+                    <label className={styles.editLabel}>Price (VND)</label>
+                    <Input
+                        value={editForm.price}
+                        placeholder="Enter sale price"
+                        inputMode="numeric"
+                        onChange={(event) => setEditForm((prev) => ({ ...prev, price: event.target.value }))}
+                    />
+                </div>
+
+                <div className={styles.editFormGroup}>
+                    <label className={styles.editLabel}>Description</label>
+                    <Input.TextArea
+                        value={editForm.description}
+                        placeholder="Describe your bicycle"
+                        autoSize={{ minRows: 4, maxRows: 7 }}
+                        onChange={(event) => setEditForm((prev) => ({ ...prev, description: event.target.value }))}
+                    />
+                </div>
+
+                <p className={styles.editHint}>
+                    Bicycle specs stay linked to your selected bicycle. This form updates the post title,
+                    description, and selling price.
+                </p>
+            </Modal>
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spin, Button, Tag, message, Descriptions, Modal, DatePicker, Input } from 'antd';
 import {
@@ -11,7 +11,8 @@ import {
 } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
-import { getOrderById, cancelDeposit, completeOrder, scheduleDelivery, reportBuyerNoShow, reportSellerNoShow } from '../../service/orderService';
+import { getCurrentUser } from '../../service/authService';
+import { getOrderById, cancelDeposit, cancelBySeller, completeOrder, scheduleDelivery, reportBuyerNoShow, reportSellerNoShow } from '../../service/orderService';
 import InspectionBookingModal from './InspectionBookingModal';
 import styles from './OrderDetailPage.module.css';
 
@@ -42,27 +43,62 @@ function OrderDetailPage() {
     const [deliveryOpen, setDeliveryOpen] = useState(false);
     const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryTime: null });
 
-    const fetchOrder = () => {
+    const fetchOrder = useCallback(() => {
         setLoading(true);
         getOrderById(orderId)
             .then(setOrder)
             .catch(() => message.error('Failed to load order details.'))
             .finally(() => setLoading(false));
-    };
+    }, [orderId]);
 
-    useEffect(() => { fetchOrder(); }, [orderId]);
+    useEffect(() => {
+        const timerId = window.setTimeout(() => {
+            fetchOrder();
+        }, 0);
 
-    const isSeller = user && order?.seller && user.email === order.seller.email;
-    const isBuyer = user && order?.buyer && user.email === order.buyer.email;
+        return () => window.clearTimeout(timerId);
+    }, [fetchOrder]);
+
+    const currentUserEmail = (user?.email || getCurrentUser()?.email || '').toLowerCase();
+    const isSeller = !!(currentUserEmail && order?.seller && currentUserEmail === order.seller.email?.toLowerCase());
+    const isBuyer = !!(currentUserEmail && order?.buyer && currentUserEmail === order.buyer.email?.toLowerCase());
 
     const handleCancel = async () => {
-        try {
-            await cancelDeposit(orderId);
-            message.success('Deposit cancelled.');
-            fetchOrder();
-        } catch (err) {
-            message.error(err.response?.data || 'Cancel failed.');
-        }
+        Modal.confirm({
+            title: 'Cancel this order?',
+            content: 'If you cancel now, your deposit will be forfeited and transferred to the seller.',
+            okText: 'Cancel Order',
+            okButtonProps: { danger: true },
+            cancelText: 'Keep Order',
+            onOk: async () => {
+                try {
+                    await cancelDeposit(orderId);
+                    message.success('Order cancelled. Deposit forfeited.');
+                    fetchOrder();
+                } catch (err) {
+                    message.error(err.response?.data || 'Cancel failed.');
+                }
+            },
+        });
+    };
+
+    const handleSellerCancel = async () => {
+        Modal.confirm({
+            title: 'Cancel this sale?',
+            content: 'Buyer will be refunded and your account will receive a violation record.',
+            okText: 'Cancel Sale',
+            okButtonProps: { danger: true },
+            cancelText: 'Keep Sale',
+            onOk: async () => {
+                try {
+                    await cancelBySeller(orderId);
+                    message.success('Sale cancelled. Buyer refunded and violation recorded.');
+                    fetchOrder();
+                } catch (err) {
+                    message.error(err.response?.data || 'Cancel failed.');
+                }
+            },
+        });
     };
 
     const handleComplete = async () => {
@@ -216,6 +252,13 @@ function OrderDetailPage() {
                                     >
                                         Schedule Delivery
                                     </Button>
+                                    <Button
+                                        danger
+                                        icon={<CloseCircleOutlined />}
+                                        onClick={handleSellerCancel}
+                                    >
+                                        Cancel Order
+                                    </Button>
                                 </>
                             )}
                             {isBuyer && (
@@ -224,7 +267,7 @@ function OrderDetailPage() {
                                     icon={<CloseCircleOutlined />}
                                     onClick={handleCancel}
                                 >
-                                    Cancel Deposit
+                                    Cancel Order
                                 </Button>
                             )}
                         </div>
@@ -255,13 +298,22 @@ function OrderDetailPage() {
                                 </>
                             )}
                             {isSeller && (
-                                <Button
-                                    danger
-                                    icon={<WarningOutlined />}
-                                    onClick={handleReportBuyerNoShow}
-                                >
-                                    Report Buyer No-Show
-                                </Button>
+                                <>
+                                    <Button
+                                        danger
+                                        icon={<WarningOutlined />}
+                                        onClick={handleReportBuyerNoShow}
+                                    >
+                                        Report Buyer No-Show
+                                    </Button>
+                                    <Button
+                                        danger
+                                        icon={<CloseCircleOutlined />}
+                                        onClick={handleSellerCancel}
+                                    >
+                                        Cancel Order
+                                    </Button>
+                                </>
                             )}
                         </div>
                     </div>

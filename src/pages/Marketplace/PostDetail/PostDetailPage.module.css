@@ -391,6 +391,22 @@
     font-size: 14px;
 }
 
+.btnManage {
+    height: 50px;
+    padding: 0 20px;
+    border-radius: 12px !important;
+    font-weight: 600;
+    font-size: 14px;
+    border-color: rgba(45, 90, 39, 0.25) !important;
+    color: #2D5A27 !important;
+    background: #fff !important;
+}
+
+.btnManage:hover {
+    border-color: #2D5A27 !important;
+    color: #1a3d17 !important;
+}
+
 /* ===== Meta Info ===== */
 .metaRow {
     display: flex;

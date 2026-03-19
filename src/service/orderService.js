@@ -34,6 +34,11 @@ export const cancelDeposit = async (orderId) => {
     return response.data;
 };
 
+export const cancelBySeller = async (orderId) => {
+    const response = await api.delete(API_ENDPOINTS.ORDERS.SELLER_CANCEL(orderId));
+    return response.data;
+};
+
 export const getMyOrders = async () => {
     const response = await api.get(API_ENDPOINTS.ORDERS.MY_ORDERS);
     return response.data;
