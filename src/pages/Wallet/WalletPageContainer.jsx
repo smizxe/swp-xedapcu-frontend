@@ -1,50 +1,78 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { useAuth } from '../../context/AuthContext';
+import { getCurrentUser } from '../../service/authService';
 import { getBalance, getTransactions, withdraw } from '../../service/walletService';
 import { createDepositUrl } from '../../service/paymentService';
 import WalletPage from './WalletPage';
 
 const WalletPageContainer = () => {
     const { user } = useAuth();
-    // AuthContext stores user from 'user' key, but login (authService) stores userId in 'userId' key
-    const userId = user?.userId || Number(localStorage.getItem('userId')) || null;
+    const currentUser = getCurrentUser();
+    const storedUser = (() => {
+        try {
+            const raw = localStorage.getItem('user');
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    })();
+    const resolvedUserId = user?.userId
+        || user?.id
+        || storedUser?.userId
+        || storedUser?.id
+        || currentUser?.userId
+        || localStorage.getItem('userId');
+    const userId = resolvedUserId != null && resolvedUserId !== '' ? Number(resolvedUserId) : null;
 
     const [walletData, setWalletData] = useState(null);
     const [transactions, setTransactions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchWalletData = async () => {
-        if (!userId) return;
+    const fetchWalletData = useCallback(async () => {
+        if (!userId) {
+            setWalletData({ balance: 0 });
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(true);
         try {
             const balance = await getBalance(userId);
             setWalletData({ balance: Number(balance) || 0 });
-        } catch (err) {
+        } catch {
             message.error('Failed to load wallet data.');
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [userId]);
 
-    const fetchTransactions = async () => {
-        if (!userId) return;
+    const fetchTransactions = useCallback(async () => {
+        if (!userId) {
+            setTransactions([]);
+            return;
+        }
         try {
             const data = await getTransactions(userId, 0, 50);
             // Backend returns a Spring Page object
             const content = data.content || data;
             setTransactions(Array.isArray(content) ? content : []);
-        } catch (err) {
+        } catch {
             message.error('Failed to load transaction history.');
-        }
-    };
-
-    useEffect(() => {
-        if (userId) {
-            fetchWalletData();
-            fetchTransactions();
+            setTransactions([]);
         }
     }, [userId]);
+
+    useEffect(() => {
+        if (!userId) {
+            setWalletData({ balance: 0 });
+            setTransactions([]);
+            setIsLoading(false);
+            return;
+        }
+
+        fetchWalletData();
+        fetchTransactions();
+    }, [userId, fetchWalletData, fetchTransactions]);
 
     const handleDeposit = async (amount) => {
         if (!userId) {

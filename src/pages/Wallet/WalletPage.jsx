@@ -30,10 +30,13 @@ const { Option } = Select;
 const TRANSACTION_TYPES = [
     { value: 'DEPOSIT', label: 'Deposit', color: '#2D5A27', bg: '#e8f5e9' },
     { value: 'WITHDRAW', label: 'Withdraw', color: '#c0392b', bg: '#fdecea' },
+    { value: 'WITHDRAWAL', label: 'Withdraw', color: '#c0392b', bg: '#fdecea' },
     { value: 'ORDER_DEPOSIT', label: 'Order Deposit', color: '#c0392b', bg: '#fdecea' },
     { value: 'ORDER_PAYMENT', label: 'Order Payment', color: '#c0392b', bg: '#fdecea' },
     { value: 'REFUND', label: 'Refund', color: '#2D5A27', bg: '#e8f5e9' },
     { value: 'COMPENSATION', label: 'Compensation', color: '#2D5A27', bg: '#e8f5e9' },
+    { value: 'TRANSFER', label: 'Transfer', color: '#2f54eb', bg: '#edf2ff' },
+    { value: 'FEE', label: 'Fee', color: '#8c6d1f', bg: '#fff7e6' },
 ];
 
 const STATUS_COLOR = {
