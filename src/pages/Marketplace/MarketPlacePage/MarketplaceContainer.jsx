@@ -3,6 +3,7 @@ import { message } from 'antd';
 import MarketplacePage from './MarketplacePage';
 import { getAllPosts, searchPosts } from '../../../service/postService';
 import { getAllCategories } from '../../../service/categoryService';
+import { getPostImages, getThumbnail } from '../../../service/imageService';
 import { isAuthenticated } from '../../../service/authService';
 import { getMyBicycles } from '../../../service/bicycleService';
 
@@ -48,7 +49,7 @@ function MarketplaceContainer() {
     }, []);
 
     // Fetch posts whenever page changes
-    const fetchPosts = useCallback(async (page = 0, query = '', category = undefined) => {
+    const fetchPosts = useCallback(async (page = 0, query = '') => {
         setIsLoading(true);
         try {
             let data;
@@ -82,20 +83,48 @@ function MarketplaceContainer() {
                 return [...active, ...sold];
             };
 
+            const attachThumbnailUrls = async (list) => {
+                return Promise.all(list.map(async (post) => {
+                    try {
+                        const thumbnailResponse = await getThumbnail(post.postId);
+                        const thumbnailUrl =
+                            thumbnailResponse?.data?.imageUrl ||
+                            thumbnailResponse?.imageUrl ||
+                            null;
+
+                        if (thumbnailUrl) {
+                            return { ...post, thumbnailUrl };
+                        }
+                    } catch {
+                        // Fall back to the first uploaded image below.
+                    }
+
+                    try {
+                        const imagesResponse = await getPostImages(post.postId);
+                        const images = imagesResponse?.data || [];
+                        return { ...post, thumbnailUrl: images[0]?.imageUrl || null };
+                    } catch {
+                        return { ...post, thumbnailUrl: null };
+                    }
+                }));
+            };
+
             // Handle both plain array and the backend's paginated shape:
             // { posts: [], totalItems: N, totalPages: N, currentPage: N }
             if (Array.isArray(data)) {
                 const sorted = applySort(data);
-                setApiPosts(sorted);
-                setTotalElements(sorted.length);
+                const postsWithThumbnails = await attachThumbnailUrls(sorted);
+                setApiPosts(postsWithThumbnails);
+                setTotalElements(postsWithThumbnails.length);
             } else {
                 // Paginated response — backend uses "posts" + "totalItems"
                 const raw = data.posts || data.content || [];
                 const sorted = applySort(raw);
-                setApiPosts(sorted);
-                setTotalElements(data.totalItems ?? data.totalElements ?? sorted.length);
+                const postsWithThumbnails = await attachThumbnailUrls(sorted);
+                setApiPosts(postsWithThumbnails);
+                setTotalElements(data.totalItems ?? data.totalElements ?? postsWithThumbnails.length);
             }
-        } catch (err) {
+        } catch {
             message.error('Failed to load listings. Please try again.');
         } finally {
             setIsLoading(false);

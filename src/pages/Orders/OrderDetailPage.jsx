@@ -12,7 +12,7 @@ import {
 import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
 import { getCurrentUser } from '../../service/authService';
-import { getOrderById, cancelDeposit, cancelBySeller, completeOrder, scheduleDelivery, reportBuyerNoShow, reportSellerNoShow } from '../../service/orderService';
+import { getOrderById, cancelDeposit, cancelBySeller, completeOrder, scheduleDelivery, reportBuyerNoShow, reportSellerNoShow, getSavedOrderDeliveryAddress, saveOrderDeliveryAddress } from '../../service/orderService';
 import InspectionBookingModal from './InspectionBookingModal';
 import styles from './OrderDetailPage.module.css';
 
@@ -62,6 +62,16 @@ function OrderDetailPage() {
     const currentUserEmail = (user?.email || getCurrentUser()?.email || '').toLowerCase();
     const isSeller = !!(currentUserEmail && order?.seller && currentUserEmail === order.seller.email?.toLowerCase());
     const isBuyer = !!(currentUserEmail && order?.buyer && currentUserEmail === order.buyer.email?.toLowerCase());
+    const canManageDelivery = isSeller && ['DEPOSIT_PAID', 'IN_DELIVERY'].includes(order?.status);
+    const savedDeliveryAddress = order?.orderId ? getSavedOrderDeliveryAddress(order.orderId) || '' : '';
+    const currentDeliveryAddress = deliveryForm.deliveryAddress || savedDeliveryAddress;
+
+    const handleDeliveryAddressChange = (value) => {
+        setDeliveryForm((prev) => ({ ...prev, deliveryAddress: value }));
+        if (order?.orderId) {
+            saveOrderDeliveryAddress(order.orderId, value);
+        }
+    };
 
     const handleCancel = async () => {
         Modal.confirm({
@@ -132,13 +142,13 @@ function OrderDetailPage() {
     };
 
     const handleScheduleDelivery = async () => {
-        if (!deliveryForm.deliveryAddress || !deliveryForm.deliveryTime) {
+        if (!currentDeliveryAddress || !deliveryForm.deliveryTime) {
             message.warning('Please fill in all delivery details.');
             return;
         }
         try {
             await scheduleDelivery(orderId, {
-                deliveryAddress: deliveryForm.deliveryAddress,
+                deliveryAddress: currentDeliveryAddress,
                 deliveryTime: deliveryForm.deliveryTime,
             });
             message.success('Delivery scheduled!');
@@ -221,6 +231,21 @@ function OrderDetailPage() {
                     </div>
                 )}
 
+                {canManageDelivery && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Delivery Address</h3>
+                        <p className={styles.helperText}>
+                            Enter or update the buyer delivery address here. This value will be reused when you schedule delivery in this browser.
+                        </p>
+                        <Input.TextArea
+                            rows={3}
+                            placeholder="Enter the buyer delivery address"
+                            value={currentDeliveryAddress}
+                            onChange={(e) => handleDeliveryAddressChange(e.target.value)}
+                        />
+                    </div>
+                )}
+
                 {/* Action Buttons */}
                 {order.status === 'PENDING' && (
                     <div className={styles.card}>
@@ -246,7 +271,10 @@ function OrderDetailPage() {
                                     <Button
                                         icon={<CarOutlined />}
                                         onClick={() => {
-                                            setDeliveryForm({ deliveryAddress: '', deliveryTime: null });
+                                            setDeliveryForm({
+                                                deliveryAddress: getSavedOrderDeliveryAddress(order.orderId) || currentDeliveryAddress || '',
+                                                deliveryTime: null,
+                                            });
                                             setDeliveryOpen(true);
                                         }}
                                     >
@@ -332,9 +360,9 @@ function OrderDetailPage() {
                 <div className={styles.formGroup}>
                     <label className={styles.formLabel}>Delivery Address</label>
                     <Input
-                        placeholder="Enter delivery address"
-                        value={deliveryForm.deliveryAddress}
-                        onChange={(e) => setDeliveryForm((prev) => ({ ...prev, deliveryAddress: e.target.value }))}
+                        placeholder="Buyer address will auto-fill here if it was saved in this browser"
+                        value={currentDeliveryAddress}
+                        onChange={(e) => handleDeliveryAddressChange(e.target.value)}
                     />
                 </div>
                 <div className={styles.formGroup}>

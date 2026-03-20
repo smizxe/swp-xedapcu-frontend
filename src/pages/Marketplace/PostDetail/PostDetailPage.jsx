@@ -18,11 +18,16 @@ import { getCurrentUser, isAuthenticated } from '../../../service/authService';
 import { createDeposit } from '../../../service/orderService';
 
 const STATUS_MAP = {
+    APPROVED: { label: 'Available', className: styles.statusActive },
     ACTIVE: { label: 'Available', className: styles.statusActive },
     PENDING: { label: 'Pending', className: styles.statusPending },
+    REJECTED: { label: 'Rejected', className: styles.statusSold },
+    HIDDEN: { label: 'Hidden', className: styles.statusReserved },
     RESERVED: { label: 'Reserved', className: styles.statusReserved },
     SOLD: { label: 'Sold', className: styles.statusSold },
 };
+
+const isPurchasableStatus = (status) => status === 'APPROVED' || status === 'ACTIVE';
 
 const formatPrice = (price) =>
     price != null ? price.toLocaleString('vi-VN') : '—';
@@ -349,11 +354,11 @@ function PostDetailPage() {
                                     id="btn-place-deposit"
                                     type="primary"
                                     className={styles.btnDeposit}
-                                    disabled={post.status !== 'ACTIVE'}
+                                    disabled={!isPurchasableStatus(post.status)}
                                     onClick={handleDeposit}
                                     icon={<UserOutlined />}
                                 >
-                                    {post.status === 'ACTIVE' ? 'Place Deposit' : statusInfo.label}
+                                    {isPurchasableStatus(post.status) ? 'Place Deposit' : statusInfo.label}
                                 </Button>
                             )}
                             <Button

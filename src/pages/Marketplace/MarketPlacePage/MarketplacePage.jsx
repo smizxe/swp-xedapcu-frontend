@@ -13,8 +13,11 @@ import { isAuthenticated } from '../../../service/authService';
 const { Option } = Select;
 
 const STATUS_MAP = {
+    APPROVED: { label: 'Available', className: styles.statusActive },
     ACTIVE: { label: 'Active', className: styles.statusActive },
     PENDING: { label: 'Pending', className: styles.statusPending },
+    REJECTED: { label: 'Rejected', className: styles.statusSold },
+    HIDDEN: { label: 'Hidden', className: styles.statusReserved },
     RESERVED: { label: 'Reserved', className: styles.statusReserved },
     SOLD: { label: 'Sold', className: styles.statusSold },
 };
@@ -88,8 +91,8 @@ const MarketplacePage = ({
                                 allowClear
                             >
                                 {categories.map((cat) => (
-                                    <Option key={cat.id} value={cat.id}>
-                                        {cat.categoryName}
+                                    <Option key={cat.categoryId ?? cat.id} value={cat.categoryId ?? cat.id}>
+                                        {cat.name ?? cat.categoryName}
                                     </Option>
                                 ))}
                             </Select>
@@ -181,7 +184,15 @@ const MarketplacePage = ({
                                     >
                                         {/* Image area */}
                                         <div className={styles.cardImageWrapper}>
-                                            <span className={styles.cardImageIcon}></span>
+                                            {post.thumbnailUrl ? (
+                                                <img
+                                                    src={post.thumbnailUrl}
+                                                    alt={post.title}
+                                                    className={styles.cardImage}
+                                                />
+                                            ) : (
+                                                <span className={styles.cardImageIcon}></span>
+                                            )}
 
                                             <span className={`${styles.statusBadge} ${getStatusClass(post.status)}`}>
                                                 {getStatusLabel(post.status)}

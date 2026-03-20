@@ -8,6 +8,8 @@ const api = axios.create({
     },
 });
 
+const DELIVERY_ADDRESS_CACHE_KEY = 'orderDeliveryAddressCache';
+
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -15,6 +17,31 @@ api.interceptors.request.use((config) => {
     }
     return config;
 });
+
+const readDeliveryAddressCache = () => {
+    try {
+        return JSON.parse(localStorage.getItem(DELIVERY_ADDRESS_CACHE_KEY) || '{}');
+    } catch {
+        return {};
+    }
+};
+
+const writeDeliveryAddressCache = (cache) => {
+    localStorage.setItem(DELIVERY_ADDRESS_CACHE_KEY, JSON.stringify(cache));
+};
+
+export const saveOrderDeliveryAddress = (orderId, deliveryAddress) => {
+    if (!orderId || !deliveryAddress?.trim()) return;
+    const cache = readDeliveryAddressCache();
+    cache[String(orderId)] = deliveryAddress.trim();
+    writeDeliveryAddressCache(cache);
+};
+
+export const getSavedOrderDeliveryAddress = (orderId) => {
+    if (!orderId) return '';
+    const cache = readDeliveryAddressCache();
+    return cache[String(orderId)] || '';
+};
 
 export const createDeposit = async (postId, deliveryAddress) => {
     // Note: Once the backend team updates the API to use @RequestBody DepositRequest,
@@ -26,6 +53,7 @@ export const createDeposit = async (postId, deliveryAddress) => {
     const response = await api.post(API_ENDPOINTS.ORDERS.DEPOSIT, payload, {
         params: { postId },
     });
+    saveOrderDeliveryAddress(response.data?.orderId, deliveryAddress);
     return response.data;
 };
 
@@ -56,6 +84,7 @@ export const getOrderById = async (orderId) => {
 
 export const scheduleDelivery = async (orderId, data) => {
     const response = await api.put(API_ENDPOINTS.ORDERS.SCHEDULE_DELIVERY(orderId), data);
+    saveOrderDeliveryAddress(orderId, data?.deliveryAddress);
     return response.data;
 };
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Input } from 'antd';
 import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
-import { getMySales, scheduleDelivery, reportBuyerNoShow, cancelBySeller } from '../../service/orderService';
+import { getMySales, scheduleDelivery, reportBuyerNoShow, cancelBySeller, getSavedOrderDeliveryAddress } from '../../service/orderService';
 import styles from './MySalesPage.module.css';
 
 // antd DatePicker showTime returns "YYYY-MM-DD HH:mm:ss", backend needs ISO "YYYY-MM-DDTHH:mm:ss"
@@ -43,8 +43,12 @@ function MySalesPage() {
     }, [fetchSales]);
 
     const openDeliveryModal = (order) => {
+        const savedAddress = getSavedOrderDeliveryAddress(order.orderId);
         setDeliveryModal({ open: true, orderId: order.orderId });
-        setDeliveryForm({ deliveryAddress: order.deliveryAddress || '', deliveryTime: null });
+        setDeliveryForm({
+            deliveryAddress: savedAddress || order.deliveryAddress || '',
+            deliveryTime: null,
+        });
     };
 
     const handleReportBuyerNoShow = async (orderId) => {
@@ -196,7 +200,7 @@ function MySalesPage() {
                 <div className={styles.formGroup}>
                     <label className={styles.formLabel}>Delivery Address</label>
                     <Input
-                        placeholder="Enter delivery address"
+                        placeholder="Buyer address will auto-fill here if it was saved in this browser"
                         value={deliveryForm.deliveryAddress}
                         onChange={(e) => setDeliveryForm((prev) => ({ ...prev, deliveryAddress: e.target.value }))}
                     />
