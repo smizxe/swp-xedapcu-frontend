@@ -1,43 +1,61 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+
+const normalizeRole = (role) => String(role || '').replace(/^ROLE_/, '').toUpperCase();
+
+const getPostLoginPath = (role) => {
+    const normalizedRole = normalizeRole(role);
+
+    if (normalizedRole === 'ADMIN') {
+        return '/admin';
+    }
+
+    if (normalizedRole === 'INSPECTOR') {
+        return '/inspector';
+    }
+
+    return '/';
+};
 
 export default function OAuth2Redirect() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { login } = useAuth();
-    const [error, setError] = useState('');
+    const token = searchParams.get('token');
+    const email = searchParams.get('email');
+    const role = searchParams.get('role');
+    const hasOAuthError = !token || !email;
 
     useEffect(() => {
-        const token = searchParams.get('token');
-        const email = searchParams.get('email');
-        const role = searchParams.get('role');
-
-        if (token && email) {
-            // Store authToken for service interceptors
-            localStorage.setItem('authToken', token);
-            localStorage.setItem('userEmail', email);
-
-            // Save to AuthContext
-            login({
-                token,
-                user: { email, role: role || 'BUYER' },
-            });
-
-            navigate('/', { replace: true });
-        } else {
-            setError('Google login failed. Missing token.');
+        if (hasOAuthError) {
+            return;
         }
-    }, [searchParams, login, navigate]);
 
-    if (error) {
+        // Store authToken for service interceptors
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('userEmail', email);
+        if (role) {
+            localStorage.setItem('userRole', role);
+        }
+
+        // Save to AuthContext
+        login({
+            token,
+            user: { email, role: role || 'BUYER' },
+        });
+
+        navigate(getPostLoginPath(role), { replace: true });
+    }, [email, hasOAuthError, login, navigate, role, token]);
+
+    if (hasOAuthError) {
         return (
             <div style={{
                 minHeight: '100vh', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', flexDirection: 'column', gap: 16,
                 fontFamily: 'sans-serif', background: '#f7f8f5',
             }}>
-                <p style={{ color: '#e74c3c', fontWeight: 600 }}>{error}</p>
+                <p style={{ color: '#e74c3c', fontWeight: 600 }}>Google login failed. Missing token.</p>
                 <button
                     onClick={() => navigate('/login')}
                     style={{

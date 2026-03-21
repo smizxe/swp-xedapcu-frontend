@@ -6,6 +6,22 @@ import { useAuth } from '../../../context/AuthContext';
 import { loginUser } from '../../../service/authService';
 import styles from './LoginPage.module.css';
 
+const normalizeRole = (role) => String(role || '').replace(/^ROLE_/, '').toUpperCase();
+
+const getPostLoginPath = (role, fallbackPath) => {
+  const normalizedRole = normalizeRole(role);
+
+  if (normalizedRole === 'ADMIN') {
+    return '/admin';
+  }
+
+  if (normalizedRole === 'INSPECTOR') {
+    return '/inspector';
+  }
+
+  return fallbackPath;
+};
+
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,12 +48,7 @@ function LoginPage() {
         user: { email: response.email, role: response.role, userId: response.userId },
       });
 
-      const userRole = response.role;
-      if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate(from, { replace: true });
-      }
+      navigate(getPostLoginPath(response.role, from), { replace: true });
     } catch (err) {
       setError(err.response?.data || 'Invalid email or password');
     } finally {
