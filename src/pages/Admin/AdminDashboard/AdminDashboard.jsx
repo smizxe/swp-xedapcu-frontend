@@ -14,9 +14,6 @@ const StatCard = ({ title, value, subtitle }) => (
                 <Typography className={styles.cardTitle}>{title}</Typography>
                 <Typography className={styles.cardSubtitle}>{subtitle}</Typography>
             </div>
-            <div className={styles.iconWrapper}>
-                <Icon size={24} className={styles.cardIcon} />
-            </div>
         </div>
         <div className={styles.cardBody}>
             <Typography className={styles.cardValue}>{value}</Typography>
