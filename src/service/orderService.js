@@ -44,15 +44,11 @@ export const getSavedOrderDeliveryAddress = (orderId) => {
 };
 
 export const createDeposit = async (postId, deliveryAddress) => {
-    // Note: Once the backend team updates the API to use @RequestBody DepositRequest,
-    // the params: { postId } can be removed. Leaving it here for backward compatibility.
     const payload = {
         postId,
         deliveryAddress: deliveryAddress || ''
     };
-    const response = await api.post(API_ENDPOINTS.ORDERS.DEPOSIT, payload, {
-        params: { postId },
-    });
+    const response = await api.post(API_ENDPOINTS.ORDERS.DEPOSIT, payload);
     saveOrderDeliveryAddress(response.data?.orderId, deliveryAddress);
     return response.data;
 };
@@ -85,6 +81,21 @@ export const getOrderById = async (orderId) => {
 export const scheduleDelivery = async (orderId, data) => {
     const response = await api.put(API_ENDPOINTS.ORDERS.SCHEDULE_DELIVERY(orderId), data);
     saveOrderDeliveryAddress(orderId, data?.deliveryAddress);
+    return response.data;
+};
+
+export const sellerConfirmDelivery = async (orderId) => {
+    const response = await api.put(API_ENDPOINTS.ORDERS.SELLER_CONFIRM_DELIVERY(orderId));
+    return response.data;
+};
+
+export const adminAssignInspector = async (orderId, inspectorId) => {
+    const response = await api.post(API_ENDPOINTS.ORDERS.ADMIN_ASSIGN_INSPECTOR(orderId, inspectorId));
+    return response.data;
+};
+
+export const inspectorMarkDelivered = async (orderId) => {
+    const response = await api.post(API_ENDPOINTS.ORDERS.INSPECTOR_MARK_DELIVERED(orderId));
     return response.data;
 };
 

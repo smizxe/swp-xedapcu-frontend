@@ -15,6 +15,9 @@ import styles from './MyOrdersPage.module.css';
 const STATUS_COLOR = {
     PENDING: 'processing',
     DEPOSIT_PAID: 'processing',
+    PENDING_SELLER_CONFIRMATION: 'gold',
+    PENDING_ADMIN_REVIEW: 'gold',
+    ASSIGNED_TO_INSPECTOR: 'cyan',
     IN_DELIVERY: 'warning',
     COMPLETED: 'success',
     CANCELLED: 'default',
@@ -113,6 +116,16 @@ function MyOrdersPage() {
                                         <span>Deposit: <strong>{formatPrice(order.depositAmount)} VND</strong></span>
                                         <span>Total: <strong>{formatPrice(order.totalAmount)} VND</strong></span>
                                     </div>
+                                    {order.deliveryAddress && (
+                                        <p className={styles.dateMeta}>
+                                            Delivery address: {order.deliveryAddress}
+                                        </p>
+                                    )}
+                                    {order.assignedInspector && (
+                                        <p className={styles.dateMeta}>
+                                            Assigned inspector: {order.assignedInspector.fullName || order.assignedInspector.email}
+                                        </p>
+                                    )}
                                     {order.createdAt && (
                                         <p className={styles.dateMeta}>
                                             Placed on {new Date(order.createdAt).toLocaleDateString('vi-VN')}
@@ -135,6 +148,13 @@ function MyOrdersPage() {
                                         >
                                             Cancel Order
                                         </Button>
+                                    )}
+                                    {['PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW', 'ASSIGNED_TO_INSPECTOR'].includes(order.status) && (
+                                        <Tag color={order.status === 'ASSIGNED_TO_INSPECTOR' ? 'cyan' : 'gold'}>
+                                            {order.status === 'ASSIGNED_TO_INSPECTOR'
+                                                ? 'Inspector assigned. Waiting for delivery progress.'
+                                                : 'Seller confirmed. Waiting for admin/inspector flow.'}
+                                        </Tag>
                                     )}
                                     {order.status === 'IN_DELIVERY' && (
                                         <>

@@ -5,10 +5,12 @@ import {
     getMyRequests,
     confirmBooking,
 } from '../../service/inspectionService';
+import { getCurrentUser } from '../../service/authService';
+import { getOrderById, inspectorMarkDelivered } from '../../service/orderService';
 import InspectionReportModal from './InspectionReportModal';
 import {
     Shield, ClipboardList, CheckCircle, Clock, AlertCircle,
-    Calendar, MapPin, Loader, ChevronRight, FileText, User
+    Calendar, MapPin, Loader, ChevronRight, FileText, User, Truck
 } from 'lucide-react';
 
 /* ── Status badge ──────────────────────────────────────── */
@@ -154,6 +156,11 @@ export default function InspectorDashboard() {
     const [error, setError]       = useState('');
     const [confirming, setConfirming] = useState(null);
     const [reportTarget, setReportTarget] = useState(null);
+    const [deliveryOrderId, setDeliveryOrderId] = useState('');
+    const [deliveryOrder, setDeliveryOrder] = useState(null);
+    const [deliveryLoading, setDeliveryLoading] = useState(false);
+    const [deliveryActionLoading, setDeliveryActionLoading] = useState(false);
+    const [deliveryError, setDeliveryError] = useState('');
 
     const fetchData = useCallback(async () => {
         setLoading(true); setError('');
@@ -190,8 +197,47 @@ export default function InspectorDashboard() {
         fetchData();
     };
 
+    const handleLookupDeliveryOrder = async () => {
+        const value = deliveryOrderId.trim();
+        if (!value) {
+            setDeliveryError('Enter an order ID first.');
+            return;
+        }
+        try {
+            setDeliveryLoading(true);
+            setDeliveryError('');
+            const order = await getOrderById(value);
+            setDeliveryOrder(order);
+        } catch (e) {
+            setDeliveryOrder(null);
+            setDeliveryError(e?.response?.data || 'Failed to load order.');
+        } finally {
+            setDeliveryLoading(false);
+        }
+    };
+
+    const handleStartShipping = async () => {
+        if (!deliveryOrder?.orderId) return;
+        try {
+            setDeliveryActionLoading(true);
+            setDeliveryError('');
+            const updated = await inspectorMarkDelivered(deliveryOrder.orderId);
+            setDeliveryOrder(updated);
+        } catch (e) {
+            setDeliveryError(e?.response?.data || 'Failed to update delivery status.');
+        } finally {
+            setDeliveryActionLoading(false);
+        }
+    };
+
     const pendingCount = bookings.filter((b) => b.status === 'PENDING').length;
     const activeCount  = requests.filter((r) => r.status !== 'COMPLETED').length;
+    const currentInspectorEmail = String(getCurrentUser()?.email || '').toLowerCase();
+    const canStartShipping = !!(
+        deliveryOrder &&
+        deliveryOrder.status === 'ASSIGNED_TO_INSPECTOR' &&
+        deliveryOrder.assignedInspector?.email?.toLowerCase() === currentInspectorEmail
+    );
 
     return (
         <div className={styles.page}>
@@ -231,6 +277,55 @@ export default function InspectorDashboard() {
                     <div className={styles.statValue}>{requests.filter((r) => r.status === 'COMPLETED').length}</div>
                     <div className={styles.statLabel}>Completed</div>
                 </div>
+            </div>
+
+            <div className={styles.deliveryPanel}>
+                <div className={styles.deliveryPanelHeader}>
+                    <div>
+                        <h2 className={styles.deliveryPanelTitle}>Delivery Orders</h2>
+                        <p className={styles.deliveryPanelSub}>
+                            Backend chưa có API list task giao hàng theo inspector, nên hiện tại tra cứu và xử lý theo `orderId`.
+                        </p>
+                    </div>
+                </div>
+                <div className={styles.deliveryLookupRow}>
+                    <input
+                        className={styles.deliveryInput}
+                        placeholder="Enter order ID"
+                        value={deliveryOrderId}
+                        onChange={(e) => setDeliveryOrderId(e.target.value)}
+                    />
+                    <button className={styles.deliveryLookupBtn} onClick={handleLookupDeliveryOrder} disabled={deliveryLoading}>
+                        {deliveryLoading ? <><Loader size={14} className={styles.spin} /> Loading...</> : 'Lookup Order'}
+                    </button>
+                </div>
+                {deliveryError && <div className={styles.deliveryError}>{deliveryError}</div>}
+                {deliveryOrder && (
+                    <div className={styles.deliveryCard}>
+                        <div className={styles.deliveryStatusRow}>
+                            <span className={`${styles.badge} ${styles.badgeAssigned}`}>{deliveryOrder.status}</span>
+                            <span className={styles.cardId}>Order #{deliveryOrder.orderId}</span>
+                        </div>
+                        <h3 className={styles.cardTitle}>{deliveryOrder.postTitle || deliveryOrder.post?.title || 'Untitled order'}</h3>
+                        {deliveryOrder.deliveryAddress && (
+                            <div className={styles.metaRow}><MapPin size={13} /><span>{deliveryOrder.deliveryAddress}</span></div>
+                        )}
+                        {deliveryOrder.assignedInspector && (
+                            <div className={styles.metaRow}><User size={13} /><span>{deliveryOrder.assignedInspector.fullName || deliveryOrder.assignedInspector.email}</span></div>
+                        )}
+                        {canStartShipping ? (
+                            <button className={styles.deliveryActionBtn} onClick={handleStartShipping} disabled={deliveryActionLoading}>
+                                {deliveryActionLoading
+                                    ? <><Loader size={14} className={styles.spin} /> Updating...</>
+                                    : <><Truck size={14} /> Start Shipping</>}
+                            </button>
+                        ) : (
+                            <div className={styles.confirmedNote}>
+                                <AlertCircle size={13} /> Open the assigned order and wait until it is assigned to your account before starting shipping.
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Tabs */}

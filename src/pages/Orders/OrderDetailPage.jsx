@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Descriptions, Modal, DatePicker, Input } from 'antd';
+import { Spin, Button, Tag, message, Descriptions, Modal, DatePicker, Input, Select } from 'antd';
 import {
     ArrowLeftOutlined,
     ScheduleOutlined,
@@ -8,11 +8,13 @@ import {
     CloseCircleOutlined,
     CheckCircleOutlined,
     WarningOutlined,
+    ClockCircleOutlined,
 } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
 import { getCurrentUser } from '../../service/authService';
-import { getOrderById, cancelDeposit, cancelBySeller, completeOrder, scheduleDelivery, reportBuyerNoShow, reportSellerNoShow, getSavedOrderDeliveryAddress, saveOrderDeliveryAddress } from '../../service/orderService';
+import adminService from '../../services/adminService';
+import { getOrderById, cancelDeposit, cancelBySeller, completeOrder, scheduleDelivery, sellerConfirmDelivery, adminAssignInspector, inspectorMarkDelivered, reportBuyerNoShow, reportSellerNoShow, getSavedOrderDeliveryAddress, saveOrderDeliveryAddress } from '../../service/orderService';
 import InspectionBookingModal from './InspectionBookingModal';
 import styles from './OrderDetailPage.module.css';
 
@@ -21,6 +23,9 @@ const toIsoDateTime = (str) => (str ? str.replace(' ', 'T') : str);
 const STATUS_COLOR = {
     PENDING: 'processing',
     DEPOSIT_PAID: 'processing',
+    PENDING_SELLER_CONFIRMATION: 'gold',
+    PENDING_ADMIN_REVIEW: 'gold',
+    ASSIGNED_TO_INSPECTOR: 'cyan',
     IN_DELIVERY: 'warning',
     COMPLETED: 'success',
     CANCELLED: 'default',
@@ -42,6 +47,9 @@ function OrderDetailPage() {
     // Delivery modal
     const [deliveryOpen, setDeliveryOpen] = useState(false);
     const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryTime: null });
+    const [inspectors, setInspectors] = useState([]);
+    const [assignInspectorId, setAssignInspectorId] = useState();
+    const [assignLoading, setAssignLoading] = useState(false);
 
     const fetchOrder = useCallback(() => {
         setLoading(true);
@@ -59,12 +67,43 @@ function OrderDetailPage() {
         return () => window.clearTimeout(timerId);
     }, [fetchOrder]);
 
-    const currentUserEmail = (user?.email || getCurrentUser()?.email || '').toLowerCase();
+    useEffect(() => {
+        setDeliveryForm((prev) => ({
+            ...prev,
+            deliveryAddress: order?.deliveryAddress || getSavedOrderDeliveryAddress(order?.orderId) || prev.deliveryAddress || '',
+        }));
+    }, [order?.deliveryAddress, order?.orderId]);
+
+    useEffect(() => {
+        const currentRole = String(getCurrentUser()?.role || user?.role || '');
+        if (!currentRole.includes('ADMIN')) {
+            return;
+        }
+
+        adminService.getAllUsers()
+            .then((users) => {
+                const list = Array.isArray(users) ? users : [];
+                setInspectors(list.filter((item) => String(item.role).includes('INSPECTOR')));
+            })
+            .catch(() => {
+                setInspectors([]);
+            });
+    }, [user?.role]);
+
+    const currentUser = getCurrentUser();
+    const currentUserEmail = (user?.email || currentUser?.email || '').toLowerCase();
+    const currentUserRole = String(user?.role || currentUser?.role || '').toUpperCase();
     const isSeller = !!(currentUserEmail && order?.seller && currentUserEmail === order.seller.email?.toLowerCase());
     const isBuyer = !!(currentUserEmail && order?.buyer && currentUserEmail === order.buyer.email?.toLowerCase());
-    const canManageDelivery = isSeller && ['DEPOSIT_PAID', 'IN_DELIVERY'].includes(order?.status);
+    const isAdmin = currentUserRole.includes('ADMIN');
+    const isAssignedInspector = !!(
+        currentUserEmail &&
+        order?.assignedInspector &&
+        currentUserEmail === order.assignedInspector.email?.toLowerCase()
+    );
+    const canManageDelivery = isSeller && ['DEPOSIT_PAID', 'PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW'].includes(order?.status);
     const savedDeliveryAddress = order?.orderId ? getSavedOrderDeliveryAddress(order.orderId) || '' : '';
-    const currentDeliveryAddress = deliveryForm.deliveryAddress || savedDeliveryAddress;
+    const currentDeliveryAddress = deliveryForm.deliveryAddress || order?.deliveryAddress || savedDeliveryAddress;
 
     const handleDeliveryAddressChange = (value) => {
         setDeliveryForm((prev) => ({ ...prev, deliveryAddress: value }));
@@ -159,6 +198,43 @@ function OrderDetailPage() {
         }
     };
 
+    const handleSellerConfirm = async () => {
+        try {
+            await sellerConfirmDelivery(orderId);
+            message.success('Delivery confirmed. Waiting for admin to assign an inspector.');
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to confirm delivery.');
+        }
+    };
+
+    const handleAdminAssign = async () => {
+        if (!assignInspectorId) {
+            message.warning('Please select an inspector first.');
+            return;
+        }
+        try {
+            setAssignLoading(true);
+            await adminAssignInspector(orderId, assignInspectorId);
+            message.success('Inspector assigned successfully.');
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to assign inspector.');
+        } finally {
+            setAssignLoading(false);
+        }
+    };
+
+    const handleInspectorMarkDelivered = async () => {
+        try {
+            await inspectorMarkDelivered(orderId);
+            message.success('Delivery handoff confirmed. Order is now in shipping progress.');
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to update delivery status.');
+        }
+    };
+
     if (loading) {
         return (
             <div className={styles.pageWrapper}>
@@ -207,8 +283,21 @@ function OrderDetailPage() {
                         <Descriptions.Item label="Total Amount">{formatPrice(order.totalAmount)} VND</Descriptions.Item>
                         <Descriptions.Item label="Remaining">{formatPrice(order.remainingAmount)} VND</Descriptions.Item>
                         <Descriptions.Item label="Created">{order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '—'}</Descriptions.Item>
+                        {order.deliveryAddress && (
+                            <Descriptions.Item label="Delivery Address">{order.deliveryAddress}</Descriptions.Item>
+                        )}
                         {order.expiresAt && (
                             <Descriptions.Item label="Expires">{new Date(order.expiresAt).toLocaleString('vi-VN')}</Descriptions.Item>
+                        )}
+                        {order.sellerConfirmedAt && (
+                            <Descriptions.Item label="Seller Confirmed At">
+                                {new Date(order.sellerConfirmedAt).toLocaleString('vi-VN')}
+                            </Descriptions.Item>
+                        )}
+                        {order.adminReviewedAt && (
+                            <Descriptions.Item label="Admin Reviewed At">
+                                {new Date(order.adminReviewedAt).toLocaleString('vi-VN')}
+                            </Descriptions.Item>
                         )}
                     </Descriptions>
                 </div>
@@ -228,6 +317,14 @@ function OrderDetailPage() {
                         <h3 className={styles.sectionTitle}>Seller</h3>
                         <p>{order.seller.fullName || 'Unknown'}</p>
                         <p className={styles.metaText}>{order.seller.email}</p>
+                    </div>
+                )}
+
+                {order.assignedInspector && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Assigned Inspector</h3>
+                        <p>{order.assignedInspector.fullName || 'Unknown'}</p>
+                        <p className={styles.metaText}>{order.assignedInspector.email}</p>
                     </div>
                 )}
 
@@ -269,6 +366,13 @@ function OrderDetailPage() {
                                         Book Inspection
                                     </Button>
                                     <Button
+                                        type="default"
+                                        icon={<CheckCircleOutlined />}
+                                        onClick={handleSellerConfirm}
+                                    >
+                                        Confirm for Inspector
+                                    </Button>
+                                    <Button
                                         icon={<CarOutlined />}
                                         onClick={() => {
                                             setDeliveryForm({
@@ -299,6 +403,64 @@ function OrderDetailPage() {
                                 </Button>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {['PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW'].includes(order.status) && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Inspector Delivery Flow</h3>
+                        <p className={styles.helperText}>
+                            Seller has confirmed the order for inspector delivery. The next step is assigning an inspector.
+                        </p>
+                        {isAdmin ? (
+                            <div className={styles.assignRow}>
+                                <Select
+                                    className={styles.assignSelect}
+                                    placeholder="Select an inspector"
+                                    value={assignInspectorId}
+                                    onChange={setAssignInspectorId}
+                                    options={inspectors.map((item) => ({
+                                        value: item.userId,
+                                        label: `${item.fullName || item.email} (${item.email})`,
+                                    }))}
+                                />
+                                <Button
+                                    type="primary"
+                                    className={styles.btnPrimary}
+                                    loading={assignLoading}
+                                    onClick={handleAdminAssign}
+                                >
+                                    Assign Inspector
+                                </Button>
+                            </div>
+                        ) : (
+                            <Tag icon={<ClockCircleOutlined />} color="gold">
+                                Waiting for admin to assign an inspector
+                            </Tag>
+                        )}
+                    </div>
+                )}
+
+                {order.status === 'ASSIGNED_TO_INSPECTOR' && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Inspector Delivery Flow</h3>
+                        <p className={styles.helperText}>
+                            An inspector has been assigned. When the assigned inspector picks up the bicycle, they can move this order into shipping progress.
+                        </p>
+                        {isAssignedInspector ? (
+                            <Button
+                                type="primary"
+                                icon={<CarOutlined />}
+                                className={styles.btnPrimary}
+                                onClick={handleInspectorMarkDelivered}
+                            >
+                                Start Shipping
+                            </Button>
+                        ) : (
+                            <Tag color="cyan">
+                                Waiting for the assigned inspector to start shipping
+                            </Tag>
+                        )}
                     </div>
                 )}
 

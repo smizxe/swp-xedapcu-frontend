@@ -81,6 +81,13 @@
     margin-bottom: 8px;
 }
 
+.metaLine {
+    font-size: 13px;
+    color: #5f6b61;
+    margin: 8px 0 0;
+    line-height: 1.5;
+}
+
 .priceRow {
     display: flex;
     gap: 24px;

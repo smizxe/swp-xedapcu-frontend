@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Input } from 'antd';
-import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined, CloseCircleOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
-import { getMySales, scheduleDelivery, reportBuyerNoShow, cancelBySeller, getSavedOrderDeliveryAddress } from '../../service/orderService';
+import { getMySales, scheduleDelivery, sellerConfirmDelivery, reportBuyerNoShow, cancelBySeller, getSavedOrderDeliveryAddress } from '../../service/orderService';
 import styles from './MySalesPage.module.css';
 
 // antd DatePicker showTime returns "YYYY-MM-DD HH:mm:ss", backend needs ISO "YYYY-MM-DDTHH:mm:ss"
@@ -12,6 +12,9 @@ const toIsoDateTime = (str) => (str ? str.replace(' ', 'T') : str);
 const STATUS_COLOR = {
     PENDING: 'processing',
     DEPOSIT_PAID: 'processing',
+    PENDING_SELLER_CONFIRMATION: 'gold',
+    PENDING_ADMIN_REVIEW: 'gold',
+    ASSIGNED_TO_INSPECTOR: 'cyan',
     IN_DELIVERY: 'warning',
     COMPLETED: 'success',
     CANCELLED: 'default',
@@ -98,6 +101,16 @@ function MySalesPage() {
         }
     };
 
+    const handleSellerConfirm = async (orderId) => {
+        try {
+            await sellerConfirmDelivery(orderId);
+            message.success('Delivery confirmed. Waiting for admin to assign an inspector.');
+            fetchSales();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to confirm delivery.');
+        }
+    };
+
     return (
         <div className={styles.pageWrapper}>
             <Header variant="dark" />
@@ -131,6 +144,16 @@ function MySalesPage() {
                                         <span>Deposit: <strong>{formatPrice(order.depositAmount)} VND</strong></span>
                                         <span>Total: <strong>{formatPrice(order.totalAmount)} VND</strong></span>
                                     </div>
+                                    {order.deliveryAddress && (
+                                        <p className={styles.metaLine}>
+                                            Delivery Address: {order.deliveryAddress}
+                                        </p>
+                                    )}
+                                    {order.assignedInspector && (
+                                        <p className={styles.metaLine}>
+                                            Assigned Inspector: {order.assignedInspector.fullName || order.assignedInspector.email}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className={styles.orderActions}>
@@ -148,6 +171,13 @@ function MySalesPage() {
                                     {order.status === 'DEPOSIT_PAID' && (
                                         <>
                                             <Button
+                                                type="default"
+                                                icon={<CheckCircleOutlined />}
+                                                onClick={() => handleSellerConfirm(order.orderId)}
+                                            >
+                                                Confirm for Inspector
+                                            </Button>
+                                            <Button
                                                 type="primary"
                                                 icon={<CarOutlined />}
                                                 className={styles.btnSchedule}
@@ -163,6 +193,21 @@ function MySalesPage() {
                                                 Cancel Order
                                             </Button>
                                         </>
+                                    )}
+                                    {order.status === 'PENDING_SELLER_CONFIRMATION' && (
+                                        <Tag icon={<ClockCircleOutlined />} color="gold" style={{ marginLeft: 4 }}>
+                                            Waiting for admin to assign an inspector
+                                        </Tag>
+                                    )}
+                                    {order.status === 'PENDING_ADMIN_REVIEW' && (
+                                        <Tag icon={<ClockCircleOutlined />} color="gold" style={{ marginLeft: 4 }}>
+                                            Waiting for admin review
+                                        </Tag>
+                                    )}
+                                    {order.status === 'ASSIGNED_TO_INSPECTOR' && (
+                                        <Tag icon={<CheckCircleOutlined />} color="cyan" style={{ marginLeft: 4 }}>
+                                            Inspector assigned
+                                        </Tag>
                                     )}
                                     {order.status === 'IN_DELIVERY' && (
                                         <>
