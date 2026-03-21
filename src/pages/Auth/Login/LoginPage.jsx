@@ -8,6 +8,28 @@ import styles from './LoginPage.module.css';
 
 const normalizeRole = (role) => String(role || '').replace(/^ROLE_/, '').toUpperCase();
 
+const getAuthErrorMessage = (error) => {
+  const responseData = error?.response?.data;
+
+  if (typeof responseData === 'string' && responseData.trim()) {
+    return responseData;
+  }
+
+  if (typeof responseData?.message === 'string' && responseData.message.trim()) {
+    return responseData.message;
+  }
+
+  if (error?.response?.status === 400 || error?.response?.status === 401) {
+    return 'Sai email hoặc mật khẩu.';
+  }
+
+  if (error?.code === 'ERR_NETWORK') {
+    return 'Không thể kết nối tới backend. Hãy kiểm tra server đang chạy.';
+  }
+
+  return error?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+};
+
 const getPostLoginPath = (role, fallbackPath) => {
   const normalizedRole = normalizeRole(role);
 
@@ -50,7 +72,7 @@ function LoginPage() {
 
       navigate(getPostLoginPath(response.role, from), { replace: true });
     } catch (err) {
-      setError(err.response?.data || 'Invalid email or password');
+      setError(getAuthErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

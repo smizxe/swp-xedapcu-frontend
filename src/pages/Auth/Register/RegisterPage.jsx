@@ -2,12 +2,10 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { registerUser } from '../../../service/authService';
 import styles from '../Login/LoginPage.module.css'; // Reuse login styles
 
 function RegisterPage({
     onSubmit,
-    onGoogleLogin,
     isLoading = false,
     externalErrors = {},
     externalSuccess = ''
@@ -23,9 +21,6 @@ function RegisterPage({
         fullName: '',
         phone: '',
     });
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };

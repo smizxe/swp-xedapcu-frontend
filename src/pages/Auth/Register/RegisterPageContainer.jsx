@@ -3,6 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import RegisterPage from './RegisterPage';
 import { registerUser } from '../../../service/authService';
 
+const getRegisterErrorMessage = (error) => {
+    const responseData = error?.response?.data;
+    const rawMessage = typeof responseData === 'string'
+        ? responseData
+        : responseData?.message || error?.message || '';
+    const message = String(rawMessage).trim();
+    const normalizedMessage = message.toLowerCase();
+
+    if (normalizedMessage.includes('already') || normalizedMessage.includes('exist') || normalizedMessage.includes('duplicate')) {
+        return 'Email này đã được đăng ký.';
+    }
+
+    if (normalizedMessage.includes('password')) {
+        return message || 'Mật khẩu không hợp lệ.';
+    }
+
+    if (error?.code === 'ERR_NETWORK') {
+        return 'Không thể kết nối tới backend. Hãy kiểm tra server đang chạy.';
+    }
+
+    return message || 'Đăng ký thất bại. Vui lòng thử lại.';
+};
+
 function RegisterPageContainer() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -14,36 +37,34 @@ function RegisterPageContainer() {
         setErrors({});
         setSuccessMessage('');
 
-        // Client-side validations
         if (!formData.email || !formData.password || !formData.fullName) {
-            setErrors({ general: 'Please fill in all required fields.' });
+            setErrors({ general: 'Vui lòng điền đầy đủ các trường bắt buộc.' });
             setIsLoading(false);
             return;
         }
 
         if (formData.password !== formData.confirmPassword) {
-            setErrors({ general: 'Passwords do not match.' });
+            setErrors({ general: 'Mật khẩu xác nhận không khớp.' });
+            setIsLoading(false);
+            return;
+        }
+
+        if (formData.password.length < 6) {
+            setErrors({ general: 'Mật khẩu phải có ít nhất 6 ký tự.' });
             setIsLoading(false);
             return;
         }
 
         try {
-            console.log('📝 Form data being submitted:', { email: formData.email, password: '***' });
+            await registerUser(formData);
+            setSuccessMessage('Tạo tài khoản thành công. Đang chuyển sang trang đăng nhập...');
 
-            const response = await registerUser(formData);
-
-            console.log('✅ Registration response:', response);
-            setSuccessMessage('Account created successfully! Redirecting to login...');
-
-            // Navigate to login page after 2 seconds
-            setTimeout(() => {
+            window.setTimeout(() => {
                 navigate('/login');
             }, 2000);
-
         } catch (error) {
-            console.error('❌ Registration handler error:', error);
             setErrors({
-                general: error.message || 'Registration failed. Please try again.'
+                general: getRegisterErrorMessage(error),
             });
         } finally {
             setIsLoading(false);
@@ -51,7 +72,6 @@ function RegisterPageContainer() {
     };
 
     const handleGoogleLogin = () => {
-        // TODO: Implement Google OAuth registration
         console.log('Google registration clicked');
     };
 
