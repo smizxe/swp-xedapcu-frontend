@@ -1,232 +1,374 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-    Box, Typography, Paper, Table, TableBody, TableCell,
-    TableContainer, TableHead, TableRow, IconButton, Chip, Select,
-    MenuItem, FormControl, CircularProgress, Alert, Button, Dialog,
-    DialogTitle, DialogContent, DialogActions
+    Alert,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    MenuItem,
+    Select,
+    TextField,
+    Tooltip,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Edit2, Lock, RefreshCw, Search, Trash2, Unlock } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import adminService from '../../../services/adminService';
-import styles from '../AdminDashboard/AdminDashboard.module.css';
+import styles from './UsersManagement.module.css';
+
+const ROLE_OPTIONS = ['ALL', 'BUYER', 'SELLER', 'INSPECTOR', 'ADMIN'];
+
+const ROLE_BADGE_CLASS = {
+    ADMIN: styles.roleAdmin,
+    INSPECTOR: styles.roleInspector,
+    SELLER: styles.roleSeller,
+    BUYER: styles.roleBuyer,
+};
+
+const normalizeStatus = (user) => (user?.isActive ? 'Active' : 'Banned');
 
 const UsersManagement = () => {
     const { user, isAdmin, loading: authLoading } = useAuth();
-
     const [users, setUsers] = useState([]);
+    const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-
+    const [keyword, setKeyword] = useState('');
+    const [roleFilter, setRoleFilter] = useState('ALL');
     const [editDialog, setEditDialog] = useState({ open: false, user: null });
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, user: null });
     const [selectedRole, setSelectedRole] = useState('');
 
-    useEffect(() => {
-        if (authLoading) return;
-        if (isAdmin) {
-            fetchUsers();
+    const fetchStats = useCallback(async () => {
+        try {
+            const data = await adminService.getUserStats();
+            setStats(data);
+        } catch {
+            setStats(null);
         }
-    }, [isAdmin, authLoading]);
+    }, []);
 
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async ({ nextKeyword = '', nextRole = 'ALL' } = {}) => {
         try {
             setLoading(true);
             setError('');
-            const data = await adminService.getAllUsers();
+
+            let data = [];
+            if (nextKeyword.trim()) {
+                data = await adminService.searchUsers(nextKeyword.trim());
+            } else if (nextRole !== 'ALL') {
+                data = await adminService.getUsersByRole(nextRole);
+            } else {
+                data = await adminService.getAllUsers();
+            }
+
             setUsers(data || []);
         } catch (err) {
-            setError('Failed to load users. Please try again.');
-            console.error(err);
+            setError(err?.response?.data || 'Failed to load users. Please try again.');
         } finally {
             setLoading(false);
         }
+    }, []);
+
+    useEffect(() => {
+        if (authLoading || !isAdmin) {
+            return;
+        }
+        fetchUsers();
+        fetchStats();
+    }, [authLoading, fetchStats, fetchUsers, isAdmin]);
+
+    useEffect(() => {
+        if (authLoading || !isAdmin) {
+            return;
+        }
+        if (roleFilter === 'ALL' && !keyword.trim()) {
+            fetchUsers();
+            return;
+        }
+        if (!keyword.trim()) {
+            fetchUsers({ nextRole: roleFilter });
+        }
+    }, [authLoading, fetchUsers, isAdmin, keyword, roleFilter]);
+
+    const handleSearch = () => {
+        fetchUsers({ nextKeyword: keyword, nextRole: roleFilter });
     };
 
-    const handleEditRole = (userToEdit) => {
-        setEditDialog({ open: true, user: userToEdit });
-        setSelectedRole(userToEdit.role);
+    const handleEditRole = (targetUser) => {
+        setEditDialog({ open: true, user: targetUser });
+        setSelectedRole(targetUser.role);
     };
 
     const handleSaveRole = async () => {
         try {
             setLoading(true);
             await adminService.updateUserRole(editDialog.user.email, selectedRole);
-            setSuccess(`Role updated for ${editDialog.user.email}`);
+            setSuccess(`Updated role for ${editDialog.user.email}`);
             setEditDialog({ open: false, user: null });
-            fetchUsers();
+            await Promise.all([
+                fetchUsers({ nextKeyword: keyword, nextRole: roleFilter }),
+                fetchStats(),
+            ]);
         } catch (err) {
-            setError('Failed to update role');
+            setError(err?.response?.data || 'Failed to update role.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleConfirmToggle = (targetUser) => {
+        setConfirmDialog({ open: true, user: targetUser });
+    };
+
+    const handleToggleActive = async () => {
+        const targetUser = confirmDialog.user;
+        if (!targetUser) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            if (targetUser.isActive) {
+                await adminService.disableUser(targetUser.email);
+                setSuccess(`Locked ${targetUser.email}`);
+            } else {
+                await adminService.enableUser(targetUser.email);
+                setSuccess(`Unlocked ${targetUser.email}`);
+            }
+            setConfirmDialog({ open: false, user: null });
+            await Promise.all([
+                fetchUsers({ nextKeyword: keyword, nextRole: roleFilter }),
+                fetchStats(),
+            ]);
+        } catch (err) {
+            setError(err?.response?.data || 'Failed to update user status.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleDeleteUser = async (email) => {
-        if (!window.confirm(`Are you sure you want to delete user ${email}?`)) {
+        if (!window.confirm(`Delete user ${email}?`)) {
             return;
         }
 
         try {
             setLoading(true);
             await adminService.deleteUser(email);
-            setSuccess(`User ${email} deleted successfully`);
-            fetchUsers();
+            setSuccess(`Deleted ${email}`);
+            await Promise.all([
+                fetchUsers({ nextKeyword: keyword, nextRole: roleFilter }),
+                fetchStats(),
+            ]);
         } catch (err) {
-            setError('Failed to delete user');
+            setError(err?.response?.data || 'Failed to delete user.');
         } finally {
             setLoading(false);
         }
     };
 
-    const getRoleColor = (role) => {
-        switch (role) {
-            case 'ADMIN': return 'error';
-            case 'SELLER': return 'primary';
-            case 'BUYER': return 'success';
-            case 'INSPECTOR': return 'warning';
-            default: return 'default';
-        }
-    };
-
-    if (authLoading || (!isAdmin && !loading)) return null;
+    if (authLoading || (!isAdmin && !loading)) {
+        return null;
+    }
 
     return (
-        <Box>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-                <Box>
-                    <Typography variant="h4" fontWeight="bold" color="#064E3B" fontFamily="inherit" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        User Management
-                    </Typography>
-                    <Typography variant="body1" color="#64748b" fontFamily="inherit">
-                        Manage users, roles and permissions
-                    </Typography>
-                </Box>
+        <div className={styles.page}>
+            <div className={styles.header}>
+                <div>
+                    <h1 className={styles.title}>User Management</h1>
+                    <p className={styles.subtitle}>Manage roles, moderation status, and account lifecycle in one place.</p>
+                </div>
                 <Button
-                    startIcon={<RefreshIcon />}
+                    startIcon={<RefreshCw size={16} />}
                     variant="outlined"
-                    onClick={fetchUsers}
+                    onClick={() => {
+                        fetchUsers({ nextKeyword: keyword, nextRole: roleFilter });
+                        fetchStats();
+                    }}
                     disabled={loading}
-                    sx={{ color: '#064E3B', borderColor: '#064E3B', fontFamily: 'inherit', fontWeight: 'bold' }}
+                    sx={{ borderColor: '#2d5a27', color: '#2d5a27', fontFamily: 'var(--font-body)', fontWeight: 600 }}
                 >
                     Refresh
                 </Button>
-            </Box>
+            </div>
+
+            {stats && (
+                <div className={styles.statsGrid}>
+                    <div className={styles.statCard}><span className={styles.statLabel}>Total Users</span><strong className={styles.statValue}>{stats.totalUsers ?? 0}</strong></div>
+                    <div className={styles.statCard}><span className={styles.statLabel}>Admins</span><strong className={styles.statValue}>{stats.admins ?? 0}</strong></div>
+                    <div className={styles.statCard}><span className={styles.statLabel}>Sellers</span><strong className={styles.statValue}>{stats.sellers ?? 0}</strong></div>
+                    <div className={styles.statCard}><span className={styles.statLabel}>Active</span><strong className={styles.statValue}>{stats.activeUsers ?? 0}</strong></div>
+                </div>
+            )}
+
+            <div className={styles.filters}>
+                <TextField
+                    size="small"
+                    placeholder="Search by email or full name"
+                    value={keyword}
+                    onChange={(e) => setKeyword(e.target.value)}
+                    className={styles.searchInput}
+                />
+                <Select
+                    size="small"
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    className={styles.filterSelect}
+                >
+                    {ROLE_OPTIONS.map((role) => (
+                        <MenuItem key={role} value={role}>{role}</MenuItem>
+                    ))}
+                </Select>
+                <Button
+                    startIcon={<Search size={16} />}
+                    variant="contained"
+                    onClick={handleSearch}
+                    sx={{ background: '#2d5a27', fontFamily: 'var(--font-body)', fontWeight: 600, '&:hover': { background: '#1f431c' } }}
+                >
+                    Search
+                </Button>
+            </div>
 
             {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
             {success && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
 
-            <Paper className={styles.glassCard} sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)' }}>
-                <TableContainer>
-                    <Table>
-                        <TableHead sx={{ bgcolor: 'rgba(209, 250, 229, 0.4)' }}>
-                            <TableRow>
-                                <TableCell sx={{ fontFamily: 'inherit', fontWeight: 'bold', color: '#064E3B' }}>EMAIL</TableCell>
-                                <TableCell sx={{ fontFamily: 'inherit', fontWeight: 'bold', color: '#064E3B' }}>FULL NAME</TableCell>
-                                <TableCell sx={{ fontFamily: 'inherit', fontWeight: 'bold', color: '#064E3B' }}>ROLE</TableCell>
-                                <TableCell sx={{ fontFamily: 'inherit', fontWeight: 'bold', color: '#064E3B' }}>STATUS</TableCell>
-                                <TableCell align="right" sx={{ fontFamily: 'inherit', fontWeight: 'bold', color: '#064E3B' }}>ACTIONS</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
+            <div className={styles.tableCard}>
+                <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Full Name</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th className={styles.actionsHeader}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                                        <CircularProgress sx={{ color: '#064E3B' }} />
-                                    </TableCell>
-                                </TableRow>
+                                <tr>
+                                    <td colSpan={5} className={styles.emptyState}>Loading users...</td>
+                                </tr>
                             ) : users.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} align="center" sx={{ py: 4, fontFamily: 'inherit' }}>
-                                        No users found
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                users.map((u) => (
-                                    <TableRow key={u.email} hover>
-                                        <TableCell sx={{ fontFamily: 'inherit' }}>{u.email}</TableCell>
-                                        <TableCell sx={{ fontFamily: 'inherit', fontWeight: 500 }}>{u.fullName || '-'}</TableCell>
-                                        <TableCell sx={{ fontFamily: 'inherit' }}>
-                                            <Chip
-                                                label={u.role}
-                                                color={getRoleColor(u.role)}
-                                                size="small"
-                                                sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
-                                            />
-                                        </TableCell>
-                                        <TableCell sx={{ fontFamily: 'inherit' }}>
-                                            <Chip
-                                                label={u.isActive ? 'Active' : 'Inactive'}
-                                                color={u.isActive ? 'success' : 'default'}
-                                                variant="outlined"
-                                                size="small"
-                                                sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
-                                            />
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <IconButton
-                                                size="small"
-                                                color="primary"
-                                                onClick={() => handleEditRole(u)}
-                                                disabled={u.email === user?.email}
-                                            >
-                                                <EditIcon fontSize="small" />
-                                            </IconButton>
-                                            <IconButton
-                                                size="small"
-                                                color="error"
-                                                onClick={() => handleDeleteUser(u.email)}
-                                                disabled={u.email === user?.email}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper>
+                                <tr>
+                                    <td colSpan={5} className={styles.emptyState}>No users found</td>
+                                </tr>
+                            ) : users.map((item) => {
+                                const statusLabel = normalizeStatus(item);
+                                const isSelf = item.email === user?.email;
+                                const isActive = item.isActive;
+
+                                return (
+                                    <tr key={item.email}>
+                                        <td className={styles.emailCell}>{item.email}</td>
+                                        <td>{item.fullName || '-'}</td>
+                                        <td>
+                                            <span className={`${styles.badge} ${ROLE_BADGE_CLASS[item.role] || styles.roleDefault}`}>
+                                                {item.role}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={`${styles.badge} ${isActive ? styles.statusActive : styles.statusBanned}`}>
+                                                {statusLabel}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className={styles.actionGroup}>
+                                                <Tooltip title="Edit Role">
+                                                    <span>
+                                                        <button
+                                                            type="button"
+                                                            className={`${styles.iconButton} ${styles.iconEdit}`}
+                                                            onClick={() => handleEditRole(item)}
+                                                            disabled={isSelf}
+                                                        >
+                                                            <Edit2 size={15} />
+                                                        </button>
+                                                    </span>
+                                                </Tooltip>
+                                                <Tooltip title={isActive ? 'Lock User' : 'Unlock User'}>
+                                                    <span>
+                                                        <button
+                                                            type="button"
+                                                            className={`${styles.iconButton} ${isActive ? styles.iconLock : styles.iconUnlock}`}
+                                                            onClick={() => handleConfirmToggle(item)}
+                                                            disabled={isSelf}
+                                                        >
+                                                            {isActive ? <Lock size={15} /> : <Unlock size={15} />}
+                                                        </button>
+                                                    </span>
+                                                </Tooltip>
+                                                <Tooltip title="Delete User">
+                                                    <span>
+                                                        <button
+                                                            type="button"
+                                                            className={`${styles.iconButton} ${styles.iconDelete}`}
+                                                            onClick={() => handleDeleteUser(item.email)}
+                                                            disabled={isSelf}
+                                                        >
+                                                            <Trash2 size={15} />
+                                                        </button>
+                                                    </span>
+                                                </Tooltip>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <Dialog open={editDialog.open} onClose={() => setEditDialog({ open: false, user: null })}>
-                <DialogTitle sx={{ fontFamily: 'inherit', fontWeight: 'bold', color: '#064E3B' }}>EDIT USER ROLE</DialogTitle>
-                <DialogContent sx={{ minWidth: 300, pt: 2, fontFamily: 'inherit' }}>
-                    <Typography variant="body2" color="text.secondary" mb={2} fontFamily="inherit">
-                        Editing role for: <strong style={{color: '#0f172a'}}>{editDialog.user?.email}</strong>
-                    </Typography>
-                    <FormControl fullWidth>
-                        <Select
-                            value={selectedRole}
-                            onChange={(e) => setSelectedRole(e.target.value)}
-                            sx={{ fontFamily: 'inherit', fontWeight: 600 }}
-                        >
-                            <MenuItem sx={{ fontFamily: 'inherit' }} value="BUYER">BUYER</MenuItem>
-                            <MenuItem sx={{ fontFamily: 'inherit' }} value="SELLER">SELLER</MenuItem>
-                            <MenuItem sx={{ fontFamily: 'inherit' }} value="INSPECTOR">INSPECTOR</MenuItem>
-                            <MenuItem sx={{ fontFamily: 'inherit' }} value="ADMIN">ADMIN</MenuItem>
-                        </Select>
-                    </FormControl>
+                <DialogTitle sx={{ fontFamily: 'var(--font-body)', fontWeight: 700, letterSpacing: '0.04em' }}>Edit User Role</DialogTitle>
+                <DialogContent sx={{ minWidth: 340, pt: 2 }}>
+                    <p className={styles.dialogCopy}>Update role for <strong>{editDialog.user?.email}</strong>.</p>
+                    <Select
+                        fullWidth
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                        sx={{ fontFamily: 'var(--font-body)' }}
+                    >
+                        <MenuItem value="BUYER">BUYER</MenuItem>
+                        <MenuItem value="SELLER">SELLER</MenuItem>
+                        <MenuItem value="INSPECTOR">INSPECTOR</MenuItem>
+                        <MenuItem value="ADMIN">ADMIN</MenuItem>
+                    </Select>
                 </DialogContent>
                 <DialogActions sx={{ p: 2 }}>
-                    <Button sx={{ fontFamily: 'inherit', fontWeight: 'bold', color: '#64748b' }} onClick={() => setEditDialog({ open: false, user: null })}>Cancel</Button>
-                    <Button 
-                        variant="contained" 
-                        onClick={handleSaveRole} 
-                        disabled={loading}
-                        sx={{ 
-                            fontFamily: 'inherit', 
-                            fontWeight: 'bold', 
-                            bgcolor: '#064E3B',
-                            '&:hover': { bgcolor: '#043428' }
-                        }}
-                    >
+                    <Button onClick={() => setEditDialog({ open: false, user: null })}>Cancel</Button>
+                    <Button variant="contained" onClick={handleSaveRole} sx={{ background: '#2d5a27', '&:hover': { background: '#1f431c' } }}>
                         Save
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Box>
+
+            <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, user: null })}>
+                <DialogTitle sx={{ fontFamily: 'var(--font-body)', fontWeight: 700, letterSpacing: '0.04em' }}>
+                    {confirmDialog.user?.isActive ? 'Lock User Account' : 'Unlock User Account'}
+                </DialogTitle>
+                <DialogContent>
+                    <p className={styles.dialogCopy}>
+                        {confirmDialog.user?.isActive
+                            ? <>This will mark <strong>{confirmDialog.user?.email}</strong> as <strong>Banned</strong>.</>
+                            : <>This will restore <strong>{confirmDialog.user?.email}</strong> to <strong>Active</strong>.</>}
+                    </p>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setConfirmDialog({ open: false, user: null })}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleToggleActive}
+                        sx={{ background: confirmDialog.user?.isActive ? '#b45309' : '#166534', '&:hover': { background: confirmDialog.user?.isActive ? '#92400e' : '#14532d' } }}
+                    >
+                        {confirmDialog.user?.isActive ? 'Lock User' : 'Unlock User'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </div>
     );
 };
 

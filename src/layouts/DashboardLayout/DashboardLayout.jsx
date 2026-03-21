@@ -7,6 +7,7 @@ import {
     ClipboardList,
     Folders,
     Users,
+    FileText,
     LogOut,
     Menu,
     X
@@ -27,6 +28,7 @@ const DashboardLayout = () => {
     const adminMenu = [
         { path: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
         { path: '/admin/users', label: 'Users', icon: Users },
+        { path: '/admin/posts', label: 'Posts', icon: FileText },
         { path: '/admin/inspections', label: 'Inspections', icon: ClipboardList },
         { path: '/admin/categories', label: 'Categories', icon: Folders },
     ];

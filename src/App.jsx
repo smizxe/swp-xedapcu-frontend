@@ -25,6 +25,7 @@ import MyPostsPage from './pages/MyPosts/MyPostsPage.jsx';
 import VnPayReturn from './pages/Wallet/VnPayReturn.jsx';
 import DashboardLayout from './layouts/DashboardLayout/DashboardLayout.jsx';
 import UsersManagement from './pages/Admin/UsersManagement/UsersManagement.jsx';
+import PostManagement from './pages/Admin/PostManagement/PostManagement.jsx';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="categories" element={<CategoryManagement />} />
             <Route path="inspections" element={<InspectionAdminPage />} />
+            <Route path="posts" element={<PostManagement />} />
             <Route path="users" element={<UsersManagement />} />
           </Route>
 

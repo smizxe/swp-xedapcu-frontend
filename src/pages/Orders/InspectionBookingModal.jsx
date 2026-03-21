@@ -1,12 +1,40 @@
-import { useState } from 'react';
-import { Modal, Input, DatePicker, TimePicker, Select, message } from 'antd';
+import { useMemo, useState } from 'react';
+import dayjs from 'dayjs';
+import { Modal, Input, DatePicker, Select, message } from 'antd';
 import { createInspectionBooking } from '../../service/inspectionService';
 import styles from './MySalesPage.module.css';
 
 const { Option } = Select;
+const INSPECTION_START_HOUR = 7;
+const INSPECTION_LAST_START_HOUR = 18;
 
 // antd v6 onChange(dayjs, dateString) - dateString can be string or string[]
 const pickStr = (v) => (Array.isArray(v) ? v[0] : v) || '';
+const padHour = (hour) => `${String(hour).padStart(2, '0')}:00`;
+const getTodayDateString = () => dayjs().format('YYYY-MM-DD');
+
+const getMinStartHourForDate = (bookingDate) => {
+    if (!bookingDate) {
+        return INSPECTION_START_HOUR;
+    }
+
+    if (bookingDate !== getTodayDateString()) {
+        return INSPECTION_START_HOUR;
+    }
+
+    return Math.max(INSPECTION_START_HOUR, dayjs().hour() + 1);
+};
+
+const getAvailableHourOptions = (bookingDate) => {
+    const options = [];
+    const minHour = getMinStartHourForDate(bookingDate);
+
+    for (let hour = minHour; hour <= INSPECTION_LAST_START_HOUR; hour += 1) {
+        options.push({ value: padHour(hour), label: padHour(hour) });
+    }
+
+    return options;
+};
 
 export default function InspectionBookingModal({ open, postId, onClose, onSuccess }) {
     const [form, setForm] = useState({
@@ -14,12 +42,12 @@ export default function InspectionBookingModal({ open, postId, onClose, onSucces
         bookingDate: null,   // "YYYY-MM-DD"
         startTime: null,     // "HH:mm"
         endTime: null,       // "HH:mm"
-        paidBy: 'SELLER',
     });
     const [submitting, setSubmitting] = useState(false);
+    const availableStartTimes = useMemo(() => getAvailableHourOptions(form.bookingDate), [form.bookingDate]);
 
     const resetForm = () => setForm({
-        location: '', bookingDate: null, startTime: null, endTime: null, paidBy: 'SELLER',
+        location: '', bookingDate: null, startTime: null, endTime: null,
     });
 
     const handleSubmit = async () => {
@@ -35,7 +63,7 @@ export default function InspectionBookingModal({ open, postId, onClose, onSucces
             startTime: form.startTime.length === 5 ? form.startTime + ':00' : form.startTime,
             endTime: form.endTime.length === 5 ? form.endTime + ':00' : form.endTime,
             location: form.location,
-            paidBy: form.paidBy,
+            paidBy: 'SELLER',
         };
 
         console.log('Sending booking payload:', payload);
@@ -83,39 +111,58 @@ export default function InspectionBookingModal({ open, postId, onClose, onSucces
                 <DatePicker
                     style={{ width: '100%' }}
                     format="YYYY-MM-DD"
-                    onChange={(_, dateStr) => setForm({ ...form, bookingDate: pickStr(dateStr) })}
+                    value={form.bookingDate ? dayjs(form.bookingDate, 'YYYY-MM-DD') : null}
+                    disabledDate={(current) => current && current.startOf('day').isBefore(dayjs().startOf('day'))}
+                    onChange={(_, dateStr) => {
+                        const nextBookingDate = pickStr(dateStr);
+                        const currentStartStillValid = getAvailableHourOptions(nextBookingDate)
+                            .some((option) => option.value === form.startTime);
+                        setForm((prev) => ({
+                            ...prev,
+                            bookingDate: nextBookingDate,
+                            startTime: currentStartStillValid ? prev.startTime : null,
+                            endTime: currentStartStillValid ? prev.endTime : null,
+                        }));
+                    }}
                 />
             </div>
 
             <div style={{ display: 'flex', gap: 12 }}>
                 <div className={styles.formGroup} style={{ flex: 1 }}>
                     <label className={styles.formLabel}>Start Time</label>
-                    <TimePicker
+                    <Select
                         style={{ width: '100%' }}
-                        format="HH:mm"
-                        onChange={(_, timeStr) => setForm({ ...form, startTime: pickStr(timeStr) })}
-                    />
+                        placeholder="Select start time"
+                        value={form.startTime}
+                        onChange={(value) => {
+                            const startHour = parseInt(value.split(':')[0], 10);
+                            setForm((prev) => ({
+                                ...prev,
+                                startTime: value,
+                                endTime: padHour(startHour + 1),
+                            }));
+                        }}
+                    >
+                        {availableStartTimes.map((option) => (
+                            <Option key={option.value} value={option.value}>
+                                {option.label}
+                            </Option>
+                        ))}
+                    </Select>
                 </div>
                 <div className={styles.formGroup} style={{ flex: 1 }}>
                     <label className={styles.formLabel}>End Time</label>
-                    <TimePicker
+                    <Select
                         style={{ width: '100%' }}
-                        format="HH:mm"
-                        onChange={(_, timeStr) => setForm({ ...form, endTime: pickStr(timeStr) })}
-                    />
+                        value={form.endTime}
+                        disabled
+                        placeholder="End time will be set automatically"
+                    >
+                        {form.endTime ? (
+                            <Option value={form.endTime}>{form.endTime}</Option>
+                        ) : undefined}
+                    </Select>
                 </div>
-            </div>
-
-            <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Inspection Fee Paid By</label>
-                <Select
-                    value={form.paidBy}
-                    onChange={(val) => setForm({ ...form, paidBy: val })}
-                    style={{ width: '100%' }}
-                >
-                    <Option value="SELLER">Seller</Option>
-                    <Option value="BUYER">Buyer</Option>
-                </Select>
             </div>
         </Modal>
     );

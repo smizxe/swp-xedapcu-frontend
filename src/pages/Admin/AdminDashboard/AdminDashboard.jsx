@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, Alert, Button } from '@mui/material';
 import { useAuth } from '../../../context/AuthContext';
 import adminService from '../../../services/adminService';
-import { 
-    Users, 
-    ShoppingCart, 
-    DollarSign, 
-    TrendingUp,
-    Store,
-    UserCircle
+import {
+    RefreshCw,
 } from 'lucide-react';
 import styles from './AdminDashboard.module.css';
 
-const StatCard = ({ title, value, subtitle, icon: Icon, trend, trendValue }) => (
+const StatCard = ({ title, value, subtitle }) => (
     <div className={styles.glassCard}>
         <div className={styles.cardHeader}>
             <div className={styles.cardInfo}>
@@ -25,110 +20,93 @@ const StatCard = ({ title, value, subtitle, icon: Icon, trend, trendValue }) => 
         </div>
         <div className={styles.cardBody}>
             <Typography className={styles.cardValue}>{value}</Typography>
-            {trend && (
-                <div className={`${styles.trend} ${trend === 'up' ? styles.trendUp : styles.trendDown}`}>
-                    {trend === 'up' ? '↑' : '↓'} {trendValue}
-                </div>
-            )}
         </div>
     </div>
 );
 
 const AdminDashboard = () => {
     const { isAdmin, loading: authLoading } = useAuth();
-    const [users, setUsers] = useState([]);
+    const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    useEffect(() => {
-        if (authLoading) return;
-        if (isAdmin) {
-            fetchUsers();
-        }
-    }, [isAdmin, authLoading]);
-
-    const fetchUsers = async () => {
+    const fetchStats = async () => {
         try {
             setLoading(true);
-            const data = await adminService.getAllUsers();
-            setUsers(data || []);
+            setError('');
+            const [userStats, postStats] = await Promise.all([
+                adminService.getUserStats(),
+                adminService.getPostStats(),
+            ]);
+
+            setStats({
+                users: userStats,
+                posts: postStats,
+            });
         } catch (err) {
-            console.error('Failed to load stats', err);
+            setError(err?.response?.data || 'Failed to load admin statistics.');
         } finally {
             setLoading(false);
         }
     };
 
-    if (authLoading || (!isAdmin && !loading)) return null;
+    useEffect(() => {
+        if (authLoading || !isAdmin) {
+            return;
+        }
+        fetchStats();
+    }, [authLoading, isAdmin]);
 
-    // Calculate dummy stats for UI demonstration based on users if endpoints are missing
-    const totalUsers = users.length;
-    const sellers = users.filter(u => u.role === 'SELLER').length;
-    const buyers = users.filter(u => u.role === 'BUYER').length;
+    if (authLoading || (!isAdmin && !loading)) {
+        return null;
+    }
+
+    const userStats = stats?.users || {};
+    const postStats = stats?.posts || {};
 
     return (
         <Box>
-            <Box mb={4}>
-                <Typography variant="h4" fontWeight="bold" color="#0f172a" fontFamily="inherit" style={{textTransform: 'uppercase', letterSpacing: '1px'}}>
-                    Overview
-                </Typography>
-                <Typography variant="body1" color="#64748b" fontFamily="inherit">
-                    System performance and statistics
-                </Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                <Box>
+                    <Typography variant="h4" fontWeight="bold" color="#0f172a" fontFamily="inherit" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Overview
+                    </Typography>
+                    <Typography variant="body1" color="#64748b" fontFamily="inherit">
+                        Real-time admin stats from the backend
+                    </Typography>
+                </Box>
+                <Button
+                    startIcon={<RefreshCw size={16} />}
+                    variant="outlined"
+                    onClick={fetchStats}
+                    disabled={loading}
+                    sx={{ color: '#064E3B', borderColor: '#064E3B', fontFamily: 'inherit', fontWeight: 'bold' }}
+                >
+                    Refresh
+                </Button>
             </Box>
 
+            {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
+
             <div className={styles.statsGrid}>
-                {/* Simulated Revenue & Orders for UI */}
-                <StatCard 
-                    title="Total Revenue" 
-                    subtitle="Last 30 days"
-                    value="$82,650"
-                    icon={DollarSign}
-                    trend="up"
-                    trendValue="15%"
-                />
-                <StatCard 
-                    title="Total Order" 
-                    subtitle="Last 30 days"
-                    value="1,645"
-                    icon={ShoppingCart}
-                    trend="up"
-                    trendValue="11%"
-                />
-                <StatCard 
-                    title="Total Customer" 
-                    subtitle="Last 30 days"
-                    value="1,462"
-                    icon={Users}
-                    trend="up"
-                    trendValue="12%"
-                />
-                <StatCard 
-                    title="Total Register"
-                    subtitle="Platform users"
-                    value={totalUsers.toString()}
-                    icon={UserCircle}
-                />
-                <StatCard 
-                    title="Active Sellers"
-                    subtitle="System sellers"
-                    value={sellers.toString()}
-                    icon={Store}
-                />
-                <StatCard 
-                    title="Active Buyers"
-                    subtitle="System buyers"
-                    value={buyers.toString()}
-                    icon={TrendingUp}
-                />
+                <StatCard title="Total Users" subtitle="All accounts" value={userStats.totalUsers ?? '-'} />
+                <StatCard title="Admins" subtitle="Admin accounts" value={userStats.admins ?? '-'} />
+                <StatCard title="Sellers" subtitle="Seller accounts" value={userStats.sellers ?? '-'} />
+                <StatCard title="Posts" subtitle="All marketplace posts" value={postStats.totalPosts ?? '-'} />
+                <StatCard title="Pending Posts" subtitle="Awaiting action" value={postStats.pending ?? '-'} />
+                <StatCard title="Active Users" subtitle="Enabled accounts" value={userStats.activeUsers ?? '-'} />
             </div>
-            
-            {/* You can add more dashboard widgets here (e.g. Sales Analytic chart image from prompt) */}
+
             <div className={styles.chartPlaceholder}>
                 <Typography variant="h5" fontWeight="bold" mb={2} color="#0f172a" fontFamily="inherit">
-                    Sales Analytic
+                    Moderation Snapshot
                 </Typography>
-                <div className={styles.glassCard} style={{height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8'}}>
-                    <Typography fontFamily="inherit">Chart visualization placeholder</Typography>
+                <div className={styles.glassCard} style={{ display: 'grid', gap: 16 }}>
+                    <Typography fontFamily="inherit">Disabled users: <strong>{userStats.disabledUsers ?? '-'}</strong></Typography>
+                    <Typography fontFamily="inherit">Active posts: <strong>{postStats.active ?? '-'}</strong></Typography>
+                    <Typography fontFamily="inherit">Reserved posts: <strong>{postStats.reserved ?? '-'}</strong></Typography>
+                    <Typography fontFamily="inherit">Sold posts: <strong>{postStats.sold ?? '-'}</strong></Typography>
+                    <Typography fontFamily="inherit">Cancelled posts: <strong>{postStats.cancelled ?? '-'}</strong></Typography>
                 </div>
             </div>
         </Box>

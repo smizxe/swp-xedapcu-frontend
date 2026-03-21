@@ -20,6 +20,37 @@ import {
     Star,
 } from 'lucide-react';
 
+const INSPECTION_START_HOUR = 7;
+const INSPECTION_LAST_START_HOUR = 18;
+
+const padHour = (hour) => `${String(hour).padStart(2, '0')}:00`;
+
+const getTodayDateString = () => new Date().toISOString().split('T')[0];
+
+const getMinStartHourForDate = (bookingDate) => {
+    if (!bookingDate) {
+        return INSPECTION_START_HOUR;
+    }
+
+    if (bookingDate !== getTodayDateString()) {
+        return INSPECTION_START_HOUR;
+    }
+
+    return Math.max(INSPECTION_START_HOUR, new Date().getHours() + 1);
+};
+
+const getAvailableHourOptions = (bookingDate) => {
+    const minHour = getMinStartHourForDate(bookingDate);
+    const options = [];
+
+    for (let hour = minHour; hour <= INSPECTION_LAST_START_HOUR; hour += 1) {
+        const label = padHour(hour);
+        options.push({ value: label, label });
+    }
+
+    return options;
+};
+
 function StepIndicator({ current }) {
     return (
         <div className={styles.stepIndicator}>
@@ -79,12 +110,6 @@ function StepPickBike({ bicycles, selectedId, onSelect }) {
     );
 }
 
-const HOUR_OPTIONS = Array.from({ length: 12 }, (_, i) => {
-    const hour = i + 7;
-    const label = `${String(hour).padStart(2, '0')}:00`;
-    return { value: label, label };
-});
-
 function StepFillDetails({
     bicycles,
     selectedId,
@@ -100,6 +125,8 @@ function StepFillDetails({
     onPickImages,
     onRemoveImage,
     onSetThumbnail,
+    availableStartTimes,
+    minBookingDate,
 }) {
     const selectedBike = bicycles.find((b) => (b.bicycleId ?? b.id) === selectedId);
 
@@ -252,8 +279,7 @@ function StepFillDetails({
                     </div>
 
                     <div className={`${styles.inspectionFields} ${inspectionEnabled ? styles.inspectionFieldsOpen : ''}`}>
-                        <div className={styles.inspectionFieldsInner}>
-                            <div className={styles.inspectionGrid}>
+                            <div className={styles.inspectionFieldsInner}>
                                 <div className={styles.fieldGroup}>
                                     <label className={styles.label} htmlFor="booking-date">
                                         <Calendar size={13} /> Inspection Date
@@ -265,19 +291,9 @@ function StepFillDetails({
                                         className={styles.input}
                                         value={inspectionForm.bookingDate}
                                         onChange={onInspectionChange}
-                                        min={new Date().toISOString().split('T')[0]}
+                                        min={minBookingDate}
                                     />
                                 </div>
-
-                                <div className={styles.fieldGroup}>
-                                    <label className={styles.label}>
-                                        <Clock size={13} /> Fee Paid By
-                                    </label>
-                                    <div className={styles.paidByBadge}>
-                                        Seller (You)
-                                    </div>
-                                </div>
-                            </div>
 
                             <div className={styles.inspectionGrid}>
                                 <div className={styles.fieldGroup}>
@@ -291,7 +307,7 @@ function StepFillDetails({
                                         onChange={(e) => onInspectionChange(e, 'startTime')}
                                     >
                                         <option value="">-- Select --</option>
-                                        {HOUR_OPTIONS.map((option) => (
+                                        {availableStartTimes.map((option) => (
                                             <option key={option.value} value={option.value}>{option.label}</option>
                                         ))}
                                     </select>
@@ -376,7 +392,6 @@ const EMPTY_INSPECTION = {
     startTime: '',
     endTime: '',
     location: '',
-    paidBy: 'SELLER',
 };
 
 function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
@@ -392,6 +407,8 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
     const [imageFiles, setImageFiles] = useState([]);
     const [thumbnailIndex, setThumbnailIndex] = useState(0);
     const fileInputRef = useRef(null);
+    const minBookingDate = getTodayDateString();
+    const availableStartTimes = getAvailableHourOptions(inspectionForm.bookingDate);
 
     const clearImagePreviews = () => {
         imageFiles.forEach((image) => URL.revokeObjectURL(image.previewUrl));
@@ -439,9 +456,21 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
         const field = fieldOverride ?? e.target.name;
         const value = e.target.value;
 
+        if (field === 'bookingDate') {
+            const nextOptions = getAvailableHourOptions(value);
+            const currentStartStillValid = nextOptions.some((option) => option.value === inspectionForm.startTime);
+            setInspectionForm((prev) => ({
+                ...prev,
+                bookingDate: value,
+                startTime: currentStartStillValid ? prev.startTime : '',
+                endTime: currentStartStillValid ? prev.endTime : '',
+            }));
+            return;
+        }
+
         if (field === 'startTime') {
             const startHour = parseInt(value.split(':')[0], 10);
-            const endHour = Math.min(startHour + 1, 18);
+            const endHour = startHour + 1;
             const endTime = `${String(endHour).padStart(2, '0')}:00`;
             setInspectionForm((prev) => ({ ...prev, startTime: value, endTime }));
             return;
@@ -649,6 +678,8 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
                                 onPickImages={handlePickImages}
                                 onRemoveImage={handleRemoveImage}
                                 onSetThumbnail={setThumbnailIndex}
+                                availableStartTimes={availableStartTimes}
+                                minBookingDate={minBookingDate}
                             />
                         )}
                     </div>
