@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import styles from './BicyclePage.module.css';
@@ -40,6 +40,9 @@ function BicyclePage() {
     const [form, setForm] = useState(EMPTY_FORM);
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('ALL');
+    const [sortOrder, setSortOrder] = useState('NEWEST');
 
     /* ── Auth guard ─────────────────────────────────── */
     useEffect(() => {
@@ -109,9 +112,9 @@ function BicyclePage() {
             const newBike = await createBicycle(form);
             console.log('[BicyclePage] createBicycle response:', newBike);
 
-            // Use loose equality (==) to handle string/number type mismatches from the API
-            // eslint-disable-next-line eqeqeq
-            const selectedCat = categories.find((c) => c.id == form.categoryId || c.categoryId == form.categoryId);
+            const selectedCat = categories.find(
+                (c) => String(c.id ?? c.categoryId ?? '') === String(form.categoryId)
+            );
 
             // Merge form data with API response as fallback so all fields are always present
             const rawId = newBike?.bicycleId ?? newBike?.id ?? Date.now();
@@ -144,6 +147,46 @@ function BicyclePage() {
     };
 
     /* ── Render states ───────────────────────────────── */
+    const filteredBicycles = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase();
+
+        const filtered = bicycles.filter((bike) => {
+            const rawCategoryId = bike.categoryId ?? bike.category_id ?? bike.category?.id;
+            const matchedCategory = categories.find((category) => (
+                String(category.id ?? category.categoryId ?? category.category_id ?? '') === String(rawCategoryId ?? '')
+            ));
+            const bikeCategoryName = bike.categoryName ?? matchedCategory?.name ?? matchedCategory?.categoryName ?? `#${rawCategoryId}`;
+            const matchesSearch = !normalizedSearch || [
+                bike.brand,
+                bike.frameMaterial,
+                bike.frameSize,
+                bike.groupset,
+                bike.wheelSize,
+                bikeCategoryName,
+            ]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(normalizedSearch));
+
+            const normalizedCategoryId = String(rawCategoryId ?? '');
+            const matchesCategory = categoryFilter === 'ALL' || normalizedCategoryId === categoryFilter;
+
+            return matchesSearch && matchesCategory;
+        });
+
+        return [...filtered].sort((a, b) => {
+            if (sortOrder === 'OLDEST') {
+                return (a.bicycleId ?? a.id ?? 0) - (b.bicycleId ?? b.id ?? 0);
+            }
+            if (sortOrder === 'CONDITION_HIGH') {
+                return Number(b.conditionPercent ?? 0) - Number(a.conditionPercent ?? 0);
+            }
+            if (sortOrder === 'CONDITION_LOW') {
+                return Number(a.conditionPercent ?? 0) - Number(b.conditionPercent ?? 0);
+            }
+            return (b.bicycleId ?? b.id ?? 0) - (a.bicycleId ?? a.id ?? 0);
+        });
+    }, [bicycles, categoryFilter, searchTerm, sortOrder, categories]);
+
     const renderBody = () => {
         if (isLoading) {
             return (
@@ -172,9 +215,17 @@ function BicyclePage() {
             );
         }
 
+        if (filteredBicycles.length === 0) {
+            return (
+                <div className={styles.centered}>
+                    <p>No bicycles match your current filters.</p>
+                </div>
+            );
+        }
+
         return (
             <div className={styles.grid}>
-                {bicycles.map((bike) => (
+                {filteredBicycles.map((bike) => (
                     <BicycleCard
                         key={bike.bicycleId ?? bike.id}
                         bike={bike}
@@ -207,6 +258,39 @@ function BicyclePage() {
                         </button>
                     </div>
                 </div>
+
+                {!isLoading && bicycles.length > 0 && (
+                    <div className={styles.toolbar}>
+                        <input
+                            className={styles.searchInput}
+                            placeholder="Search by brand, groupset, frame size..."
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                        />
+                        <select
+                            className={styles.toolbarSelect}
+                            value={categoryFilter}
+                            onChange={(event) => setCategoryFilter(event.target.value)}
+                        >
+                            <option value="ALL">All Categories</option>
+                            {categories.map((category) => (
+                                <option key={category.id} value={String(category.id)}>
+                                    {category.categoryName}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            className={styles.toolbarSelect}
+                            value={sortOrder}
+                            onChange={(event) => setSortOrder(event.target.value)}
+                        >
+                            <option value="NEWEST">Newest First</option>
+                            <option value="OLDEST">Oldest First</option>
+                            <option value="CONDITION_HIGH">Best Condition</option>
+                            <option value="CONDITION_LOW">Lowest Condition</option>
+                        </select>
+                    </div>
+                )}
 
                 {/* Content */}
                 {renderBody()}

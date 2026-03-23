@@ -8,6 +8,7 @@ import {
     Folders,
     Users,
     FileText,
+    Truck,
     LogOut,
     Menu,
     X
@@ -29,6 +30,7 @@ const DashboardLayout = () => {
         { path: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
         { path: '/admin/users', label: 'Users', icon: Users },
         { path: '/admin/posts', label: 'Posts', icon: FileText },
+        { path: '/admin/delivery', label: 'Delivery', icon: Truck },
         { path: '/admin/inspections', label: 'Inspections', icon: ClipboardList },
         { path: '/admin/categories', label: 'Categories', icon: Folders },
     ];

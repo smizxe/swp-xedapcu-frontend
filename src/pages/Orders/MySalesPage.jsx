@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Input } from 'antd';
+import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Input, Select } from 'antd';
 import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined, CloseCircleOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
 import { getMySales, scheduleDelivery, sellerConfirmDelivery, reportBuyerNoShow, cancelBySeller, getSavedOrderDeliveryAddress } from '../../service/orderService';
@@ -29,6 +29,9 @@ function MySalesPage() {
     const [loading, setLoading] = useState(true);
     const [deliveryModal, setDeliveryModal] = useState({ open: false, orderId: null });
     const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryTime: null });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [sortOrder, setSortOrder] = useState('NEWEST');
     const fetchSales = useCallback(() => {
         setLoading(true);
         getMySales()
@@ -45,11 +48,16 @@ function MySalesPage() {
         return () => window.clearTimeout(timerId);
     }, [fetchSales]);
 
+    const getOrderDeliveryAddress = (order) =>
+        order?.deliveryAddress
+        || order?.deliverySession?.location
+        || getSavedOrderDeliveryAddress(order?.orderId)
+        || '';
+
     const openDeliveryModal = (order) => {
-        const savedAddress = getSavedOrderDeliveryAddress(order.orderId);
         setDeliveryModal({ open: true, orderId: order.orderId });
         setDeliveryForm({
-            deliveryAddress: savedAddress || order.deliveryAddress || '',
+            deliveryAddress: getOrderDeliveryAddress(order),
             deliveryTime: null,
         });
     };
@@ -111,6 +119,35 @@ function MySalesPage() {
         }
     };
 
+    const filteredSales = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase();
+
+        const filtered = orders.filter((order) => {
+            const orderAddress = getOrderDeliveryAddress(order);
+            const matchesSearch = !normalizedSearch || [
+                `sale #${order.orderId}`,
+                order.postTitle,
+                order.post?.title,
+                order.buyer?.fullName,
+                order.buyer?.email,
+                orderAddress,
+            ]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(normalizedSearch));
+
+            const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        });
+
+        return [...filtered].sort((a, b) => {
+            const left = new Date(a.createdAt || 0).getTime();
+            const right = new Date(b.createdAt || 0).getTime();
+            return sortOrder === 'OLDEST' ? left - right : right - left;
+        });
+    }, [orders, searchTerm, statusFilter, sortOrder]);
+
+    const saleStatuses = Array.from(new Set(orders.map((order) => order.status).filter(Boolean)));
+
     return (
         <div className={styles.pageWrapper}>
             <Header variant="dark" />
@@ -120,13 +157,45 @@ function MySalesPage() {
                 </h1>
                 <p className={styles.pageSubtitle}>Manage orders from buyers.</p>
 
+                {!loading && orders.length > 0 && (
+                    <div className={styles.toolbar}>
+                        <Input
+                            className={styles.searchInput}
+                            placeholder="Search by sale id, post, buyer, address..."
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                            allowClear
+                        />
+                        <Select
+                            className={styles.filterSelect}
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                            options={[
+                                { value: 'ALL', label: 'All Statuses' },
+                                ...saleStatuses.map((status) => ({ value: status, label: status })),
+                            ]}
+                        />
+                        <Select
+                            className={styles.filterSelect}
+                            value={sortOrder}
+                            onChange={setSortOrder}
+                            options={[
+                                { value: 'NEWEST', label: 'Newest First' },
+                                { value: 'OLDEST', label: 'Oldest First' },
+                            ]}
+                        />
+                    </div>
+                )}
+
                 {loading ? (
                     <div className={styles.loadingWrapper}><Spin size="large" /></div>
                 ) : orders.length === 0 ? (
                     <Empty description="No sales yet." />
+                ) : filteredSales.length === 0 ? (
+                    <Empty description="No sales match your current filters." />
                 ) : (
                     <div className={styles.orderList}>
-                        {orders.map((order) => (
+                        {filteredSales.map((order) => (
                             <div key={order.orderId} className={styles.orderCard}>
                                 <div className={styles.orderHeader}>
                                     <span className={styles.orderId}>Sale #{order.orderId}</span>
@@ -144,9 +213,9 @@ function MySalesPage() {
                                         <span>Deposit: <strong>{formatPrice(order.depositAmount)} VND</strong></span>
                                         <span>Total: <strong>{formatPrice(order.totalAmount)} VND</strong></span>
                                     </div>
-                                    {order.deliveryAddress && (
+                                    {getOrderDeliveryAddress(order) && (
                                         <p className={styles.metaLine}>
-                                            Delivery Address: {order.deliveryAddress}
+                                            Delivery Address: {getOrderDeliveryAddress(order)}
                                         </p>
                                     )}
                                     {order.assignedInspector && (
@@ -245,7 +314,7 @@ function MySalesPage() {
                 <div className={styles.formGroup}>
                     <label className={styles.formLabel}>Delivery Address</label>
                     <Input
-                        placeholder="Buyer address will auto-fill here if it was saved in this browser"
+                        placeholder="Buyer address should auto-fill here from the deposit order"
                         value={deliveryForm.deliveryAddress}
                         onChange={(e) => setDeliveryForm((prev) => ({ ...prev, deliveryAddress: e.target.value }))}
                     />

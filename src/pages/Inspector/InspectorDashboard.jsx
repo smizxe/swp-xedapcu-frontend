@@ -5,15 +5,13 @@ import {
     getMyRequests,
     confirmBooking,
 } from '../../service/inspectionService';
-import { getCurrentUser } from '../../service/authService';
-import { getOrderById, inspectorMarkDelivered } from '../../service/orderService';
+import { getMyDeliveryTasks, inspectorStartDelivery, inspectorMarkDelivered } from '../../service/orderService';
 import InspectionReportModal from './InspectionReportModal';
 import {
     Shield, ClipboardList, CheckCircle, Clock, AlertCircle,
-    Calendar, MapPin, Loader, ChevronRight, FileText, User, Truck
+    Calendar, MapPin, Loader, ChevronRight, FileText, User, Truck, PackageCheck
 } from 'lucide-react';
 
-/* ── Status badge ──────────────────────────────────────── */
 const BOOKING_STATUS = {
     PENDING:   { label: 'Pending Assignment', cls: 'badgePending' },
     ASSIGNED:  { label: 'Assigned to You',    cls: 'badgeAssigned' },
@@ -33,10 +31,7 @@ function StatusBadge({ status, type = 'booking' }) {
     return <span className={`${styles.badge} ${styles[cfg.cls]}`}>{cfg.label}</span>;
 }
 
-/* ── Booking task card (My Tasks tab) ──────────────────── */
 function BookingCard({ booking, onConfirm, confirming }) {
-    // BE status after admin assigns = PENDING (awaiting inspector confirm)
-    // BE status after inspector confirms = CONFIRMED
     const canConfirm = booking.status === 'PENDING';
     return (
         <div className={styles.card}>
@@ -74,8 +69,7 @@ function BookingCard({ booking, onConfirm, confirming }) {
                 >
                     {confirming === booking.bookingId
                         ? <><Loader size={14} className={styles.spin} /> Confirming…</>
-                        : <><CheckCircle size={14} /> Confirm & Start Inspection</>
-                    }
+                        : <><CheckCircle size={14} /> Confirm & Start Inspection</>}
                 </button>
             )}
             {booking.status === 'CONFIRMED' && (
@@ -87,7 +81,6 @@ function BookingCard({ booking, onConfirm, confirming }) {
     );
 }
 
-/* ── Inspection request card (In Progress tab) ─────────── */
 function RequestCard({ req, onReport }) {
     const hasReport = !!req.report;
     return (
@@ -129,48 +122,74 @@ function RequestCard({ req, onReport }) {
                     <ChevronRight size={14} className={styles.reportBtnArrow} />
                 </button>
             )}
+        </div>
+    );
+}
 
-            {hasReport && req.report && (
-                <div className={styles.reportSummary}>
-                    <div className={styles.ratingRow}>
-                        {Array.from({ length: 10 }, (_, i) => (
-                            <div
-                                key={i}
-                                className={`${styles.ratingDot} ${i < req.report.overallRating ? styles.ratingDotFilled : ''}`}
-                            />
-                        ))}
-                        <span>{req.report.overallRating}/10</span>
-                    </div>
-                </div>
+function DeliveryCard({ order, actingOrderId, onStart, onFinish }) {
+    const isStarting = actingOrderId === `start-${order.orderId}`;
+    const isFinishing = actingOrderId === `finish-${order.orderId}`;
+
+    return (
+        <div className={styles.deliveryCard}>
+            <div className={styles.cardTop}>
+                <span className={`${styles.badge} ${order.status === 'ASSIGNED_TO_INSPECTOR' ? styles.badgeAssigned : styles.badgeCompleted}`}>
+                    {order.status}
+                </span>
+                <span className={styles.cardId}>Order #{order.orderId}</span>
+            </div>
+            <h3 className={styles.cardTitle}>{order.postTitle || order.post?.title || 'Untitled order'}</h3>
+            <div className={styles.cardMeta}>
+                {order.deliveryAddress && (
+                    <div className={styles.metaRow}><MapPin size={13} /><span>{order.deliveryAddress}</span></div>
+                )}
+                {order.buyer && (
+                    <div className={styles.metaRow}><User size={13} /><span>Buyer: {order.buyer.fullName || order.buyer.email}</span></div>
+                )}
+                {order.seller && (
+                    <div className={styles.metaRow}><User size={13} /><span>Seller: {order.seller.fullName || order.seller.email}</span></div>
+                )}
+                {order.deliverySession?.deliveryStatus && (
+                    <div className={styles.metaRow}><Truck size={13} /><span>Delivery: {order.deliverySession.deliveryStatus}</span></div>
+                )}
+            </div>
+            {order.status === 'ASSIGNED_TO_INSPECTOR' && (
+                <button className={styles.deliveryActionBtn} onClick={() => onStart(order.orderId)} disabled={isStarting}>
+                    {isStarting ? <><Loader size={14} className={styles.spin} /> Starting...</> : <><Truck size={14} /> Start Shipping</>}
+                </button>
+            )}
+            {order.status === 'IN_DELIVERY' && (
+                <button className={styles.deliveryActionBtnSecondary} onClick={() => onFinish(order.orderId)} disabled={isFinishing}>
+                    {isFinishing ? <><Loader size={14} className={styles.spin} /> Completing...</> : <><PackageCheck size={14} /> Mark Delivered</>}
+                </button>
             )}
         </div>
     );
 }
 
-/* ── Main Dashboard ─────────────────────────────────────── */
 export default function InspectorDashboard() {
-    const [tab, setTab]           = useState('tasks');
+    const [tab, setTab] = useState('tasks');
     const [bookings, setBookings] = useState([]);
     const [requests, setRequests] = useState([]);
-    const [loading, setLoading]   = useState(true);
-    const [error, setError]       = useState('');
+    const [deliveryTasks, setDeliveryTasks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [confirming, setConfirming] = useState(null);
     const [reportTarget, setReportTarget] = useState(null);
-    const [deliveryOrderId, setDeliveryOrderId] = useState('');
-    const [deliveryOrder, setDeliveryOrder] = useState(null);
-    const [deliveryLoading, setDeliveryLoading] = useState(false);
-    const [deliveryActionLoading, setDeliveryActionLoading] = useState(false);
-    const [deliveryError, setDeliveryError] = useState('');
+    const [deliveryActionKey, setDeliveryActionKey] = useState('');
 
     const fetchData = useCallback(async () => {
-        setLoading(true); setError('');
+        setLoading(true);
+        setError('');
         try {
-            const [bk, rq] = await Promise.all([
+            const [bk, rq, dt] = await Promise.all([
                 getMyBookings().catch(() => []),
                 getMyRequests().catch(() => []),
+                getMyDeliveryTasks().catch(() => []),
             ]);
             setBookings(Array.isArray(bk) ? bk : []);
             setRequests(Array.isArray(rq) ? rq : []);
+            setDeliveryTasks(Array.isArray(dt) ? dt : []);
         } catch (e) {
             setError(e?.response?.data?.error || e.message || 'Failed to load tasks.');
         } finally {
@@ -192,62 +211,47 @@ export default function InspectorDashboard() {
         }
     };
 
+    const handleStartDelivery = async (orderId) => {
+        try {
+            setDeliveryActionKey(`start-${orderId}`);
+            await inspectorStartDelivery(orderId);
+            fetchData();
+        } catch (e) {
+            alert(e?.response?.data || 'Failed to start delivery.');
+        } finally {
+            setDeliveryActionKey('');
+        }
+    };
+
+    const handleFinishDelivery = async (orderId) => {
+        try {
+            setDeliveryActionKey(`finish-${orderId}`);
+            await inspectorMarkDelivered(orderId);
+            fetchData();
+        } catch (e) {
+            alert(e?.response?.data || 'Failed to mark delivery as completed.');
+        } finally {
+            setDeliveryActionKey('');
+        }
+    };
+
     const handleReportDone = () => {
         setReportTarget(null);
         fetchData();
     };
 
-    const handleLookupDeliveryOrder = async () => {
-        const value = deliveryOrderId.trim();
-        if (!value) {
-            setDeliveryError('Enter an order ID first.');
-            return;
-        }
-        try {
-            setDeliveryLoading(true);
-            setDeliveryError('');
-            const order = await getOrderById(value);
-            setDeliveryOrder(order);
-        } catch (e) {
-            setDeliveryOrder(null);
-            setDeliveryError(e?.response?.data || 'Failed to load order.');
-        } finally {
-            setDeliveryLoading(false);
-        }
-    };
-
-    const handleStartShipping = async () => {
-        if (!deliveryOrder?.orderId) return;
-        try {
-            setDeliveryActionLoading(true);
-            setDeliveryError('');
-            const updated = await inspectorMarkDelivered(deliveryOrder.orderId);
-            setDeliveryOrder(updated);
-        } catch (e) {
-            setDeliveryError(e?.response?.data || 'Failed to update delivery status.');
-        } finally {
-            setDeliveryActionLoading(false);
-        }
-    };
-
     const pendingCount = bookings.filter((b) => b.status === 'PENDING').length;
-    const activeCount  = requests.filter((r) => r.status !== 'COMPLETED').length;
-    const currentInspectorEmail = String(getCurrentUser()?.email || '').toLowerCase();
-    const canStartShipping = !!(
-        deliveryOrder &&
-        deliveryOrder.status === 'ASSIGNED_TO_INSPECTOR' &&
-        deliveryOrder.assignedInspector?.email?.toLowerCase() === currentInspectorEmail
-    );
+    const activeCount = requests.filter((r) => r.status !== 'COMPLETED').length;
+    const deliveryCount = deliveryTasks.length;
 
     return (
         <div className={styles.page}>
-            {/* Header */}
             <div className={styles.pageHeader}>
                 <div className={styles.headerLeft}>
                     <div className={styles.headerIconWrap}><Shield size={26} /></div>
                     <div>
                         <h1 className={styles.pageTitle}>Inspector Dashboard</h1>
-                        <p className={styles.pageSub}>Manage your assigned bicycle inspections</p>
+                        <p className={styles.pageSub}>Manage inspections and assigned delivery orders</p>
                     </div>
                 </div>
                 <button className={styles.refreshBtn} onClick={fetchData} disabled={loading}>
@@ -255,7 +259,6 @@ export default function InspectorDashboard() {
                 </button>
             </div>
 
-            {/* Stats */}
             <div className={styles.statsRow}>
                 <div className={styles.statCard}>
                     <ClipboardList size={20} className={styles.statIcon} />
@@ -270,65 +273,41 @@ export default function InspectorDashboard() {
                 <div className={`${styles.statCard} ${styles.statCardActive}`}>
                     <Clock size={20} className={styles.statIcon} />
                     <div className={styles.statValue}>{activeCount}</div>
-                    <div className={styles.statLabel}>In Progress</div>
+                    <div className={styles.statLabel}>Inspections</div>
                 </div>
                 <div className={`${styles.statCard} ${styles.statCardDone}`}>
-                    <CheckCircle size={20} className={styles.statIcon} />
-                    <div className={styles.statValue}>{requests.filter((r) => r.status === 'COMPLETED').length}</div>
-                    <div className={styles.statLabel}>Completed</div>
+                    <Truck size={20} className={styles.statIcon} />
+                    <div className={styles.statValue}>{deliveryCount}</div>
+                    <div className={styles.statLabel}>Delivery Orders</div>
                 </div>
             </div>
 
             <div className={styles.deliveryPanel}>
                 <div className={styles.deliveryPanelHeader}>
                     <div>
-                        <h2 className={styles.deliveryPanelTitle}>Delivery Orders</h2>
+                        <h2 className={styles.deliveryPanelTitle}>Delivery Tasks</h2>
                         <p className={styles.deliveryPanelSub}>
-                            Backend chưa có API list task giao hàng theo inspector, nên hiện tại tra cứu và xử lý theo `orderId`.
+                            Danh sách order giao hàng được assign trực tiếp từ backend.
                         </p>
                     </div>
                 </div>
-                <div className={styles.deliveryLookupRow}>
-                    <input
-                        className={styles.deliveryInput}
-                        placeholder="Enter order ID"
-                        value={deliveryOrderId}
-                        onChange={(e) => setDeliveryOrderId(e.target.value)}
-                    />
-                    <button className={styles.deliveryLookupBtn} onClick={handleLookupDeliveryOrder} disabled={deliveryLoading}>
-                        {deliveryLoading ? <><Loader size={14} className={styles.spin} /> Loading...</> : 'Lookup Order'}
-                    </button>
-                </div>
-                {deliveryError && <div className={styles.deliveryError}>{deliveryError}</div>}
-                {deliveryOrder && (
-                    <div className={styles.deliveryCard}>
-                        <div className={styles.deliveryStatusRow}>
-                            <span className={`${styles.badge} ${styles.badgeAssigned}`}>{deliveryOrder.status}</span>
-                            <span className={styles.cardId}>Order #{deliveryOrder.orderId}</span>
-                        </div>
-                        <h3 className={styles.cardTitle}>{deliveryOrder.postTitle || deliveryOrder.post?.title || 'Untitled order'}</h3>
-                        {deliveryOrder.deliveryAddress && (
-                            <div className={styles.metaRow}><MapPin size={13} /><span>{deliveryOrder.deliveryAddress}</span></div>
-                        )}
-                        {deliveryOrder.assignedInspector && (
-                            <div className={styles.metaRow}><User size={13} /><span>{deliveryOrder.assignedInspector.fullName || deliveryOrder.assignedInspector.email}</span></div>
-                        )}
-                        {canStartShipping ? (
-                            <button className={styles.deliveryActionBtn} onClick={handleStartShipping} disabled={deliveryActionLoading}>
-                                {deliveryActionLoading
-                                    ? <><Loader size={14} className={styles.spin} /> Updating...</>
-                                    : <><Truck size={14} /> Start Shipping</>}
-                            </button>
-                        ) : (
-                            <div className={styles.confirmedNote}>
-                                <AlertCircle size={13} /> Open the assigned order and wait until it is assigned to your account before starting shipping.
-                            </div>
-                        )}
+                {deliveryTasks.length === 0 ? (
+                    <div className={styles.emptyBlock}>No delivery tasks assigned yet.</div>
+                ) : (
+                    <div className={styles.deliveryGrid}>
+                        {deliveryTasks.map((order) => (
+                            <DeliveryCard
+                                key={order.orderId}
+                                order={order}
+                                actingOrderId={deliveryActionKey}
+                                onStart={handleStartDelivery}
+                                onFinish={handleFinishDelivery}
+                            />
+                        ))}
                     </div>
                 )}
             </div>
 
-            {/* Tabs */}
             <div className={styles.tabs}>
                 <button
                     className={`${styles.tab} ${tab === 'tasks' ? styles.tabActive : ''}`}
@@ -346,7 +325,6 @@ export default function InspectorDashboard() {
                 </button>
             </div>
 
-            {/* Content */}
             {loading && (
                 <div className={styles.stateBox}>
                     <Loader size={32} className={styles.spin} />
@@ -379,11 +357,10 @@ export default function InspectorDashboard() {
             )}
 
             {!loading && !error && tab === 'progress' && (() => {
-                const activeReqs    = requests.filter((r) => r.status !== 'COMPLETED');
+                const activeReqs = requests.filter((r) => r.status !== 'COMPLETED');
                 const completedReqs = requests.filter((r) => r.status === 'COMPLETED');
                 return (
                     <>
-                        {/* ── Active inspections ─────────────────── */}
                         <div className={styles.sectionLabel}>
                             <Clock size={14} /> Active Inspections
                             <span className={styles.sectionCount}>{activeReqs.length}</span>
@@ -401,7 +378,6 @@ export default function InspectorDashboard() {
                             </div>
                         )}
 
-                        {/* ── Completed inspections ──────────────── */}
                         {completedReqs.length > 0 && (
                             <>
                                 <div className={styles.sectionLabel} style={{ marginTop: 28 }}>
@@ -419,7 +395,6 @@ export default function InspectorDashboard() {
                 );
             })()}
 
-            {/* Report Modal */}
             {reportTarget && (
                 <InspectionReportModal
                     inspection={reportTarget}

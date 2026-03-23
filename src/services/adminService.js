@@ -29,6 +29,16 @@ const adminService = {
         return response.data;
     },
 
+    getDeliveryOrders: async () => {
+        const response = await api.get('/admin/orders/delivery');
+        return Array.isArray(response.data) ? response.data : [];
+    },
+
+    getDeliveryOrdersByStatus: async (status) => {
+        const response = await api.get('/admin/orders/delivery/by-status', { params: { status } });
+        return Array.isArray(response.data) ? response.data : [];
+    },
+
     getUserByEmail: async (email) => {
         const response = await api.get(`/admin/users/${email}`);
         return response.data;

@@ -1,0 +1,173 @@
+.page {
+    width: 100%;
+}
+
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.pageTitle {
+    margin: 0 0 6px;
+    font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+    font-size: 3rem;
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: #064E3B;
+    letter-spacing: 0.04em;
+}
+
+.pageSub {
+    margin: 0;
+    color: #64748b;
+    font-size: 15px;
+}
+
+.deliveryHeaderStats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.deliveryMiniStat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(6, 78, 59, 0.06);
+    color: #064E3B;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.panel {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.filterRow {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.filterChip {
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: #fff;
+    color: #475569;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.filterChipActive {
+    background: #064E3B;
+    color: #fff;
+    border-color: #064E3B;
+}
+
+.deliveryGrid {
+    display: grid;
+    gap: 16px;
+}
+
+.deliveryCard {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    border-radius: 18px;
+    padding: 18px;
+    display: grid;
+    gap: 10px;
+}
+
+.deliveryCardHeader {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.deliveryBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.badgePending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+}
+
+.badgeAssigned {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+}
+
+.badgeShipping {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+}
+
+.deliveryTitle {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    font-family: inherit !important;
+}
+
+.deliveryMeta {
+    font-size: 14px !important;
+    color: #475569 !important;
+    font-family: inherit !important;
+}
+
+.deliveryMetaGrid {
+    display: grid;
+    gap: 6px;
+}
+
+.assignRow {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.lookupField {
+    min-width: 240px;
+    flex: 1;
+}
+
+.actionButton {
+    background: #10B981 !important;
+    font-weight: 700 !important;
+}
+
+.emptyBlock {
+    padding: 28px 12px;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+}

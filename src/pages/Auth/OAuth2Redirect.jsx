@@ -38,6 +38,8 @@ export default function OAuth2Redirect() {
         if (role) {
             localStorage.setItem('userRole', role);
         }
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userIdOwnerEmail');
 
         // Save to AuthContext
         login({

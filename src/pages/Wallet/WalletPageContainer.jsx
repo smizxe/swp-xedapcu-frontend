@@ -9,21 +9,11 @@ import WalletPage from './WalletPage';
 const WalletPageContainer = () => {
     const { user } = useAuth();
     const currentUser = getCurrentUser();
-    const storedUser = (() => {
-        try {
-            const raw = localStorage.getItem('user');
-            return raw ? JSON.parse(raw) : null;
-        } catch {
-            return null;
-        }
-    })();
     const resolvedUserId = user?.userId
         || user?.id
-        || storedUser?.userId
-        || storedUser?.id
-        || currentUser?.userId
-        || localStorage.getItem('userId');
+        || currentUser?.userId;
     const userId = resolvedUserId != null && resolvedUserId !== '' ? Number(resolvedUserId) : null;
+    const [walletError, setWalletError] = useState('');
 
     const [walletData, setWalletData] = useState(null);
     const [transactions, setTransactions] = useState([]);
@@ -67,12 +57,19 @@ const WalletPageContainer = () => {
             setWalletData({ balance: 0 });
             setTransactions([]);
             setIsLoading(false);
+
+            if (currentUser?.token) {
+                setWalletError('Khong the tai vi chinh xac vi backend chua tra userId cho phien dang nhap hien tai. Vui long dang nhap lai sau khi backend bo sung userId trong auth/profile response.');
+            } else {
+                setWalletError('');
+            }
             return;
         }
 
+        setWalletError('');
         fetchWalletData();
         fetchTransactions();
-    }, [userId, fetchWalletData, fetchTransactions]);
+    }, [userId, currentUser?.token, fetchWalletData, fetchTransactions]);
 
     const handleDeposit = async (amount) => {
         if (!userId) {
@@ -115,6 +112,7 @@ const WalletPageContainer = () => {
     return (
         <WalletPage
             walletData={walletData}
+            walletError={walletError}
             transactions={transactions}
             isLoading={isLoading}
             onDeposit={handleDeposit}

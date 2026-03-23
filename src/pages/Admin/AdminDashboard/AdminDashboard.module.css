@@ -101,36 +101,3 @@
     font-family: inherit !important;
     margin-bottom: 16px !important;
 }
-
-.lookupRow {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.lookupField {
-    min-width: 240px;
-    flex: 1;
-}
-
-.deliveryCard {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(148, 163, 184, 0.2);
-    display: grid;
-    gap: 10px;
-}
-
-.deliveryTitle {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: #0f172a !important;
-    font-family: inherit !important;
-}
-
-.deliveryMeta {
-    font-size: 14px !important;
-    color: #475569 !important;
-    font-family: inherit !important;
-}

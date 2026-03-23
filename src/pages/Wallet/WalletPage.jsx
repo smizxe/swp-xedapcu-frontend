@@ -60,6 +60,7 @@ const isPositiveType = (type) => ['DEPOSIT', 'REFUND', 'COMPENSATION'].includes(
 
 const WalletPage = ({
     walletData,
+    walletError = '',
     transactions = [],
     isLoading = false,
     onDeposit,
@@ -235,6 +236,12 @@ const WalletPage = ({
                 <div className={styles.mainGrid}>
                     {/* Left Panel */}
                     <div className={styles.leftPanel}>
+                        {walletError && (
+                            <div className={styles.warningCard}>
+                                <div className={styles.warningTitle}>Wallet sync issue</div>
+                                <div className={styles.warningText}>{walletError}</div>
+                            </div>
+                        )}
                         <div className={styles.balanceCard}>
                             <div className={styles.balanceLabel}>CURRENT BALANCE</div>
                             {isLoading ? (
@@ -248,6 +255,7 @@ const WalletPage = ({
                                 className={styles.btnDeposit}
                                 icon={<PlusOutlined />}
                                 onClick={() => setDepositOpen(true)}
+                                disabled={Boolean(walletError)}
                                 block
                             >
                                 Deposit
@@ -256,6 +264,7 @@ const WalletPage = ({
                                 className={styles.btnWithdraw}
                                 icon={<BankOutlined />}
                                 onClick={() => setWithdrawOpen(true)}
+                                disabled={Boolean(walletError)}
                                 block
                             >
                                 Withdraw

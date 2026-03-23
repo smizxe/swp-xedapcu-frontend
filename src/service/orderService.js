@@ -30,6 +30,11 @@ const writeDeliveryAddressCache = (cache) => {
     localStorage.setItem(DELIVERY_ADDRESS_CACHE_KEY, JSON.stringify(cache));
 };
 
+const getNormalizedDeliveryAddress = (order) => {
+    if (!order) return '';
+    return order.deliveryAddress || order.deliverySession?.location || '';
+};
+
 export const saveOrderDeliveryAddress = (orderId, deliveryAddress) => {
     if (!orderId || !deliveryAddress?.trim()) return;
     const cache = readDeliveryAddressCache();
@@ -43,14 +48,28 @@ export const getSavedOrderDeliveryAddress = (orderId) => {
     return cache[String(orderId)] || '';
 };
 
+const normalizeOrder = (order) => {
+    if (!order) return order;
+    const normalizedDeliveryAddress = getNormalizedDeliveryAddress(order);
+    if (normalizedDeliveryAddress) {
+        saveOrderDeliveryAddress(order.orderId, normalizedDeliveryAddress);
+    }
+
+    return {
+        ...order,
+        deliveryAddress: normalizedDeliveryAddress,
+    };
+};
+
+const normalizeOrders = (orders) => (Array.isArray(orders) ? orders.map(normalizeOrder) : []);
+
 export const createDeposit = async (postId, deliveryAddress) => {
     const payload = {
         postId,
         deliveryAddress: deliveryAddress || ''
     };
     const response = await api.post(API_ENDPOINTS.ORDERS.DEPOSIT, payload);
-    saveOrderDeliveryAddress(response.data?.orderId, deliveryAddress);
-    return response.data;
+    return normalizeOrder(response.data);
 };
 
 export const cancelDeposit = async (orderId) => {
@@ -65,17 +84,22 @@ export const cancelBySeller = async (orderId) => {
 
 export const getMyOrders = async () => {
     const response = await api.get(API_ENDPOINTS.ORDERS.MY_ORDERS);
-    return response.data;
+    return normalizeOrders(response.data);
 };
 
 export const getMySales = async () => {
     const response = await api.get(API_ENDPOINTS.ORDERS.MY_SALES);
-    return response.data;
+    return normalizeOrders(response.data);
+};
+
+export const getMyDeliveryTasks = async () => {
+    const response = await api.get(API_ENDPOINTS.ORDERS.MY_DELIVERY_TASKS);
+    return normalizeOrders(response.data);
 };
 
 export const getOrderById = async (orderId) => {
     const response = await api.get(API_ENDPOINTS.ORDERS.GET_BY_ID(orderId));
-    return response.data;
+    return normalizeOrder(response.data);
 };
 
 export const scheduleDelivery = async (orderId, data) => {
@@ -91,6 +115,11 @@ export const sellerConfirmDelivery = async (orderId) => {
 
 export const adminAssignInspector = async (orderId, inspectorId) => {
     const response = await api.post(API_ENDPOINTS.ORDERS.ADMIN_ASSIGN_INSPECTOR(orderId, inspectorId));
+    return response.data;
+};
+
+export const inspectorStartDelivery = async (orderId) => {
+    const response = await api.post(API_ENDPOINTS.ORDERS.INSPECTOR_START_DELIVERY(orderId));
     return response.data;
 };
 

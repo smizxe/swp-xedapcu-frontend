@@ -34,6 +34,22 @@
     margin: 0;
 }
 
+.toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.searchInput {
+    flex: 1 1 280px;
+    min-width: 260px;
+}
+
+.filterSelect {
+    width: 200px;
+}
+
 .loadingWrapper {
     display: flex;
     justify-content: center;
@@ -167,4 +183,16 @@
     font-size: 13px;
     line-height: 1.6;
     color: #777;
+}
+
+@media (max-width: 600px) {
+    .toolbar {
+        flex-direction: column;
+    }
+
+    .searchInput,
+    .filterSelect {
+        width: 100%;
+        min-width: 100%;
+    }
 }

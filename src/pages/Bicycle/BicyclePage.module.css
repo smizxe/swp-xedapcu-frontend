@@ -30,6 +30,40 @@
     gap: 16px;
 }
 
+.toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+.searchInput,
+.toolbarSelect {
+    padding: 10px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.searchInput {
+    flex: 1 1 280px;
+    min-width: 260px;
+}
+
+.toolbarSelect {
+    min-width: 190px;
+}
+
+.searchInput:focus,
+.toolbarSelect:focus {
+    border-color: #2D5A27;
+    box-shadow: 0 0 0 3px var(--primary-ring);
+}
+
 .titles h1 {
     font-size: 28px;
     font-weight: 700;
@@ -414,4 +448,16 @@
 .btnDelete:hover {
     background: #fecaca;
     transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+    .toolbar {
+        flex-direction: column;
+    }
+
+    .searchInput,
+    .toolbarSelect {
+        width: 100%;
+        min-width: 100%;
+    }
 }

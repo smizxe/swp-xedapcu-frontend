@@ -108,26 +108,8 @@
     line-height: 1.5;
 }
 
-.deliveryLookupRow {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.deliveryInput {
-    min-width: 220px;
-    flex: 1;
-    padding: 12px 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: rgba(255, 255, 255, 0.9);
-    font-size: 0.92rem;
-    color: var(--color-text, #1E293B);
-}
-
-.deliveryLookupBtn,
-.deliveryActionBtn {
+.deliveryActionBtn,
+.deliveryActionBtnSecondary {
     padding: 11px 18px;
     border-radius: 10px;
     border: none;
@@ -146,29 +128,27 @@
     box-shadow: 0 4px 12px rgba(16,185,129,0.25);
 }
 
-.deliveryLookupBtn:disabled,
-.deliveryActionBtn:disabled {
+.deliveryActionBtnSecondary {
+    background: rgba(6, 78, 59, 0.08);
+    color: #064E3B;
+    border: 1px solid rgba(6, 78, 59, 0.16);
+    box-shadow: none;
+}
+
+.deliveryActionBtn:disabled,
+.deliveryActionBtnSecondary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     box-shadow: none;
 }
 
-.deliveryError {
-    margin-top: 12px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(239, 68, 68, 0.08);
-    color: #b91c1c;
-    border: 1px solid rgba(239, 68, 68, 0.18);
-    font-size: 0.85rem;
-}
-
 .deliveryCard {
-    margin-top: 16px;
     display: grid;
     gap: 10px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(226, 232, 240, 0.7);
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    border-radius: 18px;
+    padding: 18px;
 }
 
 .deliveryStatusRow {
@@ -176,6 +156,17 @@
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+}
+
+.deliveryGrid {
+    display: grid;
+    gap: 16px;
+}
+
+.emptyBlock {
+    padding: 18px 6px 4px;
+    font-size: 0.9rem;
+    color: var(--color-text-muted, #64748B);
 }
 
 /* ── Tabs ────────────────────────────────────────────── */

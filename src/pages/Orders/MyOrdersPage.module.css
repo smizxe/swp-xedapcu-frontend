@@ -26,6 +26,22 @@
     margin-bottom: 32px;
 }
 
+.toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.searchInput {
+    flex: 1 1 280px;
+    min-width: 260px;
+}
+
+.filterSelect {
+    width: 190px;
+}
+
 .loadingWrapper {
     display: flex;
     justify-content: center;
@@ -111,6 +127,16 @@
 }
 
 @media (max-width: 600px) {
+    .toolbar {
+        flex-direction: column;
+    }
+
+    .searchInput,
+    .filterSelect {
+        width: 100%;
+        min-width: 100%;
+    }
+
     .priceRow {
         flex-direction: column;
         gap: 4px;

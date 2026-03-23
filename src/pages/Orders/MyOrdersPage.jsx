@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Empty, Modal } from 'antd';
+import { Spin, Button, Tag, message, Empty, Modal, Input, Select } from 'antd';
 import {
     ShoppingOutlined,
     EyeOutlined,
@@ -30,6 +30,9 @@ function MyOrdersPage() {
     const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [sortOrder, setSortOrder] = useState('NEWEST');
 
     const fetchOrders = useCallback(() => {
         setLoading(true);
@@ -86,6 +89,35 @@ function MyOrdersPage() {
         }
     };
 
+    const filteredOrders = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase();
+
+        const filtered = orders.filter((order) => {
+            const matchesSearch = !normalizedSearch || [
+                `order #${order.orderId}`,
+                order.postTitle,
+                order.post?.title,
+                order.seller?.fullName,
+                order.seller?.email,
+                order.deliveryAddress,
+            ]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(normalizedSearch));
+
+            const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
+
+            return matchesSearch && matchesStatus;
+        });
+
+        return [...filtered].sort((a, b) => {
+            const left = new Date(a.createdAt || 0).getTime();
+            const right = new Date(b.createdAt || 0).getTime();
+            return sortOrder === 'OLDEST' ? left - right : right - left;
+        });
+    }, [orders, searchTerm, statusFilter, sortOrder]);
+
+    const orderStatuses = Array.from(new Set(orders.map((order) => order.status).filter(Boolean)));
+
     return (
         <div className={styles.pageWrapper}>
             <Header variant="dark" />
@@ -95,13 +127,45 @@ function MyOrdersPage() {
                 </h1>
                 <p className={styles.pageSubtitle}>Track and manage your purchases.</p>
 
+                {!loading && orders.length > 0 && (
+                    <div className={styles.toolbar}>
+                        <Input
+                            className={styles.searchInput}
+                            placeholder="Search by order id, post, seller, address..."
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                            allowClear
+                        />
+                        <Select
+                            className={styles.filterSelect}
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                            options={[
+                                { value: 'ALL', label: 'All Statuses' },
+                                ...orderStatuses.map((status) => ({ value: status, label: status })),
+                            ]}
+                        />
+                        <Select
+                            className={styles.filterSelect}
+                            value={sortOrder}
+                            onChange={setSortOrder}
+                            options={[
+                                { value: 'NEWEST', label: 'Newest First' },
+                                { value: 'OLDEST', label: 'Oldest First' },
+                            ]}
+                        />
+                    </div>
+                )}
+
                 {loading ? (
                     <div className={styles.loadingWrapper}><Spin size="large" /></div>
                 ) : orders.length === 0 ? (
                     <Empty description="You haven't placed any orders yet." />
+                ) : filteredOrders.length === 0 ? (
+                    <Empty description="No orders match your current filters." />
                 ) : (
                     <div className={styles.orderList}>
-                        {orders.map((order) => (
+                        {filteredOrders.map((order) => (
                             <div key={order.orderId} className={styles.orderCard}>
                                 <div className={styles.orderHeader}>
                                     <span className={styles.orderId}>Order #{order.orderId}</span>

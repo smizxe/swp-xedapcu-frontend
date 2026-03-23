@@ -14,7 +14,7 @@ import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
 import { getCurrentUser } from '../../service/authService';
 import adminService from '../../services/adminService';
-import { getOrderById, cancelDeposit, cancelBySeller, completeOrder, scheduleDelivery, sellerConfirmDelivery, adminAssignInspector, inspectorMarkDelivered, reportBuyerNoShow, reportSellerNoShow, getSavedOrderDeliveryAddress, saveOrderDeliveryAddress } from '../../service/orderService';
+import { getOrderById, cancelDeposit, cancelBySeller, completeOrder, scheduleDelivery, sellerConfirmDelivery, adminAssignInspector, inspectorStartDelivery, inspectorMarkDelivered, reportBuyerNoShow, reportSellerNoShow, getSavedOrderDeliveryAddress, saveOrderDeliveryAddress } from '../../service/orderService';
 import InspectionBookingModal from './InspectionBookingModal';
 import styles from './OrderDetailPage.module.css';
 
@@ -70,9 +70,9 @@ function OrderDetailPage() {
     useEffect(() => {
         setDeliveryForm((prev) => ({
             ...prev,
-            deliveryAddress: order?.deliveryAddress || getSavedOrderDeliveryAddress(order?.orderId) || prev.deliveryAddress || '',
+            deliveryAddress: order?.deliveryAddress || order?.deliverySession?.location || getSavedOrderDeliveryAddress(order?.orderId) || prev.deliveryAddress || '',
         }));
-    }, [order?.deliveryAddress, order?.orderId]);
+    }, [order?.deliveryAddress, order?.deliverySession?.location, order?.orderId]);
 
     useEffect(() => {
         const currentRole = String(getCurrentUser()?.role || user?.role || '');
@@ -102,8 +102,9 @@ function OrderDetailPage() {
         currentUserEmail === order.assignedInspector.email?.toLowerCase()
     );
     const canManageDelivery = isSeller && ['DEPOSIT_PAID', 'PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW'].includes(order?.status);
+    const resolvedOrderDeliveryAddress = order?.deliveryAddress || order?.deliverySession?.location || '';
     const savedDeliveryAddress = order?.orderId ? getSavedOrderDeliveryAddress(order.orderId) || '' : '';
-    const currentDeliveryAddress = deliveryForm.deliveryAddress || order?.deliveryAddress || savedDeliveryAddress;
+    const currentDeliveryAddress = deliveryForm.deliveryAddress || resolvedOrderDeliveryAddress || savedDeliveryAddress;
 
     const handleDeliveryAddressChange = (value) => {
         setDeliveryForm((prev) => ({ ...prev, deliveryAddress: value }));
@@ -225,13 +226,23 @@ function OrderDetailPage() {
         }
     };
 
-    const handleInspectorMarkDelivered = async () => {
+    const handleInspectorStartDelivery = async () => {
         try {
-            await inspectorMarkDelivered(orderId);
-            message.success('Delivery handoff confirmed. Order is now in shipping progress.');
+            await inspectorStartDelivery(orderId);
+            message.success('Shipping started successfully.');
             fetchOrder();
         } catch (err) {
             message.error(err.response?.data || 'Failed to update delivery status.');
+        }
+    };
+
+    const handleInspectorMarkDelivered = async () => {
+        try {
+            await inspectorMarkDelivered(orderId);
+            message.success('Delivery completed successfully.');
+            fetchOrder();
+        } catch (err) {
+            message.error(err.response?.data || 'Failed to mark delivery as completed.');
         }
     };
 
@@ -283,8 +294,8 @@ function OrderDetailPage() {
                         <Descriptions.Item label="Total Amount">{formatPrice(order.totalAmount)} VND</Descriptions.Item>
                         <Descriptions.Item label="Remaining">{formatPrice(order.remainingAmount)} VND</Descriptions.Item>
                         <Descriptions.Item label="Created">{order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '—'}</Descriptions.Item>
-                        {order.deliveryAddress && (
-                            <Descriptions.Item label="Delivery Address">{order.deliveryAddress}</Descriptions.Item>
+                        {resolvedOrderDeliveryAddress && (
+                            <Descriptions.Item label="Delivery Address">{resolvedOrderDeliveryAddress}</Descriptions.Item>
                         )}
                         {order.expiresAt && (
                             <Descriptions.Item label="Expires">{new Date(order.expiresAt).toLocaleString('vi-VN')}</Descriptions.Item>
@@ -325,6 +336,16 @@ function OrderDetailPage() {
                         <h3 className={styles.sectionTitle}>Assigned Inspector</h3>
                         <p>{order.assignedInspector.fullName || 'Unknown'}</p>
                         <p className={styles.metaText}>{order.assignedInspector.email}</p>
+                    </div>
+                )}
+
+                {order.deliverySession && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Delivery Session</h3>
+                        {order.deliverySession.location && <p className={styles.metaText}>Location: {order.deliverySession.location}</p>}
+                        {order.deliverySession.deliveryStatus && <p className={styles.metaText}>Status: {order.deliverySession.deliveryStatus}</p>}
+                        {order.deliverySession.assignedAt && <p className={styles.metaText}>Assigned at: {new Date(order.deliverySession.assignedAt).toLocaleString('vi-VN')}</p>}
+                        {order.deliverySession.deliveredAt && <p className={styles.metaText}>Delivered at: {new Date(order.deliverySession.deliveredAt).toLocaleString('vi-VN')}</p>}
                     </div>
                 )}
 
@@ -376,7 +397,7 @@ function OrderDetailPage() {
                                         icon={<CarOutlined />}
                                         onClick={() => {
                                             setDeliveryForm({
-                                                deliveryAddress: getSavedOrderDeliveryAddress(order.orderId) || currentDeliveryAddress || '',
+                                                deliveryAddress: currentDeliveryAddress || getSavedOrderDeliveryAddress(order.orderId) || '',
                                                 deliveryTime: null,
                                             });
                                             setDeliveryOpen(true);
@@ -452,7 +473,7 @@ function OrderDetailPage() {
                                 type="primary"
                                 icon={<CarOutlined />}
                                 className={styles.btnPrimary}
-                                onClick={handleInspectorMarkDelivered}
+                                onClick={handleInspectorStartDelivery}
                             >
                                 Start Shipping
                             </Button>
@@ -468,6 +489,16 @@ function OrderDetailPage() {
                     <div className={styles.card}>
                         <h3 className={styles.sectionTitle}>Actions</h3>
                         <div className={styles.actionRow}>
+                            {isAssignedInspector && (
+                                <Button
+                                    type="primary"
+                                    icon={<CheckCircleOutlined />}
+                                    className={styles.btnPrimary}
+                                    onClick={handleInspectorMarkDelivered}
+                                >
+                                    Mark Delivered
+                                </Button>
+                            )}
                             {isBuyer && (
                                 <>
                                     <Button
@@ -522,7 +553,7 @@ function OrderDetailPage() {
                 <div className={styles.formGroup}>
                     <label className={styles.formLabel}>Delivery Address</label>
                     <Input
-                        placeholder="Buyer address will auto-fill here if it was saved in this browser"
+                        placeholder="Buyer address should auto-fill here from the deposit order"
                         value={currentDeliveryAddress}
                         onChange={(e) => handleDeliveryAddressChange(e.target.value)}
                     />

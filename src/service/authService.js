@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { API_CONFIG, API_ENDPOINTS } from '../config/apiConfig';
 
+const USER_ID_STORAGE_KEY = 'userId';
+const USER_ID_OWNER_EMAIL_STORAGE_KEY = 'userIdOwnerEmail';
+
 // Create axios instance
 const api = axios.create({
     baseURL: API_CONFIG.BASE_URL,
@@ -25,7 +28,11 @@ export const loginUser = async (email, password) => {
                 localStorage.setItem('userRole', String(data.role));
             }
             if (data.userId != null) {
-                localStorage.setItem('userId', String(data.userId));
+                localStorage.setItem(USER_ID_STORAGE_KEY, String(data.userId));
+                localStorage.setItem(USER_ID_OWNER_EMAIL_STORAGE_KEY, data.email);
+            } else {
+                localStorage.removeItem(USER_ID_STORAGE_KEY);
+                localStorage.removeItem(USER_ID_OWNER_EMAIL_STORAGE_KEY);
             }
         }
 
@@ -74,16 +81,24 @@ export const logoutUser = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
+    localStorage.removeItem(USER_ID_STORAGE_KEY);
+    localStorage.removeItem(USER_ID_OWNER_EMAIL_STORAGE_KEY);
 };
 
 // Get current user from localStorage
 export const getCurrentUser = () => {
+    const email = localStorage.getItem('userEmail');
+    const storedUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
+    const userIdOwnerEmail = localStorage.getItem(USER_ID_OWNER_EMAIL_STORAGE_KEY);
+    const resolvedUserId = storedUserId && email && userIdOwnerEmail === email
+        ? storedUserId
+        : null;
+
     return {
         token: localStorage.getItem('authToken'),
-        email: localStorage.getItem('userEmail'),
+        email,
         role: localStorage.getItem('userRole'),
-        userId: localStorage.getItem('userId'),
+        userId: resolvedUserId,
     };
 };
 

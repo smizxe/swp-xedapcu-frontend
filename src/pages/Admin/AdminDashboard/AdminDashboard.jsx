@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Alert, Button, TextField, MenuItem } from '@mui/material';
+import { Box, Typography, Alert, Button } from '@mui/material';
 import { useAuth } from '../../../context/AuthContext';
 import adminService from '../../../services/adminService';
-import { getOrderById, adminAssignInspector } from '../../../service/orderService';
-import {
-    RefreshCw,
-} from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import styles from './AdminDashboard.module.css';
 
 const StatCard = ({ title, value, subtitle }) => (
@@ -22,18 +19,12 @@ const StatCard = ({ title, value, subtitle }) => (
     </div>
 );
 
+
 const AdminDashboard = () => {
     const { isAdmin, loading: authLoading } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [inspectors, setInspectors] = useState([]);
-    const [deliveryOrderId, setDeliveryOrderId] = useState('');
-    const [deliveryOrder, setDeliveryOrder] = useState(null);
-    const [selectedInspectorId, setSelectedInspectorId] = useState('');
-    const [deliveryLoading, setDeliveryLoading] = useState(false);
-    const [deliveryError, setDeliveryError] = useState('');
-    const [assignLoading, setAssignLoading] = useState(false);
 
     const fetchStats = async () => {
         try {
@@ -55,63 +46,12 @@ const AdminDashboard = () => {
         }
     };
 
-    const fetchInspectors = async () => {
-        try {
-            const users = await adminService.getAllUsers();
-            const list = Array.isArray(users) ? users : [];
-            setInspectors(list.filter((item) => String(item.role).includes('INSPECTOR')));
-        } catch {
-            setInspectors([]);
-        }
-    };
-
     useEffect(() => {
-        if (authLoading || !isAdmin) {
-            return;
-        }
+        if (authLoading || !isAdmin) return;
         fetchStats();
-        fetchInspectors();
     }, [authLoading, isAdmin]);
 
-    const handleLookupDelivery = async () => {
-        if (!deliveryOrderId.trim()) {
-            setDeliveryError('Enter an order ID first.');
-            return;
-        }
-        try {
-            setDeliveryLoading(true);
-            setDeliveryError('');
-            setSelectedInspectorId('');
-            const order = await getOrderById(deliveryOrderId.trim());
-            setDeliveryOrder(order);
-        } catch (err) {
-            setDeliveryOrder(null);
-            setDeliveryError(err?.response?.data || 'Failed to load order details.');
-        } finally {
-            setDeliveryLoading(false);
-        }
-    };
-
-    const handleAssignInspector = async () => {
-        if (!deliveryOrder?.orderId || !selectedInspectorId) {
-            setDeliveryError('Select an inspector before assigning.');
-            return;
-        }
-        try {
-            setAssignLoading(true);
-            setDeliveryError('');
-            const updated = await adminAssignInspector(deliveryOrder.orderId, selectedInspectorId);
-            setDeliveryOrder(updated);
-        } catch (err) {
-            setDeliveryError(err?.response?.data || 'Failed to assign inspector.');
-        } finally {
-            setAssignLoading(false);
-        }
-    };
-
-    if (authLoading || (!isAdmin && !loading)) {
-        return null;
-    }
+    if (authLoading || (!isAdmin && !loading)) return null;
 
     const userStats = stats?.users || {};
     const postStats = stats?.posts || {};
@@ -159,87 +99,6 @@ const AdminDashboard = () => {
                     <Typography fontFamily="inherit">Reserved posts: <strong>{postStats.reserved ?? '-'}</strong></Typography>
                     <Typography fontFamily="inherit">Sold posts: <strong>{postStats.sold ?? '-'}</strong></Typography>
                     <Typography fontFamily="inherit">Cancelled posts: <strong>{postStats.cancelled ?? '-'}</strong></Typography>
-                </div>
-            </div>
-
-            <div className={styles.chartPlaceholder}>
-                <Typography variant="h5" fontWeight="bold" mb={2} color="#0f172a" fontFamily="inherit">
-                    Delivery Inspector Assignment
-                </Typography>
-                <div className={styles.glassCard}>
-                    <Typography className={styles.helperText}>
-                        Backend chưa có API list toàn bộ delivery orders cho admin, nên hiện tại admin xử lý assignment bằng cách nhập `orderId`.
-                    </Typography>
-                    <div className={styles.lookupRow}>
-                        <TextField
-                            label="Order ID"
-                            value={deliveryOrderId}
-                            onChange={(e) => setDeliveryOrderId(e.target.value)}
-                            size="small"
-                            className={styles.lookupField}
-                        />
-                        <Button
-                            variant="contained"
-                            onClick={handleLookupDelivery}
-                            disabled={deliveryLoading}
-                            sx={{ backgroundColor: '#064E3B', '&:hover': { backgroundColor: '#053b2d' } }}
-                        >
-                            {deliveryLoading ? 'Loading...' : 'Lookup Order'}
-                        </Button>
-                    </div>
-
-                    {deliveryError && (
-                        <Alert severity="error" sx={{ mt: 2 }}>
-                            {deliveryError}
-                        </Alert>
-                    )}
-
-                    {deliveryOrder && (
-                        <div className={styles.deliveryCard}>
-                            <Typography className={styles.deliveryTitle}>
-                                Order #{deliveryOrder.orderId} · {deliveryOrder.postTitle || deliveryOrder.post?.title || 'Untitled'}
-                            </Typography>
-                            <Typography className={styles.deliveryMeta}>
-                                Status: <strong>{deliveryOrder.status}</strong>
-                            </Typography>
-                            {deliveryOrder.deliveryAddress && (
-                                <Typography className={styles.deliveryMeta}>
-                                    Delivery address: <strong>{deliveryOrder.deliveryAddress}</strong>
-                                </Typography>
-                            )}
-                            {deliveryOrder.assignedInspector && (
-                                <Typography className={styles.deliveryMeta}>
-                                    Assigned inspector: <strong>{deliveryOrder.assignedInspector.fullName || deliveryOrder.assignedInspector.email}</strong>
-                                </Typography>
-                            )}
-                            {['PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW'].includes(deliveryOrder.status) && (
-                                <div className={styles.lookupRow}>
-                                    <TextField
-                                        select
-                                        label="Inspector"
-                                        size="small"
-                                        value={selectedInspectorId}
-                                        onChange={(e) => setSelectedInspectorId(e.target.value)}
-                                        className={styles.lookupField}
-                                    >
-                                        {inspectors.map((item) => (
-                                            <MenuItem key={item.userId || item.email} value={item.userId}>
-                                                {item.fullName || item.email} ({item.email})
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                    <Button
-                                        variant="contained"
-                                        onClick={handleAssignInspector}
-                                        disabled={assignLoading || !selectedInspectorId}
-                                        sx={{ backgroundColor: '#10B981', '&:hover': { backgroundColor: '#0f9f70' } }}
-                                    >
-                                        {assignLoading ? 'Assigning...' : 'Assign Inspector'}
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </div>
             </div>
         </Box>

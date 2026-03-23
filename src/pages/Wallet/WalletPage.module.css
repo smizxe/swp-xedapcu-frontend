@@ -37,6 +37,28 @@
     gap: 16px;
 }
 
+.warningCard {
+    background: #fff8e1;
+    border: 1px solid #f5d48a;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.warningTitle {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #8c6d1f;
+    margin-bottom: 6px;
+}
+
+.warningText {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #6b4e16;
+}
+
 /* Balance card */
 .balanceCard {
     background: #fff;

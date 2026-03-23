@@ -12,6 +12,7 @@ import PostDetailPage from './pages/Marketplace/PostDetail/PostDetailPage.jsx';
 import BikeDetail from './pages/BikeDetail/BikeDetail.jsx';
 import BicyclePage from './pages/Bicycle/BicyclePage.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard/AdminDashboard.jsx';
+import DeliveryManagement from './pages/Admin/DeliveryManagement/DeliveryManagement.jsx';
 import CategoryManagement from './pages/Admin/CategoryManagement/CategoryManagement.jsx';
 import InspectionAdminPage from './pages/Admin/InspectionAdminPage/InspectionAdminPage.jsx';
 import SellerDashboard from './pages/Seller/SellerDashboard.jsx';
@@ -47,6 +48,7 @@ function App() {
           <Route path="/:userId/bicycles" element={<BicyclePage />} />
           <Route path="/admin" element={<DashboardLayout />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="delivery" element={<DeliveryManagement />} />
             <Route path="categories" element={<CategoryManagement />} />
             <Route path="inspections" element={<InspectionAdminPage />} />
             <Route path="posts" element={<PostManagement />} />

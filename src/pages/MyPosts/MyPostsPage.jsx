@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Empty, Popconfirm, Modal, Input } from 'antd';
+import { Spin, Button, Tag, message, Empty, Popconfirm, Modal, Input, Select } from 'antd';
 import {
     FileTextOutlined,
     EyeOutlined,
@@ -52,6 +52,9 @@ export default function MyPostsPage() {
     const [editModal, setEditModal] = useState({ open: false, post: null });
     const [editForm, setEditForm] = useState({ title: '', description: '', price: '' });
     const [savingEdit, setSavingEdit] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [sortOrder, setSortOrder] = useState('NEWEST');
 
     const fetchPosts = useCallback(() => {
         setLoading(true);
@@ -192,6 +195,34 @@ export default function MyPostsPage() {
         }
     };
 
+    const filteredPosts = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase();
+
+        const filtered = posts.filter((post) => {
+            const matchesSearch = !normalizedSearch || [
+                `post #${post.postId}`,
+                post.title,
+                post.description,
+                post.bicycle?.brand,
+                post.bicycle?.frameSize,
+            ]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(normalizedSearch));
+
+            const matchesStatus = statusFilter === 'ALL' || post.status === statusFilter;
+
+            return matchesSearch && matchesStatus;
+        });
+
+        return [...filtered].sort((a, b) => {
+            const left = new Date(a.createdAt || 0).getTime();
+            const right = new Date(b.createdAt || 0).getTime();
+            return sortOrder === 'OLDEST' ? left - right : right - left;
+        });
+    }, [posts, searchTerm, statusFilter, sortOrder]);
+
+    const postStatuses = Array.from(new Set(posts.map((post) => post.status).filter(Boolean)));
+
     return (
         <div className={styles.pageWrapper}>
             <Header variant="dark" />
@@ -213,6 +244,41 @@ export default function MyPostsPage() {
                     </Button>
                 </div>
 
+                {!loading && posts.length > 0 && (
+                    <div className={styles.toolbar}>
+                        <Input
+                            className={styles.searchInput}
+                            placeholder="Search by post title, brand, description..."
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                            allowClear
+                        />
+                        <Select
+                            className={styles.filterSelect}
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                            options={[
+                                { value: 'ALL', label: 'All Statuses' },
+                                ...postStatuses.map((status) => ({
+                                    value: status,
+                                    label: STATUS_LABEL[status] || status,
+                                })),
+                            ]}
+                        />
+                        <Select
+                            className={styles.filterSelect}
+                            value={sortOrder}
+                            onChange={setSortOrder}
+                            options={[
+                                { value: 'NEWEST', label: 'Newest First' },
+                                { value: 'OLDEST', label: 'Oldest First' },
+                                { value: 'PRICE_HIGH', label: 'Price High to Low' },
+                                { value: 'PRICE_LOW', label: 'Price Low to High' },
+                            ]}
+                        />
+                    </div>
+                )}
+
                 {loading ? (
                     <div className={styles.loadingWrapper}><Spin size="large" /></div>
                 ) : posts.length === 0 ? (
@@ -228,9 +294,23 @@ export default function MyPostsPage() {
                             Go Create One
                         </Button>
                     </div>
+                ) : filteredPosts.length === 0 ? (
+                    <div className={styles.emptyWrapper}>
+                        <Empty description="No posts match your current filters." />
+                    </div>
                 ) : (
                     <div className={styles.postList}>
-                        {posts.map((post) => (
+                        {filteredPosts
+                            .sort((a, b) => {
+                                if (sortOrder === 'PRICE_HIGH') {
+                                    return Number(b.price || 0) - Number(a.price || 0);
+                                }
+                                if (sortOrder === 'PRICE_LOW') {
+                                    return Number(a.price || 0) - Number(b.price || 0);
+                                }
+                                return 0;
+                            })
+                            .map((post) => (
                             <div key={post.postId} className={styles.postCard}>
                                 <div className={styles.postHeader}>
                                     <div className={styles.postMeta}>

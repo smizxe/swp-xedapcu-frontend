@@ -57,12 +57,14 @@ export const API_ENDPOINTS = {
     DEPOSIT: '/api/orders/deposit',
     MY_ORDERS: '/api/orders/my-orders',
     MY_SALES: '/api/orders/my-sales',
+    MY_DELIVERY_TASKS: '/api/orders/my-delivery-tasks',
     GET_BY_ID: (id) => `/api/orders/${id}`,
     CANCEL: (id) => `/api/orders/${id}/cancel`,
     SELLER_CANCEL: (id) => `/api/orders/${id}/seller-cancel`,
     SCHEDULE_DELIVERY: (id) => `/api/orders/${id}/schedule-delivery`,
     SELLER_CONFIRM_DELIVERY: (id) => `/api/orders/${id}/seller-confirm-delivery`,
     ADMIN_ASSIGN_INSPECTOR: (orderId, inspectorId) => `/api/orders/${orderId}/admin-assign-inspector/${inspectorId}`,
+    INSPECTOR_START_DELIVERY: (id) => `/api/orders/${id}/inspector-start-delivery`,
     INSPECTOR_MARK_DELIVERED: (id) => `/api/orders/${id}/inspector-mark-delivered`,
     COMPLETE: (id) => `/api/orders/${id}/complete`,
     REPORT_BUYER_NO_SHOW: (id) => `/api/orders/${id}/report-buyer-no-show`,
@@ -91,6 +93,8 @@ export const API_ENDPOINTS = {
   // Admin endpoints
   ADMIN: {
     GET_ALL_USERS: '/api/admin/users',
+    GET_DELIVERY_ORDERS: '/api/admin/orders/delivery',
+    GET_DELIVERY_ORDERS_BY_STATUS: '/api/admin/orders/delivery/by-status',
     GET_USER_BY_EMAIL: (email) => `/api/admin/users/${email}`,
     UPDATE_ROLE: (email) => `/api/admin/users/${email}/role`,
     DELETE_USER: (email) => `/api/admin/users/${email}`,
