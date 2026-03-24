@@ -50,7 +50,7 @@ export default function MyPostsPage() {
     const [imageModal, setImageModal] = useState({ open: false, postId: null });
     const [verifyModal, setVerifyModal] = useState({ open: false, postId: null });
     const [editModal, setEditModal] = useState({ open: false, post: null });
-    const [editForm, setEditForm] = useState({ title: '', description: '', price: '' });
+    const [editForm, setEditForm] = useState({ title: '', description: '' });
     const [savingEdit, setSavingEdit] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
@@ -103,13 +103,12 @@ export default function MyPostsPage() {
         setEditForm({
             title: post.title || '',
             description: post.description || '',
-            price: post.price ?? '',
         });
     };
 
     const closeEditModal = () => {
         setEditModal({ open: false, post: null });
-        setEditForm({ title: '', description: '', price: '' });
+        setEditForm({ title: '', description: '' });
         setSavingEdit(false);
     };
 
@@ -161,7 +160,6 @@ export default function MyPostsPage() {
         const targetPost = editModal.post;
         const title = editForm.title.trim();
         const description = editForm.description.trim();
-        const price = Number(editForm.price);
 
         if (!targetPost?.postId || !targetPost?.bicycle?.bicycleId) {
             message.error('This post is missing bicycle information.');
@@ -173,18 +171,13 @@ export default function MyPostsPage() {
             return;
         }
 
-        if (!Number.isFinite(price) || price <= 0) {
-            message.warning('Please enter a valid price.');
-            return;
-        }
-
         setSavingEdit(true);
         try {
             await updatePost(targetPost.postId, {
                 bicycleId: targetPost.bicycle.bicycleId,
                 title,
                 description,
-                price,
+                price: targetPost.price,
             });
             message.success('Post updated.');
             closeEditModal();
@@ -354,6 +347,8 @@ export default function MyPostsPage() {
                                     <Button
                                         size="small"
                                         icon={<EditOutlined />}
+                                        disabled={post.status === 'RESERVED' || post.status === 'SOLD'}
+                                        title={post.status === 'RESERVED' ? 'Cannot edit — a buyer has placed a deposit on this post' : post.status === 'SOLD' ? 'Cannot edit — this post has been sold' : undefined}
                                         onClick={() => openEditModal(post)}
                                     >
                                         Edit
@@ -361,6 +356,8 @@ export default function MyPostsPage() {
                                     <Button
                                         size="small"
                                         icon={<PictureOutlined />}
+                                        disabled={post.status === 'RESERVED' || post.status === 'SOLD'}
+                                        title={post.status === 'RESERVED' ? 'Cannot edit photos — a buyer has placed a deposit on this post' : post.status === 'SOLD' ? 'Cannot edit photos — this post has been sold' : undefined}
                                         onClick={() => setImageModal({ open: true, postId: post.postId })}
                                     >
                                         Photos
@@ -370,6 +367,8 @@ export default function MyPostsPage() {
                                             size="small"
                                             icon={<SendOutlined />}
                                             loading={actionId === post.postId}
+                                            disabled={post.status === 'RESERVED' || post.status === 'SOLD'}
+                                            title={post.status === 'RESERVED' ? 'Cannot request review — a buyer has placed a deposit' : post.status === 'SOLD' ? 'Cannot request review — this post has been sold' : undefined}
                                             onClick={() => handleRequestReview(post.postId)}
                                         >
                                             Request Review
@@ -379,6 +378,8 @@ export default function MyPostsPage() {
                                         <Button
                                             size="small"
                                             icon={<SafetyCertificateOutlined />}
+                                            disabled={post.status === 'RESERVED' || post.status === 'SOLD'}
+                                            title={post.status === 'RESERVED' ? 'Cannot request verify — a buyer has placed a deposit' : post.status === 'SOLD' ? 'Cannot request verify — this post has been sold' : undefined}
                                             onClick={() => openVerifyModal(post)}
                                         >
                                             Request Verify
@@ -400,6 +401,7 @@ export default function MyPostsPage() {
                                         onConfirm={() => handleDelete(post.postId)}
                                         okText="Delete"
                                         cancelText="Cancel"
+                                        disabled={post.status === 'RESERVED' || post.status === 'SOLD'}
                                         okButtonProps={{ danger: true }}
                                     >
                                         <Button
@@ -407,6 +409,8 @@ export default function MyPostsPage() {
                                             danger
                                             icon={<DeleteOutlined />}
                                             loading={actionId === post.postId}
+                                            disabled={post.status === 'RESERVED' || post.status === 'SOLD'}
+                                            title={post.status === 'RESERVED' ? 'Cannot delete — a buyer has placed a deposit' : post.status === 'SOLD' ? 'Cannot delete — this post has been sold' : undefined}
                                         >
                                             Delete
                                         </Button>
@@ -453,16 +457,6 @@ export default function MyPostsPage() {
                 </div>
 
                 <div className={styles.editFormGroup}>
-                    <label className={styles.editLabel}>Price (VND)</label>
-                    <Input
-                        value={editForm.price}
-                        placeholder="Enter sale price"
-                        inputMode="numeric"
-                        onChange={(event) => setEditForm((prev) => ({ ...prev, price: event.target.value }))}
-                    />
-                </div>
-
-                <div className={styles.editFormGroup}>
                     <label className={styles.editLabel}>Description</label>
                     <Input.TextArea
                         value={editForm.description}
@@ -473,8 +467,7 @@ export default function MyPostsPage() {
                 </div>
 
                 <p className={styles.editHint}>
-                    Bicycle specs stay linked to your selected bicycle. This form updates the post title,
-                    description, and selling price.
+                    Bicycle specs stay linked to your selected bicycle. This form updates the post title and description.
                 </p>
             </Modal>
         </div>

@@ -72,9 +72,15 @@ function StepPickBike({ bicycles, selectedId, onSelect }) {
         );
     }
 
+    const sortedBicycles = [...bicycles].sort((a, b) => {
+        const idA = a.bicycleId ?? a.id ?? 0;
+        const idB = b.bicycleId ?? b.id ?? 0;
+        return idB - idA;
+    });
+
     return (
         <div className={styles.bikeGrid}>
-            {bicycles.map((bike) => {
+            {sortedBicycles.map((bike) => {
                 const id = bike.bicycleId ?? bike.id;
                 const isSelected = selectedId === id;
 
@@ -189,6 +195,12 @@ function StepFillDetails({
                         onChange={onChange}
                         required
                     />
+                    <p className={styles.feeNotice}>
+                        A <strong>5% posting fee</strong> of the listing price will be deducted from your wallet when you publish this post.
+                        {form.price && Number(form.price) > 0 && (
+                            <> &nbsp;(Fee: <strong>{Math.round(Number(form.price) * 0.05).toLocaleString('vi-VN')} VND</strong>)</>
+                        )}
+                    </p>
                 </div>
 
                 <div className={styles.fieldGroup}>
@@ -279,21 +291,21 @@ function StepFillDetails({
                     </div>
 
                     <div className={`${styles.inspectionFields} ${inspectionEnabled ? styles.inspectionFieldsOpen : ''}`}>
-                            <div className={styles.inspectionFieldsInner}>
-                                <div className={styles.fieldGroup}>
-                                    <label className={styles.label} htmlFor="booking-date">
-                                        <Calendar size={13} /> Inspection Date
-                                    </label>
-                                    <input
-                                        id="booking-date"
-                                        name="bookingDate"
-                                        type="date"
-                                        className={styles.input}
-                                        value={inspectionForm.bookingDate}
-                                        onChange={onInspectionChange}
-                                        min={minBookingDate}
-                                    />
-                                </div>
+                        <div className={styles.inspectionFieldsInner}>
+                            <div className={styles.fieldGroup}>
+                                <label className={styles.label} htmlFor="booking-date">
+                                    <Calendar size={13} /> Inspection Date
+                                </label>
+                                <input
+                                    id="booking-date"
+                                    name="bookingDate"
+                                    type="date"
+                                    className={styles.input}
+                                    value={inspectionForm.bookingDate}
+                                    onChange={onInspectionChange}
+                                    min={minBookingDate}
+                                />
+                            </div>
 
                             <div className={styles.inspectionGrid}>
                                 <div className={styles.fieldGroup}>

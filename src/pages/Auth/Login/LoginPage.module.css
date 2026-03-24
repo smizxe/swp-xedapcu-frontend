@@ -143,6 +143,16 @@
   margin-top: 24px;
 }
 
+.errorMessage {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .inputGroup {
   position: relative;
 }

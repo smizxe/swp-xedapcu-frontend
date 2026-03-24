@@ -236,7 +236,6 @@ const PostManagement = () => {
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Title</th>
                                 <th>Price</th>
                                 <th>Status</th>
@@ -246,11 +245,11 @@ const PostManagement = () => {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className={styles.emptyState}>Loading posts...</td>
+                                    <td colSpan={4} className={styles.emptyState}>Loading posts...</td>
                                 </tr>
                             ) : posts.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className={styles.emptyState}>No posts found</td>
+                                    <td colSpan={4} className={styles.emptyState}>No posts found</td>
                                 </tr>
                             ) : posts.map((post) => {
                                 const status = normalizePostStatus(post.status);
@@ -258,7 +257,6 @@ const PostManagement = () => {
 
                                 return (
                                     <tr key={post.postId}>
-                                        <td className={styles.idCell}>{post.postId}</td>
                                         <td className={styles.titleCell}>{post.title || '-'}</td>
                                         <td>{formatCurrency(post.price)}</td>
                                         <td>
