@@ -12,6 +12,29 @@ const api = axios.create({
     },
 });
 
+const persistAuthSession = ({ token, email, role, userId }) => {
+    if (!token) {
+        return;
+    }
+
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('userEmail', email || '');
+
+    if (role) {
+        localStorage.setItem('userRole', String(role));
+    } else {
+        localStorage.removeItem('userRole');
+    }
+
+    if (userId != null && userId !== '') {
+        localStorage.setItem(USER_ID_STORAGE_KEY, String(userId));
+        localStorage.setItem(USER_ID_OWNER_EMAIL_STORAGE_KEY, email || '');
+    } else {
+        localStorage.removeItem(USER_ID_STORAGE_KEY);
+        localStorage.removeItem(USER_ID_OWNER_EMAIL_STORAGE_KEY);
+    }
+};
+
 export const loginUser = async (email, password) => {
     try {
         const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, {
@@ -20,22 +43,7 @@ export const loginUser = async (email, password) => {
         });
 
         const data = response.data;
-        // Set token to localStorage
-        if (data.token) {
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('userEmail', data.email);
-            if (data.role) {
-                localStorage.setItem('userRole', String(data.role));
-            }
-            if (data.userId != null) {
-                localStorage.setItem(USER_ID_STORAGE_KEY, String(data.userId));
-                localStorage.setItem(USER_ID_OWNER_EMAIL_STORAGE_KEY, data.email);
-            } else {
-                localStorage.removeItem(USER_ID_STORAGE_KEY);
-                localStorage.removeItem(USER_ID_OWNER_EMAIL_STORAGE_KEY);
-            }
-        }
-
+        persistAuthSession(data);
         return data;
     } catch (error) {
         throw new Error(error.response?.data || 'Login failed');

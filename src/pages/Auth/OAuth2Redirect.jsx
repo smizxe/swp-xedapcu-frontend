@@ -25,6 +25,7 @@ export default function OAuth2Redirect() {
     const token = searchParams.get('token');
     const email = searchParams.get('email');
     const role = searchParams.get('role');
+    const userId = searchParams.get('userId');
     const hasOAuthError = !token || !email;
 
     useEffect(() => {
@@ -38,17 +39,22 @@ export default function OAuth2Redirect() {
         if (role) {
             localStorage.setItem('userRole', role);
         }
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userIdOwnerEmail');
+        if (userId) {
+            localStorage.setItem('userId', userId);
+            localStorage.setItem('userIdOwnerEmail', email);
+        } else {
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userIdOwnerEmail');
+        }
 
         // Save to AuthContext
         login({
             token,
-            user: { email, role: role || 'BUYER' },
+            user: { email, role: role || 'BUYER', userId },
         });
 
         navigate(getPostLoginPath(role), { replace: true });
-    }, [email, hasOAuthError, login, navigate, role, token]);
+    }, [email, hasOAuthError, login, navigate, role, token, userId]);
 
     if (hasOAuthError) {
         return (

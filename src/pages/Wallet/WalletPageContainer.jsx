@@ -59,7 +59,7 @@ const WalletPageContainer = () => {
             setIsLoading(false);
 
             if (currentUser?.token) {
-                setWalletError('Khong the tai vi chinh xac vi backend chua tra userId cho phien dang nhap hien tai. Vui long dang nhap lai sau khi backend bo sung userId trong auth/profile response.');
+                setWalletError('Phien dang nhap hien tai chua co userId. Backend da ho tro userId roi, nen chi can dang xuat va dang nhap lai de wallet tai dung so du.');
             } else {
                 setWalletError('');
             }

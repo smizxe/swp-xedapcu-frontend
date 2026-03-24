@@ -26,6 +26,7 @@ function MarketplaceContainer() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(undefined);
     const [sortBy, setSortBy] = useState('newest');
+    const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
     const PAGE_SIZE = 12;
 
@@ -116,6 +117,7 @@ function MarketplaceContainer() {
                 const postsWithThumbnails = await attachThumbnailUrls(sorted);
                 setApiPosts(postsWithThumbnails);
                 setTotalElements(postsWithThumbnails.length);
+                setHasLoadedOnce(true);
             } else {
                 // Paginated response — backend uses "posts" + "totalItems"
                 const raw = data.posts || data.content || [];
@@ -123,13 +125,16 @@ function MarketplaceContainer() {
                 const postsWithThumbnails = await attachThumbnailUrls(sorted);
                 setApiPosts(postsWithThumbnails);
                 setTotalElements(data.totalItems ?? data.totalElements ?? postsWithThumbnails.length);
+                setHasLoadedOnce(true);
             }
         } catch {
-            message.error('Failed to load listings. Please try again.');
+            if (!hasLoadedOnce && apiPosts.length === 0) {
+                message.error('Failed to load listings. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }
-    }, [sortBy]);
+    }, [apiPosts.length, hasLoadedOnce, sortBy]);
 
     // Reload when page or sortBy changes
     useEffect(() => {
