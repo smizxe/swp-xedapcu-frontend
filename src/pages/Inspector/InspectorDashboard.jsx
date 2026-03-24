@@ -347,7 +347,15 @@ export default function InspectorDashboard() {
                         <p>No tasks assigned yet. Check back later.</p>
                       </div>
                     : <div className={styles.grid}>
-                        {bookings.map((b) => (
+                        {[...bookings]
+                            .sort((a, b) => {
+                                const STATUS_ORDER = { PENDING: 0, ASSIGNED: 1, CONFIRMED: 2, COMPLETED: 3 };
+                                const orderA = STATUS_ORDER[a.status] ?? 99;
+                                const orderB = STATUS_ORDER[b.status] ?? 99;
+                                if (orderA !== orderB) return orderA - orderB;
+                                return (b.bookingId ?? 0) - (a.bookingId ?? 0);
+                            })
+                            .map((b) => (
                             <BookingCard
                                 key={b.bookingId} booking={b}
                                 onConfirm={handleConfirm} confirming={confirming}
@@ -357,8 +365,10 @@ export default function InspectorDashboard() {
             )}
 
             {!loading && !error && tab === 'progress' && (() => {
-                const activeReqs = requests.filter((r) => r.status !== 'COMPLETED');
-                const completedReqs = requests.filter((r) => r.status === 'COMPLETED');
+                const activeReqs = [...requests.filter((r) => r.status !== 'COMPLETED')]
+                    .sort((a, b) => (b.inspectionId ?? 0) - (a.inspectionId ?? 0));
+                const completedReqs = [...requests.filter((r) => r.status === 'COMPLETED')]
+                    .sort((a, b) => (b.inspectionId ?? 0) - (a.inspectionId ?? 0));
                 return (
                     <>
                         <div className={styles.sectionLabel}>

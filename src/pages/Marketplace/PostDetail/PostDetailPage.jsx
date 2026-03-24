@@ -334,6 +334,8 @@ function PostDetailPage() {
                                     <Button
                                         type="primary"
                                         className={styles.btnDeposit}
+                                        disabled={post.status === 'RESERVED' || post.status === 'SOLD'}
+                                        title={post.status === 'RESERVED' ? 'Cannot edit — a buyer has placed a deposit' : post.status === 'SOLD' ? 'Cannot edit — this post has been sold' : undefined}
                                         onClick={() => navigate('/my-posts', { state: { editPostId: post.postId } })}
                                         icon={<EditOutlined />}
                                     >
@@ -343,6 +345,8 @@ function PostDetailPage() {
                                         <Button
                                             className={styles.btnManage}
                                             icon={<SafetyCertificateOutlined />}
+                                            disabled={post.status === 'RESERVED' || post.status === 'SOLD'}
+                                            title={post.status === 'RESERVED' ? 'Cannot request verify — a buyer has placed a deposit' : post.status === 'SOLD' ? 'Cannot request verify — this post has been sold' : undefined}
                                             onClick={() => navigate('/my-posts', { state: { verifyPostId: post.postId } })}
                                         >
                                             Request Verify

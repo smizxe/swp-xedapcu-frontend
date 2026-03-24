@@ -1,13 +1,37 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Input, Select } from 'antd';
+import dayjs from 'dayjs';
+import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Select, Input } from 'antd';
 import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined, CloseCircleOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
 import { getMySales, scheduleDelivery, sellerConfirmDelivery, reportBuyerNoShow, cancelBySeller, getSavedOrderDeliveryAddress } from '../../service/orderService';
 import styles from './MySalesPage.module.css';
 
-// antd DatePicker showTime returns "YYYY-MM-DD HH:mm:ss", backend needs ISO "YYYY-MM-DDTHH:mm:ss"
-const toIsoDateTime = (str) => (str ? str.replace(' ', 'T') : str);
+// Returns the minimum start hour available for a given delivery date
+const DELIVERY_LAST_HOUR = 20;
+const DELIVERY_START_HOUR = 7;
+const padH = (h) => `${String(h).padStart(2, '0')}:00`;
+
+const getMinStartHour = (dateStr) => {
+    if (!dateStr) return DELIVERY_START_HOUR;
+    const today = dayjs().format('YYYY-MM-DD');
+    if (dateStr !== today) return DELIVERY_START_HOUR;
+    return Math.max(DELIVERY_START_HOUR, dayjs().hour() + 1);
+};
+
+const getStartTimeOptions = (dateStr) => {
+    const minH = getMinStartHour(dateStr);
+    const options = [];
+    for (let h = minH; h <= DELIVERY_LAST_HOUR; h++) {
+        options.push({ value: padH(h), label: padH(h) });
+    }
+    return options;
+};
+
+const toIsoDateTime = (dateStr, startTime) => {
+    if (!dateStr || !startTime) return null;
+    return `${dateStr}T${startTime}:00`;
+};
 
 const STATUS_COLOR = {
     PENDING: 'processing',
@@ -28,7 +52,7 @@ function MySalesPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deliveryModal, setDeliveryModal] = useState({ open: false, orderId: null });
-    const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryTime: null });
+    const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryDate: null, startTime: null, endTime: null });
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [sortOrder, setSortOrder] = useState('NEWEST');
@@ -58,9 +82,16 @@ function MySalesPage() {
         setDeliveryModal({ open: true, orderId: order.orderId });
         setDeliveryForm({
             deliveryAddress: getOrderDeliveryAddress(order),
-            deliveryTime: null,
+            deliveryDate: null,
+            startTime: null,
+            endTime: null,
         });
     };
+
+    const startTimeOptions = useMemo(
+        () => getStartTimeOptions(deliveryForm.deliveryDate),
+        [deliveryForm.deliveryDate]
+    );
 
     const handleReportBuyerNoShow = async (orderId) => {
         try {
@@ -92,14 +123,14 @@ function MySalesPage() {
     };
 
     const handleSchedule = async () => {
-        if (!deliveryForm.deliveryAddress || !deliveryForm.deliveryTime) {
+        if (!deliveryForm.deliveryAddress || !deliveryForm.deliveryDate || !deliveryForm.startTime) {
             message.warning('Please fill in all delivery details.');
             return;
         }
         try {
             await scheduleDelivery(deliveryModal.orderId, {
                 deliveryAddress: deliveryForm.deliveryAddress,
-                deliveryTime: toIsoDateTime(deliveryForm.deliveryTime),
+                deliveryTime: toIsoDateTime(deliveryForm.deliveryDate, deliveryForm.startTime),
             });
             message.success('Delivery scheduled!');
             setDeliveryModal({ open: false, orderId: null });
@@ -320,16 +351,52 @@ function MySalesPage() {
                     />
                 </div>
                 <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Delivery Date & Time</label>
+                    <label className={styles.formLabel}>Delivery Date</label>
                     <DatePicker
-                        showTime
                         style={{ width: '100%' }}
-                        format="YYYY-MM-DD HH:mm:ss"
-                        onChange={(_, dateStr) => setDeliveryForm((prev) => ({
-                            ...prev,
-                            deliveryTime: Array.isArray(dateStr) ? dateStr[0] : dateStr,
-                        }))}
+                        format="YYYY-MM-DD"
+                        disabledDate={(current) => current && current.startOf('day').isBefore(dayjs().startOf('day'))}
+                        onChange={(_, dateStr) => {
+                            const nextDate = Array.isArray(dateStr) ? dateStr[0] : dateStr;
+                            const opts = getStartTimeOptions(nextDate);
+                            const stillValid = opts.some((o) => o.value === deliveryForm.startTime);
+                            setDeliveryForm((prev) => ({
+                                ...prev,
+                                deliveryDate: nextDate,
+                                startTime: stillValid ? prev.startTime : null,
+                                endTime: stillValid ? prev.endTime : null,
+                            }));
+                        }}
                     />
+                </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                    <div className={styles.formGroup} style={{ flex: 1 }}>
+                        <label className={styles.formLabel}>Start Time</label>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Select start time"
+                            value={deliveryForm.startTime}
+                            onChange={(value) => {
+                                const h = parseInt(value.split(':')[0], 10);
+                                setDeliveryForm((prev) => ({
+                                    ...prev,
+                                    startTime: value,
+                                    endTime: padH(h + 1),
+                                }));
+                            }}
+                            options={startTimeOptions}
+                        />
+                    </div>
+                    <div className={styles.formGroup} style={{ flex: 1 }}>
+                        <label className={styles.formLabel}>End Time</label>
+                        <Select
+                            style={{ width: '100%' }}
+                            value={deliveryForm.endTime}
+                            disabled
+                            placeholder="Auto-set (start + 1h)"
+                            options={deliveryForm.endTime ? [{ value: deliveryForm.endTime, label: deliveryForm.endTime }] : []}
+                        />
+                    </div>
                 </div>
             </Modal>
 

@@ -238,7 +238,15 @@ export default function InspectionAdminPage() {
     };
 
     const FILTERS = ['ALL', 'PENDING', 'ASSIGNED', 'CONFIRMED', 'COMPLETED'];
-    const filtered = filter === 'ALL' ? bookings : bookings.filter((b) => b.status === filter);
+    const STATUS_ORDER = { PENDING: 0, ASSIGNED: 1, CONFIRMED: 2, COMPLETED: 3 };
+    const filtered = (filter === 'ALL' ? bookings : bookings.filter((b) => b.status === filter))
+        .slice()
+        .sort((a, b) => {
+            const orderA = STATUS_ORDER[a.status] ?? 99;
+            const orderB = STATUS_ORDER[b.status] ?? 99;
+            if (orderA !== orderB) return orderA - orderB;
+            return (b.bookingId ?? 0) - (a.bookingId ?? 0);
+        });
 
     const stats = {
         total: bookings.length,
