@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import MarketplacePage from './MarketplacePage';
-import { getAllPosts, searchPosts } from '../../../service/postService';
+import { getAllPosts, searchPosts, getMyPosts } from '../../../service/postService';
 import { getAllCategories } from '../../../service/categoryService';
 import { getPostImages, getThumbnail } from '../../../service/imageService';
 import { isAuthenticated } from '../../../service/authService';
@@ -39,15 +39,32 @@ function MarketplaceContainer() {
             });
     }, []);
 
-    // Fetch user's bicycles once on mount (only when logged in)
-    useEffect(() => {
+    // Fetch user's bicycles and posts once on mount (only when logged in)
+    const refreshMyBicycles = useCallback(async () => {
         if (!isAuthenticated()) return;
-        getMyBicycles()
-            .then((bikes) => setMyBicycles(bikes || []))
-            .catch(() => {
-                // Non-critical; silently ignore
-            });
+        try {
+            const [bikes, myPosts] = await Promise.all([
+                getMyBicycles(),
+                getMyPosts(),
+            ]);
+            const allBikes = bikes || [];
+            const allMyPosts = Array.isArray(myPosts) ? myPosts : [];
+            // Collect bicycle IDs that already have an active post (ignore SOLD)
+            const postedBicycleIds = new Set(
+                allMyPosts
+                    .filter((p) => p.status !== 'SOLD' && p.bicycle?.bicycleId != null)
+                    .map((p) => p.bicycle.bicycleId)
+            );
+            // Only show bicycles that do NOT have an active post yet
+            setMyBicycles(allBikes.filter((b) => !postedBicycleIds.has(b.bicycleId ?? b.id)));
+        } catch {
+            // Non-critical; silently ignore
+        }
     }, []);
+
+    useEffect(() => {
+        refreshMyBicycles();
+    }, [refreshMyBicycles]);
 
     // Fetch posts whenever page changes
     const fetchPosts = useCallback(async (page = 0, query = '') => {
@@ -174,6 +191,8 @@ function MarketplaceContainer() {
     const handleAddPostSuccess = () => {
         setCurrentPage(0);
         fetchPosts(0, searchQuery, selectedCategory);
+        // Re-filter bicycles so the newly posted one disappears from the list
+        refreshMyBicycles();
     };
 
     return (
