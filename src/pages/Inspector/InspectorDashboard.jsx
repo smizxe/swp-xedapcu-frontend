@@ -158,10 +158,15 @@ function DeliveryCard({ order, actingOrderId, onStart, onFinish }) {
                     {isStarting ? <><Loader size={14} className={styles.spin} /> Starting...</> : <><Truck size={14} /> Start Shipping</>}
                 </button>
             )}
-            {order.status === 'IN_DELIVERY' && (
+            {order.status === 'IN_DELIVERY' && order.deliverySession?.deliveryStatus !== 'DELIVERED' && (
                 <button className={styles.deliveryActionBtnSecondary} onClick={() => onFinish(order.orderId)} disabled={isFinishing}>
                     {isFinishing ? <><Loader size={14} className={styles.spin} /> Completing...</> : <><PackageCheck size={14} /> Mark Delivered</>}
                 </button>
+            )}
+            {order.status === 'IN_DELIVERY' && order.deliverySession?.deliveryStatus === 'DELIVERED' && (
+                <div className={styles.confirmedNote} style={{ marginTop: '10px' }}>
+                    <PackageCheck size={14} /> Delivered! Awaiting Buyer confirmation.
+                </div>
             )}
         </div>
     );

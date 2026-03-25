@@ -129,9 +129,15 @@ const WalletPage = ({
             key: 'transactionType',
             width: 200,
             render: (type, record) => {
-                const txType = type || record.type;
-                const info = getTypeInfo(txType);
-                const positive = isPositiveType(txType);
+                let txType = type || record.type;
+                let info = getTypeInfo(txType);
+                const positive = Number(record.amount) > 0 || (Number(record.amount) === 0 && isPositiveType(txType));
+
+                if (txType === 'DEPOSIT' && !positive) {
+                    txType = 'ORDER_DEPOSIT';
+                    info = getTypeInfo(txType);
+                }
+
                 return (
                     <span className={styles.typeCell}>
                         {positive ? (
@@ -161,11 +167,11 @@ const WalletPage = ({
             key: 'amount',
             width: 160,
             render: (amount, record) => {
-                const txType = record.transactionType || record.type;
-                const positive = isPositiveType(txType);
+                const num = Number(amount);
+                const positive = num > 0;
                 return (
                     <span className={positive ? styles.amountPositive : styles.amountNegative}>
-                        {positive ? '+' : '-'}{Math.abs(Number(amount)).toLocaleString('vi-VN')} đ
+                        {positive ? '+' : '-'}{Math.abs(num).toLocaleString('vi-VN')} đ
                     </span>
                 );
             },
@@ -475,7 +481,6 @@ const WalletPage = ({
                 {selectedTx && (
                     <div className={styles.detailContent}>
                         {[
-                            { label: 'Transaction ID', value: selectedTx.transactionId || selectedTx.id || '—' },
                             { label: 'Type', value: getTypeInfo(selectedTx.transactionType || selectedTx.type).label },
                             { label: 'Amount', value: formatCurrency(selectedTx.amount) },
                             { label: 'Status', value: selectedTx.status || '—' },

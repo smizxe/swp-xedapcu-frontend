@@ -196,9 +196,11 @@ function StepFillDetails({
                         required
                     />
                     <p className={styles.feeNotice}>
-                        A <strong>5% posting fee</strong> of the listing price will be deducted from your wallet when you publish this post.
+                        A <strong>posting fee (5% - 10%)</strong> based on your account standing will be deducted from your wallet when you publish this post.
                         {form.price && Number(form.price) > 0 && (
-                            <> &nbsp;(Fee: <strong>{Math.round(Number(form.price) * 0.05).toLocaleString('vi-VN')} VND</strong>)</>
+                            <>
+                                <br />Estimated Fee: <strong>{Math.round(Number(form.price) * 0.05).toLocaleString('vi-VN')} - {Math.round(Number(form.price) * 0.1).toLocaleString('vi-VN')} VND</strong>
+                            </>
                         )}
                     </p>
                 </div>
