@@ -613,10 +613,6 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
 
             setSubmittedWithInspection(inspectionEnabled);
             setShowSuccess(true);
-
-            if (!inspectionEnabled) {
-                onSuccess?.();
-            }
         } catch (err) {
             const msg =
                 err?.response?.data?.message ||
@@ -632,6 +628,7 @@ function CreateListingModal({ isOpen, onClose, bicycles = [], onSuccess }) {
     const handleSuccessClose = () => {
         reset();
         onClose();
+        onSuccess?.();
     };
 
     if (!isOpen) {
