@@ -50,3 +50,11 @@ export const updateBicycle = async (id, data) => {
     const response = await api.put(API_ENDPOINTS.BICYCLES.UPDATE(id), data);
     return response.data;
 };
+
+/**
+ * Delete a bicycle by ID.
+ */
+export const deleteBicycle = async (id) => {
+    const response = await api.delete(API_ENDPOINTS.BICYCLES.DELETE(id));
+    return response.data;
+};

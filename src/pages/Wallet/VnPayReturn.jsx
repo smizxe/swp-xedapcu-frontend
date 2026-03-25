@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Result, Button, Spin } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
@@ -9,35 +9,72 @@ import styles from './VnPayReturn.module.css';
 export default function VnPayReturn() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [result, setResult] = useState(null); // { status: 'success' | 'failed', transactionId }
+
+    const params = useMemo(() => {
+        const nextParams = {};
+        searchParams.forEach((value, key) => {
+            nextParams[key] = value;
+        });
+        return nextParams;
+    }, [searchParams]);
+
+    const initialResult = useMemo(() => {
+        const status = params.status;
+        const transactionId = params.transactionId || params.vnp_TxnRef || '';
+        const error = params.error || '';
+        const responseCode = params.responseCode || params.vnp_ResponseCode || '';
+
+        if (status) {
+            return {
+                status,
+                transactionId,
+                responseCode,
+                error,
+            };
+        }
+
+        if (!params.vnp_ResponseCode) {
+            return {
+                status: 'failed',
+                transactionId,
+                responseCode,
+                error,
+            };
+        }
+
+        return null;
+    }, [params]);
+
+    const [loading, setLoading] = useState(() => !initialResult);
+    const [result, setResult] = useState(initialResult);
 
     useEffect(() => {
-        const params = {};
-        searchParams.forEach((value, key) => {
-            params[key] = value;
-        });
+        if (initialResult) {
+            return;
+        }
 
-        // If we have vnp_ResponseCode, we can determine status locally too
+        const transactionId = params.transactionId || params.vnp_TxnRef || '';
         const responseCode = params.vnp_ResponseCode;
 
-        if (responseCode) {
-            // Also notify backend
-            checkVnPayReturn(params)
-                .then((data) => setResult(data))
-                .catch(() => {
-                    // Fallback to local check
-                    setResult({
-                        status: responseCode === '00' ? 'success' : 'failed',
-                        transactionId: params.vnp_TxnRef || '',
-                    });
-                })
-                .finally(() => setLoading(false));
-        } else {
-            setResult({ status: 'failed' });
-            setLoading(false);
-        }
-    }, [searchParams]);
+        checkVnPayReturn(params)
+            .then((data) => {
+                setResult({
+                    status: data?.status || (responseCode === '00' ? 'success' : 'failed'),
+                    transactionId: data?.transactionId || transactionId,
+                    responseCode,
+                    error: '',
+                });
+            })
+            .catch(() => {
+                setResult({
+                    status: responseCode === '00' ? 'success' : 'failed',
+                    transactionId,
+                    responseCode,
+                    error: '',
+                });
+            })
+            .finally(() => setLoading(false));
+    }, [initialResult, params]);
 
     if (loading) {
         return (
@@ -52,6 +89,11 @@ export default function VnPayReturn() {
     }
 
     const isSuccess = result?.status === 'success';
+    const subtitle = isSuccess
+        ? `Transaction #${result?.transactionId || ''} has been completed. Your wallet balance has been updated.`
+        : result?.error
+            ? decodeURIComponent(result.error)
+            : 'The payment was not completed. Please try again or contact support.';
 
     return (
         <div>
@@ -61,11 +103,7 @@ export default function VnPayReturn() {
                     icon={isSuccess ? <CheckCircleOutlined className={styles.iconSuccess} /> : <CloseCircleOutlined className={styles.iconFailed} />}
                     status={isSuccess ? 'success' : 'error'}
                     title={isSuccess ? 'Deposit Successful!' : 'Payment Failed'}
-                    subTitle={
-                        isSuccess
-                            ? `Transaction #${result.transactionId || ''} has been completed. Your wallet balance has been updated.`
-                            : 'The payment was not completed. Please try again or contact support.'
-                    }
+                    subTitle={subtitle}
                     extra={[
                         <Button
                             key="wallet"

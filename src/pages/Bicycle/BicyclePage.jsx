@@ -2,13 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import styles from './BicyclePage.module.css';
-import { getMyBicycles, createBicycle } from '../../service/bicycleService';
+import { createBicycle, deleteBicycle, getMyBicycles, updateBicycle } from '../../service/bicycleService';
 import { getAllCategories } from '../../service/categoryService';
 import { isAuthenticated } from '../../service/authService';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
-/* ── helpers ─────────────────────────────────────────── */
 const getConditionColor = (pct) => {
     if (pct >= 80) return '#16a34a';
     if (pct >= 50) return '#d97706';
@@ -25,33 +24,27 @@ const EMPTY_FORM = {
     categoryId: '',
 };
 
-/* ── BicyclePage ─────────────────────────────────────── */
 function BicyclePage() {
     const navigate = useNavigate();
-
-    /* data */
     const [bicycles, setBicycles] = useState([]);
     const [categories, setCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    /* modal — Add Bicycle */
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState(EMPTY_FORM);
+    const [editingBikeId, setEditingBikeId] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('ALL');
     const [sortOrder, setSortOrder] = useState('NEWEST');
 
-    /* ── Auth guard ─────────────────────────────────── */
     useEffect(() => {
         if (!isAuthenticated()) {
             navigate('/login');
         }
     }, [navigate]);
 
-    /* ── Fetch bicycles + categories ─────────────────── */
     useEffect(() => {
         if (!isAuthenticated()) return;
 
@@ -79,15 +72,31 @@ function BicyclePage() {
         fetchData();
     }, []);
 
-    /* ── Modal helpers ───────────────────────────────── */
-    const openModal = () => {
+    const openCreateModal = () => {
+        setEditingBikeId(null);
         setForm(EMPTY_FORM);
+        setFormError('');
+        setShowModal(true);
+    };
+
+    const openEditModal = (bike) => {
+        setEditingBikeId(bike.bicycleId ?? bike.id);
+        setForm({
+            brand: bike.brand ?? '',
+            frameMaterial: bike.frameMaterial ?? '',
+            frameSize: bike.frameSize ?? '',
+            groupset: bike.groupset ?? '',
+            wheelSize: bike.wheelSize ?? '',
+            conditionPercent: Number(bike.conditionPercent ?? 50),
+            categoryId: Number(bike.categoryId ?? bike.category_id ?? bike.category?.id ?? ''),
+        });
         setFormError('');
         setShowModal(true);
     };
 
     const closeModal = () => {
         setShowModal(false);
+        setEditingBikeId(null);
         setFormError('');
     };
 
@@ -103,50 +112,86 @@ function BicyclePage() {
         e.preventDefault();
         setFormError('');
 
-        /* basic validation */
-        if (!form.brand.trim()) { setFormError('Brand is required.'); return; }
-        if (!form.categoryId) { setFormError('Please select a category.'); return; }
+        if (!form.brand.trim()) {
+            setFormError('Brand is required.');
+            return;
+        }
+        if (!form.categoryId) {
+            setFormError('Please select a category.');
+            return;
+        }
 
         try {
             setSubmitting(true);
-            const newBike = await createBicycle(form);
-            console.log('[BicyclePage] createBicycle response:', newBike);
-
             const selectedCat = categories.find(
                 (c) => String(c.id ?? c.categoryId ?? '') === String(form.categoryId)
             );
 
-            // Merge form data with API response as fallback so all fields are always present
-            const rawId = newBike?.bicycleId ?? newBike?.id ?? Date.now();
-            const enrichedBike = {
-                ...form,
-                ...newBike,
-                bicycleId: rawId,
-                categoryName: newBike?.categoryName ?? selectedCat?.categoryName ?? selectedCat?.name ?? '',
-            };
-            setBicycles((prev) => [enrichedBike, ...prev]);
+            if (editingBikeId) {
+                const updatedBike = await updateBicycle(editingBikeId, form);
+                const enrichedBike = {
+                    ...form,
+                    ...updatedBike,
+                    bicycleId: updatedBike?.bicycleId ?? updatedBike?.id ?? editingBikeId,
+                    categoryName: updatedBike?.categoryName ?? selectedCat?.categoryName ?? selectedCat?.name ?? '',
+                };
+                setBicycles((prev) => prev.map((bike) => (
+                    (bike.bicycleId ?? bike.id) === editingBikeId ? { ...bike, ...enrichedBike } : bike
+                )));
+            } else {
+                const newBike = await createBicycle(form);
+                const rawId = newBike?.bicycleId ?? newBike?.id ?? Date.now();
+                const enrichedBike = {
+                    ...form,
+                    ...newBike,
+                    bicycleId: rawId,
+                    categoryName: newBike?.categoryName ?? selectedCat?.categoryName ?? selectedCat?.name ?? '',
+                };
+                setBicycles((prev) => [enrichedBike, ...prev]);
+            }
+
             closeModal();
         } catch (err) {
-            console.error('[BicyclePage] createBicycle error:', err);
-            const msg = err.response?.data?.message || err.message || 'Failed to add bicycle.';
-            setFormError(msg);
+            console.error('[BicyclePage] bicycle save error:', err);
+            setFormError(
+                err.response?.data?.message
+                || err.response?.data
+                || err.message
+                || `Failed to ${editingBikeId ? 'update' : 'add'} bicycle.`
+            );
         } finally {
             setSubmitting(false);
         }
     };
 
-    /* ── Category name helper ────────────────────────── */
+    const handleDelete = async (bike) => {
+        const bicycleId = bike.bicycleId ?? bike.id;
+        const confirmed = window.confirm(`Delete bicycle "${bike.brand}"?`);
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            await deleteBicycle(bicycleId);
+            setBicycles((prev) => prev.filter((item) => (item.bicycleId ?? item.id) !== bicycleId));
+        } catch (err) {
+            console.error('[BicyclePage] delete error:', err);
+            window.alert(err.response?.data?.message || err.response?.data || err.message || 'Failed to delete bicycle.');
+        }
+    };
+
     const getCategoryName = (id) => {
         if (id == null) return 'Unknown';
         const cat = categories.find(
-            (c) => c.category_id === id || c.categoryId === id ||
-                c.id === id || c.category_id === Number(id) ||
-                c.id === Number(id)
+            (c) => c.category_id === id
+                || c.categoryId === id
+                || c.id === id
+                || c.category_id === Number(id)
+                || c.id === Number(id)
         );
         return cat ? (cat.name ?? cat.categoryName) : `#${id}`;
     };
 
-    /* ── Render states ───────────────────────────────── */
     const filteredBicycles = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase();
 
@@ -156,6 +201,7 @@ function BicyclePage() {
                 String(category.id ?? category.categoryId ?? category.category_id ?? '') === String(rawCategoryId ?? '')
             ));
             const bikeCategoryName = bike.categoryName ?? matchedCategory?.name ?? matchedCategory?.categoryName ?? `#${rawCategoryId}`;
+
             const matchesSearch = !normalizedSearch || [
                 bike.brand,
                 bike.frameMaterial,
@@ -191,8 +237,8 @@ function BicyclePage() {
         if (isLoading) {
             return (
                 <div className={styles.centered}>
-                    <div className={styles.emptyIcon}>⏳</div>
-                    <p>Loading your bicycles…</p>
+                    <div className={styles.emptyIcon}>Loading</div>
+                    <p>Loading your bicycles...</p>
                 </div>
             );
         }
@@ -200,7 +246,7 @@ function BicyclePage() {
         if (error) {
             return (
                 <div className={styles.centered}>
-                    <div className={styles.emptyIcon}>⚠️</div>
+                    <div className={styles.emptyIcon}>Error</div>
                     <p>{error}</p>
                 </div>
             );
@@ -209,8 +255,8 @@ function BicyclePage() {
         if (bicycles.length === 0) {
             return (
                 <div className={styles.centered}>
-                    <p>You haven't added any bicycles yet.</p>
-                    <p>Click <strong>+ Add Bicycle</strong> to get started!</p>
+                    <p>You have not added any bicycles yet.</p>
+                    <p>Click <strong>+ Add Bicycle</strong> to get started.</p>
                 </div>
             );
         }
@@ -232,28 +278,26 @@ function BicyclePage() {
                         categoryName={bike.categoryName ?? getCategoryName(
                             bike.categoryId ?? bike.category_id ?? bike.category?.id
                         )}
-                        onEdit={() => console.log('Edit', bike.bicycleId ?? bike.id)}
-                        onDelete={() => console.log('Delete', bike.bicycleId ?? bike.id)}
+                        onEdit={() => openEditModal(bike)}
+                        onDelete={() => handleDelete(bike)}
                     />
                 ))}
             </div>
         );
     };
 
-    /* ── JSX ─────────────────────────────────────────── */
     return (
         <div className={styles.pageWrapper}>
             <Header variant="dark" />
 
             <div className={styles.pageContent}>
-                {/* Header row */}
                 <div className={styles.pageHeader}>
                     <div className={styles.titles}>
                         <h1>My Bicycles</h1>
                         <p>Manage your bicycle collection</p>
                     </div>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        <button className={styles.btnAdd} onClick={openModal}>
+                        <button className={styles.btnAdd} onClick={openCreateModal}>
                             + Add Bicycle
                         </button>
                     </div>
@@ -275,7 +319,7 @@ function BicyclePage() {
                             <option value="ALL">All Categories</option>
                             {categories.map((category) => (
                                 <option key={category.id} value={String(category.id)}>
-                                    {category.categoryName}
+                                    {category.categoryName ?? category.name}
                                 </option>
                             ))}
                         </select>
@@ -292,18 +336,15 @@ function BicyclePage() {
                     </div>
                 )}
 
-                {/* Content */}
                 {renderBody()}
             </div>
 
-            {/* ── Add Bicycle Modal ──────────────────────────── */}
             {showModal && (
                 <div className={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && closeModal()}>
                     <div className={styles.modal}>
-                        <h2>🚲 Add New Bicycle</h2>
+                        <h2>{editingBikeId ? 'Edit Bicycle' : 'Add New Bicycle'}</h2>
 
                         <form className={styles.form} onSubmit={handleSubmit}>
-                            {/* Row 1 */}
                             <div className={styles.formRow}>
                                 <div className={styles.fieldGroup}>
                                     <label htmlFor="brand">Brand *</label>
@@ -328,14 +369,13 @@ function BicyclePage() {
                                         <option value="">Select category</option>
                                         {categories.map((c) => (
                                             <option key={c.id} value={c.id}>
-                                                {c.categoryName}
+                                                {c.categoryName ?? c.name}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
                             </div>
 
-                            {/* Row 2 */}
                             <div className={styles.formRow}>
                                 <div className={styles.fieldGroup}>
                                     <label htmlFor="frameMaterial">Frame Material</label>
@@ -359,7 +399,6 @@ function BicyclePage() {
                                 </div>
                             </div>
 
-                            {/* Row 3 */}
                             <div className={styles.formRow}>
                                 <div className={styles.fieldGroup}>
                                     <label htmlFor="groupset">Groupset</label>
@@ -383,7 +422,6 @@ function BicyclePage() {
                                 </div>
                             </div>
 
-                            {/* Condition */}
                             <div className={styles.fieldGroup}>
                                 <label htmlFor="conditionPercent">Condition (%) *</label>
                                 <input
@@ -399,42 +437,36 @@ function BicyclePage() {
                                 />
                             </div>
 
-                            {/* Error */}
                             {formError && <p className={styles.errorMsg}>{formError}</p>}
 
-                            {/* Actions */}
                             <div className={styles.modalActions}>
                                 <button type="button" className={styles.btnCancel} onClick={closeModal}>
                                     Cancel
                                 </button>
                                 <button type="submit" className={styles.btnSubmit} disabled={submitting}>
-                                    {submitting ? 'Adding…' : 'Add Bicycle'}
+                                    {submitting ? (editingBikeId ? 'Saving...' : 'Adding...') : (editingBikeId ? 'Save Changes' : 'Add Bicycle')}
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
 
-/* ── BicycleCard ─────────────────────────────────────── */
 function BicycleCard({ bike, categoryName, onEdit, onDelete }) {
     const condition = bike.conditionPercent;
     const condColor = getConditionColor(condition ?? 0);
-
     const specs = [
         { label: 'Frame Material', value: bike.frameMaterial },
         { label: 'Frame Size', value: bike.frameSize },
         { label: 'Groupset', value: bike.groupset },
         { label: 'Wheel Size', value: bike.wheelSize },
-    ].filter((s) => s.value);
+    ].filter((spec) => spec.value);
 
     return (
         <div className={styles.card}>
-            {/* Card header */}
             <div className={styles.cardHeader}>
                 <p className={styles.cardTitle}>
                     <span className={styles.bikeIcon}>Brand</span>
@@ -443,19 +475,17 @@ function BicycleCard({ bike, categoryName, onEdit, onDelete }) {
                 <span className={styles.categoryBadge}>{categoryName}</span>
             </div>
 
-            {/* Specs */}
             {specs.length > 0 && (
                 <div className={styles.specGrid}>
-                    {specs.map((s) => (
-                        <div key={s.label} className={styles.spec}>
-                            <span className={styles.specLabel}>{s.label}</span>
-                            <span className={styles.specValue}>{s.value}</span>
+                    {specs.map((spec) => (
+                        <div key={spec.label} className={styles.spec}>
+                            <span className={styles.specLabel}>{spec.label}</span>
+                            <span className={styles.specValue}>{spec.value}</span>
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* Condition bar */}
             {condition != null && (
                 <div className={styles.conditionWrap}>
                     <div className={styles.conditionHeader}>
@@ -473,7 +503,6 @@ function BicycleCard({ bike, categoryName, onEdit, onDelete }) {
                 </div>
             )}
 
-            {/* Card actions */}
             <div className={styles.cardActions}>
                 <button className={styles.btnEdit} onClick={onEdit} title="Edit">
                     <EditOutlinedIcon fontSize="small" />

@@ -97,10 +97,10 @@ const WalletPage = ({
         setDepositLoading(true);
         try {
             if (onDeposit) await onDeposit(depositAmount);
-        } finally {
-            setDepositLoading(false);
             setDepositOpen(false);
             setDepositAmount(null);
+        } finally {
+            setDepositLoading(false);
         }
     };
 
