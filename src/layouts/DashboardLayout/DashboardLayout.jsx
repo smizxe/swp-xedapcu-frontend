@@ -11,7 +11,8 @@ import {
     Truck,
     LogOut,
     Menu,
-    X
+    X,
+    Wallet,
 } from 'lucide-react';
 
 const DashboardLayout = () => {
@@ -27,7 +28,7 @@ const DashboardLayout = () => {
     const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
     const adminMenu = [
-        { path: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
+        { path: '/admin', label: 'Revenue', icon: Wallet, exact: true },
         { path: '/admin/users', label: 'Users', icon: Users },
         { path: '/admin/posts', label: 'Posts', icon: FileText },
         { path: '/admin/delivery', label: 'Delivery', icon: Truck },

@@ -79,16 +79,6 @@ function MyOrdersPage() {
         }
     };
 
-    const handleReportSellerNoShow = async (orderId) => {
-        try {
-            await reportSellerNoShow(orderId);
-            message.success('Seller no-show reported. Deposit refunded.');
-            fetchOrders();
-        } catch (err) {
-            message.error(err.response?.data || 'Failed to report seller no-show.');
-        }
-    };
-
     const filteredOrders = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase();
 
@@ -229,13 +219,6 @@ function MyOrdersPage() {
                                                 onClick={() => handleComplete(order.orderId)}
                                             >
                                                 Confirm Received
-                                            </Button>
-                                            <Button
-                                                danger
-                                                icon={<WarningOutlined />}
-                                                onClick={() => handleReportSellerNoShow(order.orderId)}
-                                            >
-                                                Seller No-Show
                                             </Button>
                                         </>
                                     )}
