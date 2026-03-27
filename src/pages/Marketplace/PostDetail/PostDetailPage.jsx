@@ -469,6 +469,9 @@ function PostDetailPage() {
                     onChange={(e) => setDeliveryAddress(e.target.value)}
                     autoSize={{ minRows: 3, maxRows: 5 }}
                 />
+                <p style={{ marginTop: 16, marginBottom: 0, color: '#cf1322', fontSize: 13 }}>
+                    <span style={{ fontWeight: 600 }}>Note:</span> If you cancel the order later, you will lose a 1% deposit fee.
+                </p>
             </Modal>
         </div>
     );

@@ -20,6 +20,7 @@ function RegisterPage({
         confirmPassword: '',
         fullName: '',
         phone: '',
+        role: 'BUYER',
     });
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -97,6 +98,35 @@ function RegisterPage({
                                 disabled={isLoading}
                             />
                             <label htmlFor="phone" className={styles.label}>Phone</label>
+                        </div>
+
+                        {/* Role Selection */}
+                        <div className={styles.inputGroup} style={{ flexDirection: 'column', gap: '10px' }}>
+                            <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary, #9ca3af)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>I am a...</label>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '10px', border: formData.role === 'BUYER' ? '2px solid #10b981' : '1.5px solid rgba(255,255,255,0.12)', background: formData.role === 'BUYER' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.04)', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="BUYER"
+                                        checked={formData.role === 'BUYER'}
+                                        onChange={handleChange}
+                                        style={{ accentColor: '#10b981', width: 16, height: 16 }}
+                                    />
+                                    <span style={{ fontWeight: 600, color: formData.role === 'BUYER' ? '#10b981' : 'inherit', fontSize: '0.95rem' }}>Buyer</span>
+                                </label>
+                                <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '10px', border: formData.role === 'SELLER' ? '2px solid #10b981' : '1.5px solid rgba(255,255,255,0.12)', background: formData.role === 'SELLER' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.04)', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="SELLER"
+                                        checked={formData.role === 'SELLER'}
+                                        onChange={handleChange}
+                                        style={{ accentColor: '#10b981', width: 16, height: 16 }}
+                                    />
+                                    <span style={{ fontWeight: 600, color: formData.role === 'SELLER' ? '#10b981' : 'inherit', fontSize: '0.95rem' }}>Seller</span>
+                                </label>
+                            </div>
                         </div>
 
                         {/* Input Email */}

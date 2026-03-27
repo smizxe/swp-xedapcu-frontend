@@ -343,10 +343,101 @@
 }
 
 .bikeGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    margin-bottom: 3rem;
+    display: none; /* Replaced by Hero Banner */
+}
+
+/* ── Featured Hero Banner ── */
+.featuredHeroBanner {
+    position: relative;
+    width: 100%;
+    height: 640px;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow-xl);
+    margin-bottom: 4rem;
+}
+
+.featuredHeroBanner img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.featuredHeroBanner:hover img {
+    transform: scale(1.05);
+}
+
+.featuredOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.1) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4rem;
+    transition: background 500ms ease;
+}
+
+.featuredHeroBanner:hover .featuredOverlay {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.15) 100%);
+}
+
+.featuredBannerLabel {
+    color: var(--color-cta);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    transform: translateY(10px);
+    opacity: 0.9;
+    transition: transform 500ms ease, opacity 500ms ease;
+}
+
+.featuredHeroBanner:hover .featuredBannerLabel {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.featuredBannerTitle {
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5.5vw, 4.8rem);
+    font-weight: 700;
+    line-height: 1.05;
+    margin-bottom: 2rem;
+    max-width: 900px;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    letter-spacing: 0.02em;
+    transform: translateY(10px);
+    transition: transform 600ms ease;
+}
+
+.featuredHeroBanner:hover .featuredBannerTitle {
+    transform: translateY(0);
+}
+
+.featuredBannerLink {
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: color 200ms ease, gap 200ms ease;
+}
+
+.featuredHeroBanner:hover .featuredBannerLink {
+    color: var(--color-cta);
+    gap: 0.85rem;
 }
 
 /* ── Bicycle Card (Glass) ── */

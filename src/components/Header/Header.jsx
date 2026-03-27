@@ -63,8 +63,7 @@ const Header = ({ variant = 'light' }) => {
                 </Link>
 
                 <div className={styles.navLinks}>
-                    <Link to="/marketplace">Browse</Link>
-                    <Link to="/marketplace">Verified</Link>
+                    <Link to="/my-posts">Verified</Link>
                     <Link to="/marketplace">Market Place</Link>
                     <Link to="/about">About</Link>
                 </div>
@@ -78,17 +77,10 @@ const Header = ({ variant = 'light' }) => {
                     </button>
                     <button
                         className={styles.btnSecondary}
-                        onClick={() => navigate('/login')}
+                        onClick={() => window.open('https://www.google.com/maps/place/FPT+Software+Tp.H%E1%BB%93+Ch%C3%AD+Minh/@10.6950573,106.2378064,11z/data=!4m10!1m2!2m1!1sFPT+Software!3m6!1s0x317527374c43baad:0xb8b244d75d12213e!8m2!3d10.8508885!4d106.7983267!15sCgxGUFQgU29mdHdhcmUiA4gBAVoOIgxmcHQgc29mdHdhcmWSARBzb2Z0d2FyZV9jb21wYW55mgEjQ2haRFNVaE5NRzluUzBWSlEwRm5TVU5ZTVdWSGRsaDNFQUXgAQD6AQQIABAy!16s%2Fg%2F113gl62_r?entry=ttu&g_ep=EgoyMDI2MDMyNC4wIKXMDSoASAFQAw%3D%3D', '_blank')}
                     >
                         <MapPin />
                     </button>
-                    <button
-                        className={styles.btnSecondary}
-                        onClick={() => navigate('/login')}
-                    >
-                        <ShoppingCart />
-                    </button>
-
                     <div className={styles.userDropdownContainer}>
                         {isLoggedIn ? (
                             <div className={styles.userGreeting}>
@@ -119,6 +111,46 @@ const Header = ({ variant = 'light' }) => {
                                     >
                                         Admin Dashboard
                                     </button>
+                                ) : userRole === 'INSPECTOR' || userRole === 'ROLE_INSPECTOR' ? (
+                                    <button
+                                        className={styles.dropdownItem}
+                                        onClick={() => navigate('/inspector')}
+                                    >
+                                        Inspector Dashboard
+                                    </button>
+                                ) : userRole === 'SELLER' || userRole === 'ROLE_SELLER' ? (
+                                    <>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate('/profile')}
+                                        >
+                                            My Profile
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate('/wallet')}
+                                        >
+                                            My Wallet
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate('/my-sales')}
+                                        >
+                                            My Sales
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate('/my-posts')}
+                                        >
+                                            My Posts
+                                        </button>
+                                        <button
+                                            className={styles.dropdownItem}
+                                            onClick={() => navigate(`/${userId}/bicycles`)}
+                                        >
+                                            My Bicycles
+                                        </button>
+                                    </>
                                 ) : (
                                     <>
                                         <button
@@ -138,24 +170,6 @@ const Header = ({ variant = 'light' }) => {
                                             onClick={() => navigate('/my-orders')}
                                         >
                                             My Orders
-                                        </button>
-                                        <button
-                                            className={styles.dropdownItem}
-                                            onClick={() => navigate('/my-sales')}
-                                        >
-                                            My Sales
-                                        </button>
-                                        <button
-                                            className={styles.dropdownItem}
-                                            onClick={() => navigate('/my-posts')}
-                                        >
-                                            My Posts
-                                        </button>
-                                        <button
-                                            className={styles.dropdownItem}
-                                            onClick={() => navigate(`/${userId}/bicycles`)}
-                                        >
-                                            My Bicycles
                                         </button>
                                     </>
                                 )}

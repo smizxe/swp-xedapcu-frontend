@@ -62,6 +62,8 @@ export const registerUser = async (userData) => {
         const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, {
             email: userData.email,
             password: userData.password,
+            fullName: userData.fullName || '',
+            phone: userData.phone || '',
             role: userData.role || 'BUYER', // Default role is BUYER for new registrations
         });
 
