@@ -29,6 +29,11 @@ const adminService = {
         return response.data;
     },
 
+    getAllOrders: async (page = 0, size = 200) => {
+        const response = await api.get('/admin/orders', { params: { page, size } });
+        return unwrapPage(response.data);
+    },
+
     getDeliveryOrders: async () => {
         const response = await api.get('/admin/orders/delivery');
         return Array.isArray(response.data) ? response.data : [];

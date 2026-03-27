@@ -6,6 +6,7 @@ import { RefreshCw, Truck, UserCheck, Clock3, PackageCheck } from 'lucide-react'
 import styles from './DeliveryManagement.module.css';
 
 const DELIVERY_FILTERS = ['ALL', 'PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW', 'ASSIGNED_TO_INSPECTOR', 'IN_DELIVERY', 'COMPLETED'];
+const DELIVERY_STATUSES = DELIVERY_FILTERS.filter((item) => item !== 'ALL');
 
 const DeliveryStatusBadge = ({ status }) => {
     const tone =
@@ -119,7 +120,7 @@ export default function DeliveryManagement() {
 
     const fetchInspectors = async () => {
         try {
-            const users = await adminService.getAllUsers();
+            const users = await adminService.getUsersByRole('INSPECTOR');
             const list = Array.isArray(users) ? users : [];
             setInspectors(list.filter((item) => String(item.role).includes('INSPECTOR')));
         } catch {
@@ -131,10 +132,13 @@ export default function DeliveryManagement() {
         try {
             setDeliveryLoading(true);
             setDeliveryError('');
-            const orders = status === 'ALL'
-                ? await adminService.getDeliveryOrders()
-                : await adminService.getDeliveryOrdersByStatus(status);
-            setDeliveryOrders(Array.isArray(orders) ? orders : []);
+            const orders = await adminService.getAllOrders(0, 200);
+            const list = Array.isArray(orders) ? orders : [];
+            const deliveryList = list.filter((order) => DELIVERY_STATUSES.includes(order.status));
+            const filteredList = status === 'ALL'
+                ? deliveryList
+                : deliveryList.filter((order) => order.status === status);
+            setDeliveryOrders(filteredList);
         } catch (err) {
             setDeliveryError(err?.response?.data || 'Failed to load delivery orders.');
         } finally {
