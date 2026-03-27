@@ -65,7 +65,7 @@ const CategoryManagement = () => {
 
         try {
             setError('');
-            const created = await categoryService.createCategory({ name: newCategoryName });
+            const created = await categoryService.createCategory({ categoryName: newCategoryName.trim() });
             setSuccess('Category created successfully');
             setNewCategoryName('');
             setDialogOpen(false);
