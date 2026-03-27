@@ -13,16 +13,16 @@ import {
 } from 'lucide-react';
 
 const BOOKING_STATUS = {
-    PENDING:   { label: 'Pending Assignment', cls: 'badgePending' },
-    ASSIGNED:  { label: 'Assigned to You',    cls: 'badgeAssigned' },
-    CONFIRMED: { label: 'In Progress',        cls: 'badgeConfirmed' },
-    COMPLETED: { label: 'Completed',          cls: 'badgeCompleted' },
+    PENDING: { label: 'Pending Assignment', cls: 'badgePending' },
+    ASSIGNED: { label: 'Assigned to You', cls: 'badgeAssigned' },
+    CONFIRMED: { label: 'In Progress', cls: 'badgeConfirmed' },
+    COMPLETED: { label: 'Completed', cls: 'badgeCompleted' },
 };
 
 const INSPECT_STATUS = {
-    PENDING:     { label: 'Pending',     cls: 'badgePending' },
+    PENDING: { label: 'Pending', cls: 'badgePending' },
     IN_PROGRESS: { label: 'In Progress', cls: 'badgeConfirmed' },
-    COMPLETED:   { label: 'Completed',   cls: 'badgeCompleted' },
+    COMPLETED: { label: 'Completed', cls: 'badgeCompleted' },
 };
 
 function StatusBadge({ status, type = 'booking' }) {
@@ -291,9 +291,6 @@ export default function InspectorDashboard() {
                 <div className={styles.deliveryPanelHeader}>
                     <div>
                         <h2 className={styles.deliveryPanelTitle}>Delivery Tasks</h2>
-                        <p className={styles.deliveryPanelSub}>
-                            Danh sách order giao hàng được assign trực tiếp từ backend.
-                        </p>
                     </div>
                 </div>
                 {deliveryTasks.length === 0 ? (
@@ -350,7 +347,7 @@ export default function InspectorDashboard() {
                     ? <div className={styles.stateBox}>
                         <ClipboardList size={48} strokeWidth={1} />
                         <p>No tasks assigned yet. Check back later.</p>
-                      </div>
+                    </div>
                     : <div className={styles.grid}>
                         {[...bookings]
                             .sort((a, b) => {
@@ -361,12 +358,12 @@ export default function InspectorDashboard() {
                                 return (b.bookingId ?? 0) - (a.bookingId ?? 0);
                             })
                             .map((b) => (
-                            <BookingCard
-                                key={b.bookingId} booking={b}
-                                onConfirm={handleConfirm} confirming={confirming}
-                            />
-                        ))}
-                      </div>
+                                <BookingCard
+                                    key={b.bookingId} booking={b}
+                                    onConfirm={handleConfirm} confirming={confirming}
+                                />
+                            ))}
+                    </div>
             )}
 
             {!loading && !error && tab === 'progress' && (() => {

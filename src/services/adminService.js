@@ -113,6 +113,19 @@ const adminService = {
         const response = await api.delete(`/admin/posts/${postId}`);
         return response.data;
     },
+
+    // ── Admin Wallet / Revenue ──────────────────────────────
+    getAdminWalletBalance: async (userId) => {
+        const response = await api.get('/wallet/balance', { params: { userId } });
+        return response.data; // BigDecimal (number)
+    },
+
+    getAdminWalletTransactions: async (userId, page = 0, size = 200) => {
+        const response = await api.get('/wallet/transactions', { params: { userId, page, size } });
+        // Response is Page<TransactionResponse>
+        const data = response.data;
+        return Array.isArray(data) ? data : (data?.content || []);
+    },
 };
 
 export default adminService;

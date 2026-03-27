@@ -1,103 +1,496 @@
-.glassCard {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+/* ================================================================
+   Admin Revenue Dashboard — AdminDashboard.module.css
+   Font: Barlow Condensed | Theme: Emerald Green Glass
+   ================================================================ */
 
-.glassCard:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(6, 78, 59, 0.06); /* Emerald tint */
-}
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap');
 
-.statsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    margin-bottom: 32px;
-}
-
-.cardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
-}
-
-.cardInfo {
+/* ── Page Shell ──────────────────────────────────────────────── */
+.page {
+    font-family: 'Barlow Condensed', sans-serif;
     display: flex;
     flex-direction: column;
+    gap: 24px;
+    padding: 4px 0;
+    min-height: 100%;
 }
 
-.cardTitle {
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    color: #64748b !important;
-    font-family: inherit !important;
-}
-
-.cardSubtitle {
-    font-size: 13px !important;
-    color: #94a3b8 !important;
-    font-family: inherit !important;
-}
-
-.iconWrapper {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: rgba(6, 78, 59, 0.05); /* Emerald tint */
+/* ── Page Header ─────────────────────────────────────────────── */
+.pageHeader {
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: #064E3B;
-}
-
-.cardBody {
-    display: flex;
-    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 12px;
 }
 
-.cardValue {
-    font-size: 32px !important;
-    font-weight: 700 !important;
-    color: #0f172a !important;
-    font-family: inherit !important;
-    line-height: 1 !important;
+.pageTitle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: #064E3B;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0;
+    line-height: 1;
 }
 
-.trend {
+.pageSubtitle {
+    font-family: 'Barlow Condensed', sans-serif;
     font-size: 14px;
-    font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 20px;
+    color: #64748b;
+    margin: 4px 0 0;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* ── Error Banner ────────────────────────────────────────────── */
+.errorBanner {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 12px;
+    color: #dc2626;
+    font-size: 14px;
+    font-family: inherit;
 }
 
-.trendUp {
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
+/* ── Refresh Button ──────────────────────────────────────────── */
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    border: 1.5px solid #064E3B;
+    background: transparent;
+    color: #064E3B;
+    border-radius: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
 }
 
-.trendDown {
-    background: rgba(239, 68, 68, 0.1);
-    color: #DC2626;
+.refreshBtn:hover {
+    background: #064E3B;
+    color: #fff;
 }
 
-.chartPlaceholder {
-    margin-top: 32px;
+.refreshBtn:disabled {
+    opacity: 0.5;
+    cursor: default;
 }
 
-.helperText {
-    font-size: 14px !important;
-    color: #64748b !important;
-    font-family: inherit !important;
-    margin-bottom: 16px !important;
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* ── Glass Card (shared) ─────────────────────────────────────── */
+.glassCard {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow:
+        0 4px 24px rgba(6, 78, 59, 0.05),
+        0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.glassCard:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 8px 32px rgba(6, 78, 59, 0.09),
+        0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* ── Stat Cards ──────────────────────────────────────────────── */
+.statsRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 900px) {
+    .statsRow { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+    .statsRow { grid-template-columns: 1fr; }
+}
+
+.statCard {
+    position: relative;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 18px;
+    padding: 24px 20px;
+    overflow: hidden;
+    box-shadow:
+        0 4px 24px rgba(6, 78, 59, 0.05),
+        0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.statCard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 36px rgba(6, 78, 59, 0.12);
+}
+
+.statCardGlow {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    opacity: 0.08;
+    transition: opacity 0.3s;
+}
+
+.statCard:hover .statCardGlow {
+    opacity: 0.14;
+}
+
+.statCardInner {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.statIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.statInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.statTitle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.statSubtitle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.statValue {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    line-height: 1;
+}
+
+/* ── Filter Row ──────────────────────────────────────────────── */
+.filterRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filterIcon {
+    color: #064E3B;
+    flex-shrink: 0;
+}
+
+.filterLabel {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #064E3B;
+    letter-spacing: 0.4px;
+    flex-shrink: 0;
+}
+
+.rangeChips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    padding: 6px 14px;
+    border: 1.5px solid rgba(6, 78, 59, 0.25);
+    background: transparent;
+    color: #047857;
+    border-radius: 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.chip:hover {
+    background: rgba(6, 78, 59, 0.08);
+}
+
+.chipActive {
+    background: #064E3B;
+    color: #fff;
+    border-color: #064E3B;
+}
+
+.customRange {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.datePicker {
+    padding: 6px 10px;
+    border: 1.5px solid rgba(6, 78, 59, 0.2);
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: #334155;
+    background: rgba(255, 255, 255, 0.8);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.datePicker:focus {
+    border-color: #047857;
+}
+
+.dateSep {
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+/* ── Charts Grid ─────────────────────────────────────────────── */
+.chartsGrid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 960px) {
+    .chartsGrid { grid-template-columns: 1fr; }
+}
+
+.chartHeader {
+    margin-bottom: 16px;
+}
+
+.chartTitle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.chartSubtitle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+    font-weight: 400;
+}
+
+.emptyChart {
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.legendText {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: #475569;
+}
+
+/* ── Chart Tooltip ───────────────────────────────────────────── */
+.chartTooltip {
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    padding: 10px 14px;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.tooltipLabel {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.tooltipValue {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #6EE7B7;
+}
+
+/* ── Transaction Table ───────────────────────────────────────── */
+.tableCard {
+    padding: 0;
+    overflow: hidden;
+}
+
+.tableHeader {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid rgba(6, 78, 59, 0.08);
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Barlow Condensed', sans-serif;
+}
+
+.table thead tr {
+    background: rgba(6, 78, 59, 0.04);
+}
+
+.table th {
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba(6, 78, 59, 0.08);
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: #334155;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    vertical-align: middle;
+}
+
+.tableRow {
+    transition: background 0.15s;
+}
+
+.tableRow:hover {
+    background: rgba(6, 78, 59, 0.03);
+}
+
+.txId {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    color: #475569;
+    font-size: 13px;
+    background: rgba(6, 78, 59, 0.06);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.feeBadge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(6, 78, 59, 0.1);
+    color: #047857;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+.amountPositive {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #047857;
+}
+
+.timeCell {
+    font-size: 13px;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.postIdCell {
+    font-family: 'Barlow Condensed', sans-serif;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.emptyRow, .loadingRow {
+    text-align: center;
+    padding: 48px 20px !important;
+    color: #94a3b8;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* ── Loading Dots ────────────────────────────────────────────── */
+.loadingDots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.loadingDots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #064E3B;
+    animation: bounce 1.2s infinite;
+}
+
+.loadingDots span:nth-child(2) { animation-delay: 0.2s; }
+.loadingDots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40%           { transform: scale(1);   opacity: 1; }
 }
