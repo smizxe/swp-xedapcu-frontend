@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './HomePage.module.css';
 import HeroSection from './HeroSection/HeroSection';
 import useScrollAnimation from '../../hooks/useScrollAnimation';
 import { useNavigate } from 'react-router-dom';
-
+import { getAllPosts } from '../../service/postService';
+import { getThumbnail, getPostImages } from '../../service/imageService';
 const cls = (...classes) => classes.filter(Boolean).join(' ');
 
 // SVG icon components — no emoji, per design system rules
@@ -42,26 +43,16 @@ const IconStar = () => (
 
 const HomePage = () => {
     const navigate = useNavigate();
-    const [hoveredCard, setHoveredCard] = useState(null);
 
     // Scroll animation refs
     const [heroRef, heroVisible] = useScrollAnimation(0.1);
     const [featuredHeaderRef, featuredHeaderVisible] = useScrollAnimation(0.2);
-    const [card0Ref, card0Visible] = useScrollAnimation(0.1);
-    const [card1Ref, card1Visible] = useScrollAnimation(0.1);
-    const [card2Ref, card2Visible] = useScrollAnimation(0.1);
     const [howItWorksHeaderRef, howItWorksHeaderVisible] = useScrollAnimation(0.2);
     const [step0Ref, step0Visible] = useScrollAnimation(0.1);
     const [step1Ref, step1Visible] = useScrollAnimation(0.1);
     const [step2Ref, step2Visible] = useScrollAnimation(0.1);
     const [trustRef, trustVisible] = useScrollAnimation(0.1);
     const [ctaRef, ctaVisible] = useScrollAnimation(0.15);
-
-    const cardRefs = [
-        [card0Ref, card0Visible],
-        [card1Ref, card1Visible],
-        [card2Ref, card2Visible],
-    ];
 
     const stepRefs = [
         [step0Ref, step0Visible],
@@ -71,38 +62,50 @@ const HomePage = () => {
 
     const staggerDelays = [styles.delay100, styles.delay200, styles.delay300];
 
-    const featuredBikes = [
-        {
-            id: 1,
-            name: 'Mountain Pro X1',
-            brand: 'Trek',
-            price: '29.500.000',
-            condition: 'Like New',
-            verified: true,
-            rating: 4.9,
-            image: 'https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?w=500&h=400&fit=crop'
-        },
-        {
-            id: 2,
-            name: 'Vintage Roadster',
-            brand: 'Pinarello',
-            price: '18.900.000',
-            condition: 'Excellent',
-            verified: true,
-            rating: 4.8,
-            image: 'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=500&h=400&fit=crop'
-        },
-        {
-            id: 3,
-            name: 'City E-Bike',
-            brand: 'Specialized',
-            price: '42.000.000',
-            condition: 'Good',
-            verified: true,
-            rating: 4.7,
-            image: 'https://images.unsplash.com/photo-1571333250630-f0230c320b6d?w=500&h=400&fit=crop'
-        }
-    ];
+    const [featuredBikes, setFeaturedBikes] = useState([]);
+    const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
+
+    useEffect(() => {
+        const loadFeatured = async () => {
+            try {
+                const data = await getAllPosts(0, 4);
+                let rawPosts = Array.isArray(data) ? data : (data.posts || data.content || []);
+                rawPosts = rawPosts.filter(p => p.status !== 'SOLD').slice(0, 1);
+                
+                const postsWithThumbs = await Promise.all(rawPosts.map(async (post) => {
+                    let thumbUrl = 'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=500&h=400&fit=crop';
+                    try {
+                        const tRes = await getThumbnail(post.postId);
+                        thumbUrl = tRes?.data?.imageUrl || tRes?.imageUrl || thumbUrl;
+                    } catch (err1) {
+                        try {
+                            const iRes = await getPostImages(post.postId);
+                            if (iRes?.data?.length > 0) thumbUrl = iRes.data[0].imageUrl;
+                        } catch (err2) {
+                            console.warn('Image fetch failed for post', post.postId, err1, err2);
+                        }
+                    }
+                    return {
+                        id: post.postId,
+                        name: post.title || 'Premium Bike',
+                        brand: post.bicycle?.brand || 'Unknown Brand',
+                        price: (post.price || 0).toLocaleString('vi-VN'),
+                        condition: post.bicycle?.conditionPercent ? `${post.bicycle.conditionPercent}%` : 'Checked',
+                        verified: post.isInspected !== false, // Default true if null
+                        rating: 5.0,
+                        image: thumbUrl
+                    };
+                }));
+                
+                setFeaturedBikes(postsWithThumbs);
+            } catch (err) {
+                console.error("Failed to load featured posts", err);
+            } finally {
+                setIsLoadingFeatured(false);
+            }
+        };
+        loadFeatured();
+    }, []);
 
     const howItWorks = [
         {
@@ -182,7 +185,11 @@ const HomePage = () => {
                                     alt="Featured premium bicycle"
                                 />
                                 {/* Floating glass badge */}
-                                <div className={styles.floatingVerifiedBadge}>
+                                <div 
+                                    className={styles.floatingVerifiedBadge} 
+                                    onClick={() => navigate('/my-posts')} 
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <span className={styles.verifiedCheckCircle}><IconCheck /></span>
                                     Inspector Verified
                                 </div>
@@ -230,64 +237,37 @@ const HomePage = () => {
                         </p>
                     </div>
 
-                    <div className={styles.bikeGrid}>
-                        {featuredBikes.map((bike, index) => {
-                            const [ref, visible] = cardRefs[index];
-                            return (
-                                <article
-                                    key={bike.id}
-                                    ref={ref}
-                                    className={cls(
-                                        styles.bikeCard,
-                                        hoveredCard === bike.id ? styles.bikeCardHovered : '',
-                                        styles.animateHidden,
-                                        visible && styles.animateVisible,
-                                        staggerDelays[index]
-                                    )}
-                                    onMouseEnter={() => setHoveredCard(bike.id)}
-                                    onMouseLeave={() => setHoveredCard(null)}
-                                >
-                                    {/* Verified badge */}
-                                    {bike.verified && (
-                                        <div className={styles.verifiedBadge}>
-                                            <IconCheck />
-                                            Verified
-                                        </div>
-                                    )}
-
-                                    {/* Image */}
-                                    <div className={styles.bikeImageWrap}>
-                                        <img src={bike.image} alt={bike.name} />
-                                    </div>
-
-                                    {/* Info */}
-                                    <div className={styles.bikeBody}>
-                                        <span className={styles.bikeBrand}>{bike.brand}</span>
-                                        <h3 className={styles.bikeName}>{bike.name}</h3>
-
-                                        <div className={styles.bikeMeta}>
-                                            <span className={styles.bikeConditionBadge}>{bike.condition}</span>
-                                            <span className={styles.bikeRating}>
-                                                <IconStar />
-                                                {bike.rating}
-                                            </span>
-                                        </div>
-
-                                        <div className={styles.bikeFooter}>
-                                            <div>
-                                                <span className={styles.bikePrice}>{bike.price}</span>
-                                                <span className={styles.bikeCurrency}> ₫</span>
-                                            </div>
-                                            <button className={styles.btnViewBike} onClick={() => navigate(`/bicycles/${bike.id}`)}>
-                                                View
-                                                <IconArrowRight />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </article>
-                            );
-                        })}
-                    </div>
+                    {isLoadingFeatured ? (
+                        <div className={styles.featuredHeroBanner}>
+                            <div className={styles.featuredOverlay} style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                <span className={styles.featuredBannerLabel}>Loading Featured...</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div 
+                            className={styles.featuredHeroBanner} 
+                            onClick={() => navigate(featuredBikes.length > 0 ? `/marketplace/${featuredBikes[0].id}` : '/marketplace')}
+                        >
+                            <img 
+                                src={featuredBikes.length > 0 ? featuredBikes[0].image : "https://images.unsplash.com/photo-1544191696-102dbbce16ba?w=1600&h=900&fit=crop"} 
+                                alt={featuredBikes.length > 0 ? featuredBikes[0].name : "Elite Racing Bicycle"} 
+                            />
+                            <div className={styles.featuredOverlay}>
+                                <span className={styles.featuredBannerLabel}>
+                                    {featuredBikes.length > 0 ? featuredBikes[0].brand : "Racing"}
+                                </span>
+                                <h3 className={styles.featuredBannerTitle}>
+                                    {featuredBikes.length > 0 
+                                        ? `EXPERIENCE THE ${featuredBikes[0].name.toUpperCase()}`
+                                        : "CRANKWORX NEW ZEALAND 2026 RECAP"}
+                                </h3>
+                                <span className={styles.featuredBannerLink}>
+                                    {featuredBikes.length > 0 ? "View Details" : "Read Now"}
+                                    <IconArrowRight />
+                                </span>
+                            </div>
+                        </div>
+                    )}
 
                     <div className={styles.featuredCta}>
                         <button className={styles.btnOutlineEmerald} onClick={() => navigate('/marketplace')}>

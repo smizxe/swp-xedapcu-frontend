@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { Spin, Button, Tag, message, Empty, Modal, DatePicker, Select, Input } from 'antd';
 import { ShopOutlined, EyeOutlined, CarOutlined, WarningOutlined, CloseCircleOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Header from '../../components/Header/Header';
-import { getMySales, scheduleDelivery, sellerConfirmDelivery, reportBuyerNoShow, cancelBySeller, getSavedOrderDeliveryAddress } from '../../service/orderService';
+import { getMySales, scheduleDelivery, sellerConfirmDelivery, cancelBySeller, getSavedOrderDeliveryAddress } from '../../service/orderService';
 import styles from './MySalesPage.module.css';
 
 // Returns the minimum start hour available for a given delivery date
@@ -93,15 +93,7 @@ function MySalesPage() {
         [deliveryForm.deliveryDate]
     );
 
-    const handleReportBuyerNoShow = async (orderId) => {
-        try {
-            await reportBuyerNoShow(orderId);
-            message.success('Buyer no-show reported. Deposit transferred.');
-            fetchSales();
-        } catch (err) {
-            message.error(err.response?.data || 'Failed to report buyer no-show.');
-        }
-    };
+
 
     const handleSellerCancel = (orderId) => {
         Modal.confirm({
@@ -311,13 +303,7 @@ function MySalesPage() {
                                     )}
                                     {order.status === 'IN_DELIVERY' && (
                                         <>
-                                            <Button
-                                                danger
-                                                icon={<WarningOutlined />}
-                                                onClick={() => handleReportBuyerNoShow(order.orderId)}
-                                            >
-                                                Buyer No-Show
-                                            </Button>
+
                                             <Button
                                                 danger
                                                 icon={<CloseCircleOutlined />}
