@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Button, Tag, message, Descriptions, Modal, DatePicker, Input, Select } from 'antd';
+import { Spin, Button, Tag, message, Descriptions, Modal, DatePicker, Input, Select, Rate } from 'antd';
 import {
     ArrowLeftOutlined,
     ScheduleOutlined,
@@ -15,6 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getCurrentUser } from '../../service/authService';
 import adminService from '../../services/adminService';
 import { getOrderById, cancelDeposit, cancelBySeller, completeOrder, scheduleDelivery, sellerConfirmDelivery, adminAssignInspector, inspectorStartDelivery, inspectorMarkDelivered, reportBuyerNoShow, reportSellerNoShow, getSavedOrderDeliveryAddress, saveOrderDeliveryAddress } from '../../service/orderService';
+import { createReview, getSellerReviews } from '../../service/reviewService';
 import InspectionBookingModal from './InspectionBookingModal';
 import styles from './OrderDetailPage.module.css';
 
@@ -33,6 +34,7 @@ const STATUS_COLOR = {
 };
 
 const formatPrice = (v) => (v != null ? v.toLocaleString('vi-VN') : '—');
+const resolveUserId = (entity) => entity?.userId || entity?.id || null;
 
 function OrderDetailPage() {
     const { orderId } = useParams();
@@ -50,6 +52,10 @@ function OrderDetailPage() {
     const [inspectors, setInspectors] = useState([]);
     const [assignInspectorId, setAssignInspectorId] = useState();
     const [assignLoading, setAssignLoading] = useState(false);
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [existingReview, setExistingReview] = useState(null);
+    const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
 
     const fetchOrder = useCallback(() => {
         setLoading(true);
@@ -90,6 +96,30 @@ function OrderDetailPage() {
             });
     }, [user?.role]);
 
+    useEffect(() => {
+        const currentUserData = getCurrentUser();
+        const currentUserId = currentUserData?.userId ? Number(currentUserData.userId) : null;
+        const sellerId = resolveUserId(order?.seller);
+
+        if (!order || order.status !== 'COMPLETED' || !sellerId || !currentUserId) {
+            setExistingReview(null);
+            return;
+        }
+
+        getSellerReviews(sellerId, 0, 50)
+            .then((pageData) => {
+                const reviews = Array.isArray(pageData?.content) ? pageData.content : [];
+                const matchedReview = reviews.find((review) =>
+                    Number(review.orderId) === Number(order.orderId) &&
+                    Number(review.fromUserId) === currentUserId
+                );
+                setExistingReview(matchedReview || null);
+            })
+            .catch(() => {
+                setExistingReview(null);
+            });
+    }, [order]);
+
     const currentUser = getCurrentUser();
     const currentUserEmail = (user?.email || currentUser?.email || '').toLowerCase();
     const currentUserRole = String(user?.role || currentUser?.role || '').toUpperCase();
@@ -101,10 +131,12 @@ function OrderDetailPage() {
         order?.assignedInspector &&
         currentUserEmail === order.assignedInspector.email?.toLowerCase()
     );
+    const currentUserId = currentUser?.userId ? Number(currentUser.userId) : null;
     const canManageDelivery = isSeller && ['DEPOSIT_PAID', 'PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW'].includes(order?.status);
     const resolvedOrderDeliveryAddress = order?.deliveryAddress || order?.deliverySession?.location || '';
     const savedDeliveryAddress = order?.orderId ? getSavedOrderDeliveryAddress(order.orderId) || '' : '';
     const currentDeliveryAddress = deliveryForm.deliveryAddress || resolvedOrderDeliveryAddress || savedDeliveryAddress;
+    const canReviewSeller = Boolean(isBuyer && currentUserId && order?.status === 'COMPLETED' && resolveUserId(order?.buyer) === currentUserId);
 
     const handleDeliveryAddressChange = (value) => {
         setDeliveryForm((prev) => ({ ...prev, deliveryAddress: value }));
@@ -243,6 +275,39 @@ function OrderDetailPage() {
             fetchOrder();
         } catch (err) {
             message.error(err.response?.data || 'Failed to mark delivery as completed.');
+        }
+    };
+
+    const handleSubmitReview = async () => {
+        const trimmedComment = reviewForm.comment.trim();
+        const payload = {
+            rating: reviewForm.rating || null,
+            comment: trimmedComment || null,
+        };
+
+        if (!payload.rating && !payload.comment) {
+            message.warning('Please provide a rating or a comment.');
+            return;
+        }
+
+        try {
+            setReviewSubmitting(true);
+            const createdReview = await createReview(orderId, payload);
+            setExistingReview(createdReview);
+            setReviewModalOpen(false);
+            message.success('Review submitted successfully.');
+        } catch (err) {
+            const errorText = err.response?.data || err.message || 'Failed to submit review.';
+            if (typeof errorText === 'string' && errorText.toLowerCase().includes('already reviewed')) {
+                setExistingReview({
+                    orderId: order?.orderId,
+                    rating: payload.rating,
+                    comment: payload.comment,
+                });
+            }
+            message.error(errorText);
+        } finally {
+            setReviewSubmitting(false);
         }
     };
 
@@ -539,6 +604,39 @@ function OrderDetailPage() {
                         </div>
                     </div>
                 )}
+
+                {canReviewSeller && (
+                    <div className={styles.card}>
+                        <h3 className={styles.sectionTitle}>Seller Review</h3>
+                        {existingReview ? (
+                            <>
+                                <p className={styles.helperText}>
+                                    You already reviewed this seller for this order.
+                                </p>
+                                {existingReview.rating ? (
+                                    <Rate disabled value={existingReview.rating} className={styles.reviewStars} />
+                                ) : null}
+                                {existingReview.comment ? (
+                                    <p className={styles.reviewPreview}>{existingReview.comment}</p>
+                                ) : null}
+                            </>
+                        ) : (
+                            <>
+                                <p className={styles.helperText}>
+                                    This order is complete. Leave a review to help other buyers evaluate this seller.
+                                </p>
+                                <Button
+                                    type="primary"
+                                    className={styles.btnPrimary}
+                                    icon={<CheckCircleOutlined />}
+                                    onClick={() => setReviewModalOpen(true)}
+                                >
+                                    Review Seller
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Schedule Delivery Modal */}
@@ -583,6 +681,34 @@ function OrderDetailPage() {
                     fetchOrder();
                 }}
             />
+
+            <Modal
+                title="Review Seller"
+                open={reviewModalOpen}
+                onOk={handleSubmitReview}
+                onCancel={() => setReviewModalOpen(false)}
+                okText="Submit Review"
+                cancelText="Cancel"
+                confirmLoading={reviewSubmitting}
+            >
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Rating</label>
+                    <Rate
+                        value={reviewForm.rating}
+                        onChange={(value) => setReviewForm((prev) => ({ ...prev, rating: value }))}
+                    />
+                </div>
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Comment</label>
+                    <Input.TextArea
+                        rows={4}
+                        maxLength={500}
+                        placeholder="Share your experience with this seller"
+                        value={reviewForm.comment}
+                        onChange={(event) => setReviewForm((prev) => ({ ...prev, comment: event.target.value }))}
+                    />
+                </div>
+            </Modal>
         </div>
     );
 }

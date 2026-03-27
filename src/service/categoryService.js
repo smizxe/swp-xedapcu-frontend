@@ -16,14 +16,25 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+const normalizeCategory = (category) => {
+    if (!category) return category;
+    return {
+        ...category,
+        id: category.id ?? category.categoryId ?? category.category_id,
+        categoryId: category.categoryId ?? category.id ?? category.category_id,
+        categoryName: category.categoryName ?? category.name ?? '',
+        name: category.name ?? category.categoryName ?? '',
+    };
+};
+
 export const getAllCategories = async () => {
     const response = await api.get(API_ENDPOINTS.CATEGORIES.GET_ALL);
-    return response.data;
+    return Array.isArray(response.data) ? response.data.map(normalizeCategory) : [];
 };
 
 export const createCategory = async (data) => {
     const response = await api.post(API_ENDPOINTS.CATEGORIES.CREATE, data);
-    return response.data;
+    return normalizeCategory(response.data?.category || response.data);
 };
 
 export const deleteCategory = async (id) => {

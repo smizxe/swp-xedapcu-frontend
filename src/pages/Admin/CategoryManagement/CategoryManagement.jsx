@@ -53,7 +53,7 @@ const CategoryManagement = () => {
             setLoading(true);
             const data = await categoryService.getAllCategories();
             setCategories(data);
-        } catch (err) {
+        } catch {
             setError('Failed to load categories');
         } finally {
             setLoading(false);
@@ -65,13 +65,13 @@ const CategoryManagement = () => {
 
         try {
             setError('');
-            await categoryService.createCategory({ name: newCategoryName });
+            const created = await categoryService.createCategory({ name: newCategoryName });
             setSuccess('Category created successfully');
             setNewCategoryName('');
             setDialogOpen(false);
-            fetchCategories();
+            setCategories((prev) => [...prev, created]);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create category');
+            setError(err.response?.data?.message || err.response?.data || 'Failed to create category');
         }
     };
 
@@ -148,15 +148,15 @@ const CategoryManagement = () => {
                                         </TableRow>
                                     ) : (
                                         categories.map((cat) => (
-                                            <TableRow key={cat.categoryId} className={styles.tableRow}>
-                                                <TableCell>{cat.categoryId}</TableCell>
+                                            <TableRow key={cat.categoryId ?? cat.id} className={styles.tableRow}>
+                                                <TableCell>{cat.categoryId ?? cat.id}</TableCell>
                                                 <TableCell className={styles.categoryName}>
-                                                    {cat.name}
+                                                    {cat.categoryName || cat.name || '—'}
                                                 </TableCell>
                                                 <TableCell align="right">
                                                     <IconButton
                                                         size="small"
-                                                        onClick={() => handleDelete(cat.categoryId)}
+                                                        onClick={() => handleDelete(cat.categoryId ?? cat.id)}
                                                         className={styles.deleteButton}
                                                     >
                                                         <DeleteIcon fontSize="small" />

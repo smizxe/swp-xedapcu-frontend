@@ -2,13 +2,14 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Typography, Alert, Button, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import adminService from '../../../services/adminService';
 import { adminAssignInspector } from '../../../service/orderService';
-import { RefreshCw, Truck, UserCheck, Clock3 } from 'lucide-react';
+import { RefreshCw, Truck, UserCheck, Clock3, PackageCheck } from 'lucide-react';
 import styles from './DeliveryManagement.module.css';
 
-const DELIVERY_FILTERS = ['ALL', 'PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW', 'ASSIGNED_TO_INSPECTOR', 'IN_DELIVERY'];
+const DELIVERY_FILTERS = ['ALL', 'PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW', 'ASSIGNED_TO_INSPECTOR', 'IN_DELIVERY', 'COMPLETED'];
 
 const DeliveryStatusBadge = ({ status }) => {
     const tone =
+        status === 'COMPLETED' ? styles.badgeCompleted :
         status === 'ASSIGNED_TO_INSPECTOR' ? styles.badgeAssigned :
         status === 'IN_DELIVERY' ? styles.badgeShipping :
         styles.badgePending;
@@ -65,6 +66,15 @@ const DeliveryOrderCard = ({ order, inspectors, assigningOrderId, onAssign }) =>
             {order.assignedInspector && (
                 <Typography className={styles.deliveryMeta}>
                     Assigned inspector: <strong>{order.assignedInspector.fullName || order.assignedInspector.email}</strong>
+                </Typography>
+            )}
+
+            {order.status === 'COMPLETED' && (
+                <Typography className={styles.deliveryMeta}>
+                    <strong>Delivery completed successfully.</strong>
+                    {order.deliverySession?.deliveredAt && (
+                        <> Delivered at {new Date(order.deliverySession.deliveredAt).toLocaleString('vi-VN')}</>
+                    )}
                 </Typography>
             )}
 
@@ -164,6 +174,7 @@ export default function DeliveryManagement() {
         pending: deliveryOrders.filter((item) => ['PENDING_SELLER_CONFIRMATION', 'PENDING_ADMIN_REVIEW'].includes(item.status)).length,
         assigned: deliveryOrders.filter((item) => item.status === 'ASSIGNED_TO_INSPECTOR').length,
         shipping: deliveryOrders.filter((item) => item.status === 'IN_DELIVERY').length,
+        completed: deliveryOrders.filter((item) => item.status === 'COMPLETED').length,
     };
 
     return (
@@ -191,6 +202,7 @@ export default function DeliveryManagement() {
                 <div className={styles.deliveryMiniStat}><Truck size={15} /> {deliveryStats.shipping} shipping</div>
                 <div className={styles.deliveryMiniStat}><UserCheck size={15} /> {deliveryStats.assigned} assigned</div>
                 <div className={styles.deliveryMiniStat}><Clock3 size={15} /> {deliveryStats.pending} pending</div>
+                <div className={styles.deliveryMiniStat}><PackageCheck size={15} /> {deliveryStats.completed} completed</div>
             </div>
 
             <div className={styles.panel}>

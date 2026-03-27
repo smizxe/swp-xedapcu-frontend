@@ -129,6 +129,11 @@
     color: #059669;
 }
 
+.badgeCompleted {
+    background: rgba(99, 102, 241, 0.12);
+    color: #4338ca;
+}
+
 .deliveryTitle {
     font-size: 18px !important;
     font-weight: 700 !important;

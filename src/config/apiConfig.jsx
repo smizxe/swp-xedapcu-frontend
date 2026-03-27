@@ -111,6 +111,14 @@ export const API_ENDPOINTS = {
     SUBMIT_REPORT: (inspectionId) => `/api/inspections/${inspectionId}/report`,
     GET_REPORT: (inspectionId) => `/api/inspections/${inspectionId}/report`,
   },
+  // Review endpoints
+  REVIEWS: {
+    CREATE: (orderId) => `/api/reviews/${orderId}`,
+    GET_BY_ID: (reviewId) => `/api/reviews/${reviewId}`,
+    DELETE: (reviewId) => `/api/reviews/${reviewId}`,
+    SELLER_REVIEWS: (sellerId) => `/api/reviews/seller/${sellerId}`,
+    SELLER_RATING: (sellerId) => `/api/reviews/seller/${sellerId}/rating`,
+  },
 }
 // Log configuration in development
 if (API_CONFIG.IS_DEV) {

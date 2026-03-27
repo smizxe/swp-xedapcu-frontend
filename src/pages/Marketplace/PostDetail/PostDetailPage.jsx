@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Button, Spin, message, Modal, Input, Image } from 'antd';
+import { Button, Spin, message, Modal, Input, Image, Rate } from 'antd';
 import {
     ArrowLeftOutlined,
     SafetyCertificateOutlined,
@@ -9,6 +9,7 @@ import {
     LeftOutlined,
     RightOutlined,
     EditOutlined,
+    StarFilled,
 } from '@ant-design/icons';
 import styles from './PostDetailPage.module.css';
 import Header from '../../../components/Header/Header';
@@ -16,6 +17,7 @@ import { getPostById } from '../../../service/postService';
 import { getPostImages } from '../../../service/imageService';
 import { getCurrentUser, isAuthenticated } from '../../../service/authService';
 import { createDeposit } from '../../../service/orderService';
+import { getSellerRatingSummary, getSellerReviews } from '../../../service/reviewService';
 
 const STATUS_MAP = {
     APPROVED: { label: 'Available', className: styles.statusActive },
@@ -41,6 +43,8 @@ const getConditionColor = (pct) => {
 const initials = (name) =>
     name ? name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() : '?';
 
+const resolveSellerId = (seller, post) => seller?.userId || seller?.id || post?.sellerId || null;
+
 function PostDetailPage() {
     const { postId } = useParams();
     const navigate = useNavigate();
@@ -58,6 +62,8 @@ function PostDetailPage() {
     // Image gallery
     const [postImages, setPostImages] = useState([]);
     const [activeImgIdx, setActiveImgIdx] = useState(0);
+    const [sellerRating, setSellerRating] = useState(null);
+    const [sellerReviews, setSellerReviews] = useState([]);
 
     useEffect(() => {
         if (post) return;
@@ -80,6 +86,29 @@ function PostDetailPage() {
             })
             .catch(() => {});
     }, [postId]);
+
+    useEffect(() => {
+        const sellerId = resolveSellerId(post?.seller, post);
+        if (!sellerId) {
+            setSellerRating(null);
+            setSellerReviews([]);
+            return;
+        }
+
+        Promise.allSettled([
+            getSellerRatingSummary(sellerId),
+            getSellerReviews(sellerId, 0, 5),
+        ]).then(([ratingResult, reviewsResult]) => {
+            if (ratingResult.status === 'fulfilled') {
+                setSellerRating(ratingResult.value || null);
+            }
+
+            if (reviewsResult.status === 'fulfilled') {
+                const pageData = reviewsResult.value;
+                setSellerReviews(Array.isArray(pageData?.content) ? pageData.content : []);
+            }
+        });
+    }, [post]);
 
     const handleDeposit = () => {
         if (!isAuthenticated()) {
@@ -313,9 +342,54 @@ function PostDetailPage() {
                                         {post.seller.fullName || 'Unknown'}
                                     </span>
                                     <span className={styles.sellerEmail}>{post.seller.email}</span>
+                                    <div className={styles.sellerRatingRow}>
+                                        <span className={styles.sellerRatingValue}>
+                                            <StarFilled />{' '}
+                                            {sellerRating?.averageRating ? sellerRating.averageRating.toFixed(1) : '0.0'}
+                                        </span>
+                                        <span className={styles.sellerRatingMeta}>
+                                            {sellerRating?.totalRatings || 0} review{sellerRating?.totalRatings === 1 ? '' : 's'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         )}
+
+                        <div className={styles.reviewSection}>
+                            <div className={styles.reviewSectionHeader}>
+                                <p className={styles.sectionTitle}>Seller Reviews</p>
+                                <span className={styles.reviewSummary}>
+                                    {sellerRating?.averageRating ? `${sellerRating.averageRating.toFixed(1)} / 5` : 'No ratings yet'}
+                                </span>
+                            </div>
+
+                            {sellerReviews.length > 0 ? (
+                                <div className={styles.reviewList}>
+                                    {sellerReviews.map((review) => (
+                                        <div key={review.reviewId} className={styles.reviewCard}>
+                                            <div className={styles.reviewTopRow}>
+                                                <div>
+                                                    <p className={styles.reviewAuthor}>{review.fromUserName || 'Buyer'}</p>
+                                                    <p className={styles.reviewDate}>
+                                                        {review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : ''}
+                                                    </p>
+                                                </div>
+                                                {review.rating ? <Rate disabled value={review.rating} className={styles.reviewStars} /> : null}
+                                            </div>
+                                            {review.comment ? (
+                                                <p className={styles.reviewComment}>{review.comment}</p>
+                                            ) : (
+                                                <p className={styles.reviewCommentMuted}>This buyer left a rating without a written comment.</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className={styles.reviewEmpty}>
+                                    No reviews for this seller yet.
+                                </div>
+                            )}
+                        </div>
 
                         {/* Meta */}
                         <div className={styles.metaRow}>

@@ -239,6 +239,16 @@ function MyOrdersPage() {
                                             </Button>
                                         </>
                                     )}
+                                    {order.status === 'COMPLETED' && (
+                                        <Button
+                                            type="primary"
+                                            className={styles.btnComplete}
+                                            icon={<CheckCircleOutlined />}
+                                            onClick={() => navigate(`/orders/${order.orderId}`)}
+                                        >
+                                            Review Seller
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                         ))}
