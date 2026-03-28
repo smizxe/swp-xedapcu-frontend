@@ -12,6 +12,21 @@
     margin-bottom: 40px;
     border-bottom: 1px solid #f0f0f0;
     padding-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.headerCopy {
+    flex: 1;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .pageTitle {
@@ -47,7 +62,6 @@
 }
 
 .avatarContainer {
-    position: relative;
     margin-bottom: 16px;
 }
 
@@ -57,31 +71,24 @@
     font-weight: 800;
 }
 
-.avatarEditIcon {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background: #2D5A27;
-    color: #fff;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 2px solid #fff;
-    transition: transform 0.2s;
-}
-
-.avatarEditIcon:hover {
-    transform: scale(1.1);
-}
-
 .userNameDisplay {
     font-weight: 700;
     font-size: 18px;
     text-transform: capitalize;
+    margin-bottom: 8px;
+}
+
+.roleBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #eef8f2;
+    color: #2D5A27;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 /* Form Fields */
@@ -111,11 +118,6 @@
     transition: all 0.2s;
 }
 
-.valueRow:hover {
-    border-color: #2D5A27;
-    background: #ffffff;
-}
-
 .readonlyContainer {
     padding: 12px 16px;
     background: #f5f5f5;
@@ -125,9 +127,34 @@
     cursor: not-allowed;
 }
 
-.inlineEditIcon {
-    color: #ccc;
-    font-size: 14px;
+.readonlyValueRow {
+    cursor: default;
+}
+
+.readonlyValueRow:hover {
+    border-color: #eeeeee;
+    background: #fcfcfc;
+}
+
+.fieldValueWrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 24px;
+}
+
+.fieldIcon {
+    color: #2D5A27;
+    font-size: 16px;
+}
+
+.fieldValue {
+    color: #1A1A1A;
+}
+
+.subtleValue {
+    color: #666666;
+    line-height: 1.6;
 }
 
 /* Buttons */
@@ -151,6 +178,29 @@
     height: 40px;
 }
 
+.btnOutline:disabled {
+    color: #999999 !important;
+    border-color: #d9d9d9 !important;
+    background: #fafafa !important;
+}
+
+.btnGhost {
+    border-radius: 4px !important;
+    height: 40px !important;
+}
+
+.modernInput {
+    border-radius: 4px !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+.modernInput:hover,
+.modernInput:focus,
+.modernInput-focused {
+    border-color: #2D5A27 !important;
+    box-shadow: none !important;
+}
+
 .btnBlackSmall {
     background: #2D5A27 !important;
     border-color: #2D5A27 !important;
@@ -162,39 +212,32 @@
     border-radius: 4px !important;
 }
 
-/* Inputs */
-.modernInput {
-    border-radius: 4px !important;
-    border: 1px solid #2D5A27 !important;
-    padding: 10px 12px !important;
+.statusCard {
+    width: 100%;
+    background: #f6fbf8;
+    border: 1px solid #dcefe3;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
 }
 
-.editArea {
+.statusRow {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    align-items: center;
+    gap: 10px;
+    color: #1A1A1A;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
-.editActions {
-    display: flex;
-    gap: 8px;
+.statusIcon {
+    color: #2D5A27;
 }
 
-/* About Section */
-.aboutMeSection {
-    margin-top: 40px;
-    padding-top: 30px;
-    border-top: 1px solid #f0f0f0;
-}
-
-.aboutText {
-    color: #4A4A4A;
+.statusDescription {
+    margin: 0;
+    color: #666666;
     line-height: 1.6;
-}
-
-.placeholderText {
-    color: #ccc;
-    font-style: italic;
 }
 
 .loadingWrapper {
@@ -203,4 +246,24 @@
     align-items: center;
     justify-content: center;
     padding: 100px;
+}
+
+.alert {
+    margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+    .profileContentWrapper {
+        margin: 12px;
+        padding: 24px;
+    }
+
+    .header {
+        flex-direction: column;
+    }
+
+    .infoGrid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
 }
