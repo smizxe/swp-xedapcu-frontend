@@ -1,32 +1,33 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import adminService from '../../../services/adminService';
 import styles from './AdminDashboard.module.css';
 import {
-    AreaChart, Area, PieChart, Pie, Cell, Tooltip as ReTooltip,
-    XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend,
+    AreaChart,
+    Area,
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip as ReTooltip,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    ResponsiveContainer,
+    Legend,
 } from 'recharts';
-import {
-    TrendingUp, DollarSign, RefreshCw, Calendar, AlertCircle, Users
-} from 'lucide-react';
+import { TrendingUp, DollarSign, RefreshCw, Calendar, AlertCircle, Users, ReceiptText } from 'lucide-react';
 
-// ─── Palette ────────────────────────────────────────────────────────────────
-const EMERALD = { 900: '#064E3B', 700: '#047857', 500: '#10B981', 300: '#6EE7B7', 100: '#D1FAE5' };
+const EMERALD = { 900: '#064E3B', 700: '#047857', 500: '#10B981', 300: '#6EE7B7' };
 const PIE_COLORS = [EMERALD[700], EMERALD[500], '#14B8A6', '#94A3B8'];
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-const fmt = (n) =>
-    n === null || n === undefined
-        ? '—'
-        : Number(n).toLocaleString('vi-VN') + ' ₫';
+const fmtCurrency = (value) =>
+    value === null || value === undefined ? '—' : `${Number(value).toLocaleString('vi-VN')} ₫`;
 
 const isToday = (dateStr) => {
     if (!dateStr) return false;
     const d = new Date(dateStr);
     const now = new Date();
-    return d.getDate() === now.getDate() &&
-        d.getMonth() === now.getMonth() &&
-        d.getFullYear() === now.getFullYear();
+    return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
 };
 
 const FEE_LABEL = {
@@ -37,12 +38,19 @@ const FEE_LABEL = {
 };
 
 const INCOMING_TYPES = new Set(['FEE', 'PENALTY', 'INSPECTION_FEE', 'DEPOSIT']);
+const today = new Date();
+const iso = (date) => date.toISOString().slice(0, 10);
+const RANGES = [
+    { label: '7 Days', days: 7 },
+    { label: '30 Days', days: 30 },
+    { label: '90 Days', days: 90 },
+    { label: 'All Time', days: 0 },
+];
 
 const classifyFee = (tx) => {
     const type = (tx.transactionType || tx.type || '').toUpperCase();
-    // Nếu BE đã dùng enum mới → map trực tiếp
     if (FEE_LABEL[type] && type !== 'DEPOSIT') return FEE_LABEL[type];
-    // Fallback: DEPOSIT (data cũ) → parse description
+
     if (type === 'DEPOSIT') {
         const desc = (tx.description || '').toLowerCase();
         if (desc.includes('10%')) return 'Post Fee (10%)';
@@ -50,7 +58,8 @@ const classifyFee = (tx) => {
         if (desc.includes('penalty') || desc.includes('1%')) return 'Cancel Penalty (1%)';
         return 'Platform Commission';
     }
-    return null; // không phải income
+
+    return null;
 };
 
 const parsePostId = (desc = '') => {
@@ -61,11 +70,12 @@ const parsePostId = (desc = '') => {
 const groupByDay = (txs) => {
     const map = {};
     txs.forEach((tx) => {
-        const d = new Date(tx.createdAt);
-        const key = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+        const date = new Date(tx.createdAt);
+        const key = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
         if (!map[key]) map[key] = 0;
         map[key] += Math.abs(Number(tx.amount));
     });
+
     return Object.entries(map)
         .sort((a, b) => {
             const [ad, am] = a[0].split('/').map(Number);
@@ -75,23 +85,12 @@ const groupByDay = (txs) => {
         .map(([date, revenue]) => ({ date, revenue }));
 };
 
-// ─── Date Range Picker (native) ───────────────────────────────────────────
-const today = new Date();
-const iso = (d) => d.toISOString().slice(0, 10);
-const RANGES = [
-    { label: '7 Days', days: 7 },
-    { label: '30 Days', days: 30 },
-    { label: '90 Days', days: 90 },
-    { label: 'All Time', days: 0 },
-];
-
-// ─── Stat Card ────────────────────────────────────────────────────────────
 const StatCard = ({ icon: Icon, title, subtitle, value, accent }) => (
     <div className={styles.statCard}>
         <div className={styles.statCardGlow} style={{ background: accent }} />
         <div className={styles.statCardInner}>
             <div className={styles.statIcon} style={{ background: `${accent}22`, color: accent }}>
-                <Icon size={22} />
+                {Icon ? <Icon size={22} /> : null}
             </div>
             <div className={styles.statInfo}>
                 <div className={styles.statTitle}>{title}</div>
@@ -102,13 +101,12 @@ const StatCard = ({ icon: Icon, title, subtitle, value, accent }) => (
     </div>
 );
 
-// ─── Custom Tooltip for Recharts ─────────────────────────────────────────
 const CustomAreaTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div className={styles.chartTooltip}>
             <div className={styles.tooltipLabel}>{label}</div>
-            <div className={styles.tooltipValue}>{fmt(payload[0].value)}</div>
+            <div className={styles.tooltipValue}>{fmtCurrency(payload[0].value)}</div>
         </div>
     );
 };
@@ -123,47 +121,46 @@ const CustomPieTooltip = ({ active, payload }) => {
     );
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────
-const AdminDashboard = () => {
+function AdminDashboard() {
     const { user, isAdmin, loading: authLoading } = useAuth();
-    const [balance, setBalance] = useState(null);
+    const [summary, setSummary] = useState(null);
     const [transactions, setTransactions] = useState([]);
-    const [userStats, setUserStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [rangeIdx, setRangeIdx] = useState(1); // default 30 days
+    const [rangeIdx, setRangeIdx] = useState(1);
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
 
-    // ── Fetch ──────────────────────────────────────────────────────────────
     const fetchData = useCallback(async () => {
         if (!user?.userId) return;
+
         try {
             setLoading(true);
             setError('');
-            const [bal, txs, uStats] = await Promise.all([
-                adminService.getAdminWalletBalance(user.userId),
+            const [summaryData, txs] = await Promise.all([
+                adminService.getDashboardSummary(),
                 adminService.getAdminWalletTransactions(user.userId, 0, 500),
-                adminService.getUserStats()
             ]);
-            setBalance(bal);
+
+            setSummary(summaryData);
             setTransactions(txs);
-            setUserStats(uStats);
         } catch (err) {
-            setError(err?.response?.data || 'Failed to load revenue data.');
+            setError(err?.response?.data || 'Failed to load admin overview.');
         } finally {
             setLoading(false);
         }
     }, [user?.userId]);
 
     useEffect(() => {
-        if (!authLoading && isAdmin) fetchData();
+        if (!authLoading && isAdmin) {
+            fetchData();
+        }
     }, [authLoading, isAdmin, fetchData]);
 
-    // ── Date filtering ─────────────────────────────────────────────────────
     const filteredTx = useMemo(() => {
         const range = RANGES[rangeIdx];
-        let from = null, to = null;
+        let from = null;
+        let to = null;
 
         if (fromDate && toDate) {
             from = new Date(fromDate);
@@ -171,7 +168,7 @@ const AdminDashboard = () => {
             to.setHours(23, 59, 59, 999);
         } else if (range && range.days > 0) {
             to = new Date();
-            to.setHours(23, 59, 59, 999); // Set to end of day to avoid timezone/clock clipping newer records
+            to.setHours(23, 59, 59, 999);
             from = new Date();
             from.setDate(from.getDate() - range.days);
             from.setHours(0, 0, 0, 0);
@@ -179,123 +176,146 @@ const AdminDashboard = () => {
 
         return transactions.filter((tx) => {
             if (!tx.createdAt) return false;
-            const d = new Date(tx.createdAt);
-            if (from && d < from) return false;
-            if (to && d > to) return false;
+            const date = new Date(tx.createdAt);
+            if (from && date < from) return false;
+            if (to && date > to) return false;
             return true;
         });
     }, [transactions, rangeIdx, fromDate, toDate]);
 
-    // Incoming revenue: new enum types OR legacy DEPOSIT with positive amount
     const incomingTx = useMemo(
-        () => filteredTx.filter((tx) => {
-            const type = (tx.transactionType || tx.type || '').toUpperCase();
-            return INCOMING_TYPES.has(type) && Number(tx.amount) > 0;
-        }),
+        () =>
+            filteredTx.filter((tx) => {
+                const type = (tx.transactionType || tx.type || '').toUpperCase();
+                return INCOMING_TYPES.has(type) && Number(tx.amount) > 0;
+            }),
         [filteredTx]
     );
 
-    // ── Stats ──────────────────────────────────────────────────────────────
-    const totalCollected = useMemo(
-        () => transactions.filter(tx => {
-            const type = (tx.transactionType || tx.type || '').toUpperCase();
-            return INCOMING_TYPES.has(type) && Number(tx.amount) > 0;
-        }).reduce((s, tx) => s + Number(tx.amount), 0),
-        [transactions]
-    );
-
     const todayEarnings = useMemo(
-        () => transactions.filter(tx => {
-            const type = (tx.transactionType || tx.type || '').toUpperCase();
-            return INCOMING_TYPES.has(type) && Number(tx.amount) > 0 && isToday(tx.createdAt);
-        }).reduce((s, tx) => s + Number(tx.amount), 0),
+        () =>
+            transactions
+                .filter((tx) => {
+                    const type = (tx.transactionType || tx.type || '').toUpperCase();
+                    return INCOMING_TYPES.has(type) && Number(tx.amount) > 0 && isToday(tx.createdAt);
+                })
+                .reduce((sum, tx) => sum + Number(tx.amount), 0),
         [transactions]
     );
 
-    // Removal of activeListingsFee since we use User Stats now
-    // ── Pie data ───────────────────────────────────────────────────────────
     const pieData = useMemo(() => {
         const buckets = {};
-        incomingTx.forEach(tx => {
-            const cat = classifyFee(tx) || 'Other Income';
-            if (!buckets[cat]) buckets[cat] = 0;
-            buckets[cat] += Number(tx.amount);
+        incomingTx.forEach((tx) => {
+            const label = classifyFee(tx) || 'Other Income';
+            if (!buckets[label]) buckets[label] = 0;
+            buckets[label] += Number(tx.amount);
         });
-        const total = Object.values(buckets).reduce((s, v) => s + v, 0) || 1;
+        const total = Object.values(buckets).reduce((sum, value) => sum + value, 0) || 1;
         return Object.entries(buckets).map(([name, value]) => ({
-            name, value, pct: ((value / total) * 100).toFixed(1),
+            name,
+            value,
+            pct: ((value / total) * 100).toFixed(1),
         }));
     }, [incomingTx]);
 
-    // ── Area chart data ────────────────────────────────────────────────────
     const areaData = useMemo(() => groupByDay(incomingTx), [incomingTx]);
 
-    // ── Guards ─────────────────────────────────────────────────────────────
     if (authLoading) return null;
 
     return (
         <div className={styles.page}>
-            {/* ── Page Header ─────────────────────────────────────── */}
             <div className={styles.pageHeader}>
                 <div>
-                    <h1 className={styles.pageTitle}>Revenue Dashboard</h1>
-                    <p className={styles.pageSubtitle}>Platform income · Admin wallet analytics</p>
+                    <h1 className={styles.pageTitle}>Admin Overview</h1>
+                    <p className={styles.pageSubtitle}>Unified platform metrics, revenue flow, and operational health</p>
                 </div>
-                <button
-                    className={styles.refreshBtn}
-                    onClick={fetchData}
-                    disabled={loading}
-                >
+                <button className={styles.refreshBtn} onClick={fetchData} disabled={loading}>
                     <RefreshCw size={16} className={loading ? styles.spinning : ''} />
                     Refresh
                 </button>
             </div>
 
-            {error && (
+            {error ? (
                 <div className={styles.errorBanner}>
                     <AlertCircle size={16} />
                     {error}
                 </div>
-            )}
+            ) : null}
 
-            {/* ── Stat Cards (Top) ──────────────────────────────── */}
             <div className={styles.statsRow}>
                 <StatCard
                     icon={DollarSign}
-                    title="Total Collected Revenue"
-                    subtitle="All-time platform income"
-                    value={loading ? '...' : fmt(totalCollected)}
+                    title="Platform Revenue"
+                    subtitle="Current admin-side revenue pool"
+                    value={loading ? '...' : fmtCurrency(summary?.financialStats?.platformRevenue ?? 0)}
                     accent={EMERALD[900]}
                 />
                 <StatCard
                     icon={TrendingUp}
                     title="Today's Earnings"
-                    subtitle="Collected today"
-                    value={loading ? '...' : fmt(todayEarnings)}
+                    subtitle="Incoming fees collected today"
+                    value={loading ? '...' : fmtCurrency(todayEarnings)}
                     accent={EMERALD[700]}
                 />
                 <StatCard
                     icon={Users}
-                    title="Total Platform Users"
+                    title="Total Users"
                     subtitle="Registered accounts"
-                    value={loading ? '...' : (userStats?.totalUsers?.toLocaleString('vi-VN') || 0)}
+                    value={loading ? '...' : Number(summary?.userStats?.totalUsers ?? 0).toLocaleString('vi-VN')}
                     accent={EMERALD[500]}
+                />
+                <StatCard
+                    icon={ReceiptText}
+                    title="Completed Orders"
+                    subtitle="Orders finished successfully"
+                    value={loading ? '...' : Number(summary?.orderStats?.completed ?? 0).toLocaleString('vi-VN')}
+                    accent={EMERALD[300]}
                 />
             </div>
 
-            {/* ── Date Range Selector ───────────────────────────── */}
+            <div className={styles.quickStatsGrid}>
+                <div className={styles.quickStat}>
+                    <span className={styles.quickStatLabel}>Total Transactions</span>
+                    <strong className={styles.quickStatValue}>
+                        {loading ? '...' : Number(summary?.financialStats?.totalTransactions ?? 0).toLocaleString('vi-VN')}
+                    </strong>
+                </div>
+                <div className={styles.quickStat}>
+                    <span className={styles.quickStatLabel}>Total Order Value</span>
+                    <strong className={styles.quickStatValue}>
+                        {loading ? '...' : fmtCurrency(summary?.financialStats?.totalOrderValue ?? 0)}
+                    </strong>
+                </div>
+                <div className={styles.quickStat}>
+                    <span className={styles.quickStatLabel}>Active Users</span>
+                    <strong className={styles.quickStatValue}>
+                        {loading ? '...' : Number(summary?.userStats?.activeUsers ?? 0).toLocaleString('vi-VN')}
+                    </strong>
+                </div>
+                <div className={styles.quickStat}>
+                    <span className={styles.quickStatLabel}>Active Posts</span>
+                    <strong className={styles.quickStatValue}>
+                        {loading ? '...' : Number(summary?.postStats?.active ?? 0).toLocaleString('vi-VN')}
+                    </strong>
+                </div>
+            </div>
+
             <div className={styles.glassCard}>
                 <div className={styles.filterRow}>
                     <Calendar size={16} className={styles.filterIcon} />
                     <span className={styles.filterLabel}>Date Range:</span>
                     <div className={styles.rangeChips}>
-                        {RANGES.map((r, i) => (
+                        {RANGES.map((range, index) => (
                             <button
-                                key={r.label}
-                                className={`${styles.chip} ${rangeIdx === i && !fromDate ? styles.chipActive : ''}`}
-                                onClick={() => { setRangeIdx(i); setFromDate(''); setToDate(''); }}
+                                key={range.label}
+                                className={`${styles.chip} ${rangeIdx === index && !fromDate ? styles.chipActive : ''}`}
+                                onClick={() => {
+                                    setRangeIdx(index);
+                                    setFromDate('');
+                                    setToDate('');
+                                }}
                             >
-                                {r.label}
+                                {range.label}
                             </button>
                         ))}
                     </div>
@@ -305,7 +325,10 @@ const AdminDashboard = () => {
                             className={styles.datePicker}
                             value={fromDate}
                             max={iso(today)}
-                            onChange={e => { setFromDate(e.target.value); setRangeIdx(-1); }}
+                            onChange={(e) => {
+                                setFromDate(e.target.value);
+                                setRangeIdx(-1);
+                            }}
                         />
                         <span className={styles.dateSep}>→</span>
                         <input
@@ -313,15 +336,16 @@ const AdminDashboard = () => {
                             className={styles.datePicker}
                             value={toDate}
                             max={iso(today)}
-                            onChange={e => { setToDate(e.target.value); setRangeIdx(-1); }}
+                            onChange={(e) => {
+                                setToDate(e.target.value);
+                                setRangeIdx(-1);
+                            }}
                         />
                     </div>
                 </div>
             </div>
 
-            {/* ── Charts (Middle) ───────────────────────────────── */}
             <div className={styles.chartsGrid}>
-                {/* Pie Chart */}
                 <div className={styles.glassCard}>
                     <div className={styles.chartHeader}>
                         <h3 className={styles.chartTitle}>Revenue Breakdown</h3>
@@ -332,31 +356,18 @@ const AdminDashboard = () => {
                     ) : (
                         <ResponsiveContainer width="100%" height={280}>
                             <PieChart>
-                                <Pie
-                                    data={pieData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
-                                    paddingAngle={3}
-                                    dataKey="value"
-                                >
-                                    {pieData.map((_, i) => (
-                                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
+                                    {pieData.map((_, index) => (
+                                        <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                                     ))}
                                 </Pie>
                                 <ReTooltip content={<CustomPieTooltip />} />
-                                <Legend
-                                    iconType="circle"
-                                    iconSize={10}
-                                    formatter={(val) => <span className={styles.legendText}>{val}</span>}
-                                />
+                                <Legend iconType="circle" iconSize={10} formatter={(value) => <span className={styles.legendText}>{value}</span>} />
                             </PieChart>
                         </ResponsiveContainer>
                     )}
                 </div>
 
-                {/* Area Chart */}
                 <div className={styles.glassCard}>
                     <div className={styles.chartHeader}>
                         <h3 className={styles.chartTitle}>Revenue Growth</h3>
@@ -381,7 +392,7 @@ const AdminDashboard = () => {
                                     tickLine={false}
                                 />
                                 <YAxis
-                                    tickFormatter={v => v === 0 ? '0' : (v / 1000).toFixed(0) + 'k'}
+                                    tickFormatter={(value) => (value === 0 ? '0' : `${(value / 1000).toFixed(0)}k`)}
                                     tick={{ fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fill: '#64748b' }}
                                     axisLine={false}
                                     tickLine={false}
@@ -402,7 +413,6 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* ── Incoming Transactions (Bottom) ───────────────── */}
             <div className={`${styles.glassCard} ${styles.tableCard}`}>
                 <div className={styles.tableHeader}>
                     <div>
@@ -438,7 +448,7 @@ const AdminDashboard = () => {
                                 </tr>
                             ) : (
                                 incomingTx.map((tx) => {
-                                    const cat = classifyFee(tx) || 'Platform Commission';
+                                    const category = classifyFee(tx) || 'Platform Commission';
                                     const postId = parsePostId(tx.description || '');
                                     return (
                                         <tr key={tx.transactionId} className={styles.tableRow}>
@@ -446,18 +456,19 @@ const AdminDashboard = () => {
                                                 <span className={styles.txId}>#{tx.transactionId}</span>
                                             </td>
                                             <td>
-                                                <span className={styles.feeBadge}>{cat}</span>
+                                                <span className={styles.feeBadge}>{category}</span>
                                             </td>
                                             <td>
-                                                <span className={styles.amountPositive}>
-                                                    +{Number(tx.amount).toLocaleString('vi-VN')} ₫
-                                                </span>
+                                                <span className={styles.amountPositive}>+{Number(tx.amount).toLocaleString('vi-VN')} ₫</span>
                                             </td>
                                             <td className={styles.timeCell}>
                                                 {tx.createdAt
                                                     ? new Date(tx.createdAt).toLocaleString('vi-VN', {
-                                                        day: '2-digit', month: '2-digit', year: 'numeric',
-                                                        hour: '2-digit', minute: '2-digit',
+                                                        day: '2-digit',
+                                                        month: '2-digit',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
                                                     })
                                                     : '—'}
                                             </td>
@@ -474,6 +485,6 @@ const AdminDashboard = () => {
             </div>
         </div>
     );
-};
+}
 
 export default AdminDashboard;
