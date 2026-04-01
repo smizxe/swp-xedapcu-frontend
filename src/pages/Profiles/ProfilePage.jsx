@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Alert, Avatar, Button, Input, Spin, message } from 'antd';
 import {
     CheckCircleOutlined,
+    CloseCircleOutlined,
     EditOutlined,
     MailOutlined,
     SaveOutlined,
@@ -219,14 +220,15 @@ function ProfilePage() {
 
                             <div className={styles.securitySection}>
                                 <label className={styles.fieldLabel}>Account Status</label>
-                                <div className={styles.statusCard}>
-                                    <div className={styles.statusRow}>
-                                        <CheckCircleOutlined className={styles.statusIcon} />
+                                <div className={`${styles.statusCard} ${profile?.isActive === false ? styles.statusCardDisabled : ''}`}>
+                                    <div className={`${styles.statusRow} ${profile?.isActive === false ? styles.statusTextDisabled : ''}`}>
+                                        {profile?.isActive === false ? (
+                                            <CloseCircleOutlined className={`${styles.statusIcon} ${styles.statusIconDisabled}`} />
+                                        ) : (
+                                            <CheckCircleOutlined className={styles.statusIcon} />
+                                        )}
                                         <span>{profile?.isActive === false ? 'Disabled' : 'Active'}</span>
                                     </div>
-                                    <p className={styles.statusDescription}>
-                                        Avatar, address, and bio still depend on future backend profile support.
-                                    </p>
                                 </div>
                                 <ReadonlyField label="Login Provider" value={formatProviderLabel(profile?.provider)} subtle={!profile?.provider} />
                             </div>
@@ -269,15 +271,6 @@ function ProfilePage() {
                             )}
 
                             <ReadonlyField label="Role" value={formatRoleLabel(profile?.role)} />
-                            <ReadonlyField
-                                label="User ID"
-                                value={profile?.userId != null ? String(profile.userId) : 'Not available'}
-                            />
-                            <ReadonlyField
-                                label="Address / Bio"
-                                value="Backend has not exposed stable read data for address or bio yet."
-                                subtle
-                            />
                         </div>
                     </div>
                 )}

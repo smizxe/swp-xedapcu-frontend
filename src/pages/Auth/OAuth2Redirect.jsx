@@ -27,6 +27,9 @@ export default function OAuth2Redirect() {
     const role = searchParams.get('role');
     const userId = searchParams.get('userId');
     const hasOAuthError = !token || !email;
+    const errorParam = searchParams.get('error');
+    // Lỗi từ OAuth2FailureHandler: ?error=<encoded message>
+    const hasOAuthFailure = !!errorParam && !token;
 
     useEffect(() => {
         if (hasOAuthError) {
@@ -55,6 +58,46 @@ export default function OAuth2Redirect() {
 
         navigate(getPostLoginPath(role), { replace: true });
     }, [email, hasOAuthError, login, navigate, role, token, userId]);
+
+    // Bị banned hoặc lỗi từ OAuth2FailureHandler
+    if (hasOAuthFailure) {
+        const isBanned = (errorParam || '').toLowerCase().includes('deactivated') ||
+            (errorParam || '').toLowerCase().includes('disabled') ||
+            (errorParam || '').toLowerCase().includes('banned');
+        return (
+            <div style={{
+                minHeight: '100vh', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', flexDirection: 'column', gap: 20,
+                fontFamily: 'sans-serif', background: '#fff5f5',
+            }}>
+                <div style={{
+                    background: '#fff1f0', border: '1px solid #ffa39e',
+                    borderRadius: 12, padding: '32px 40px', textAlign: 'center',
+                    maxWidth: 460,
+                }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>{isBanned ? '🚫' : '⚠️'}</div>
+                    <h2 style={{ color: '#cf1322', margin: '0 0 8px' }}>
+                        {isBanned ? 'Tài khoản bị khoá' : 'Đăng nhập thất bại'}
+                    </h2>
+                    <p style={{ color: '#666', margin: '0 0 24px', lineHeight: 1.6 }}>
+                        {isBanned
+                            ? 'Tài khoản Google của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để biết thêm chi tiết.'
+                            : decodeURIComponent(errorParam || 'Đã có lỗi xảy ra. Vui lòng thử lại.')}
+                    </p>
+                    <button
+                        onClick={() => navigate('/login')}
+                        style={{
+                            padding: '10px 24px', borderRadius: 8, border: 'none',
+                            background: '#cf1322', color: '#fff', fontWeight: 600,
+                            cursor: 'pointer', fontSize: 14,
+                        }}
+                    >
+                        Quay lại trang đăng nhập
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     if (hasOAuthError) {
         return (
