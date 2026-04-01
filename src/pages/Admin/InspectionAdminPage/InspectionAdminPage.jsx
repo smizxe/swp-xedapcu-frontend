@@ -1,19 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import {
-    getAllBookings,
-    assignInspector,
-    getAllUsers,
-} from '../../../service/inspectionService';
+import { getAllBookings, assignInspector, getAllUsers } from '../../../service/inspectionService';
+import adminService from '../../../services/adminService';
 import styles from './InspectionAdminPage.module.css';
 import {
-    Shield, ClipboardList, User, Calendar, MapPin,
-    Clock, CheckCircle, AlertCircle, Loader, X, UserCheck
+    Shield,
+    ClipboardList,
+    User,
+    Calendar,
+    MapPin,
+    Clock,
+    CheckCircle,
+    AlertCircle,
+    Loader,
+    X,
+    UserCheck,
+    FileText,
+    ExternalLink,
+    Star,
 } from 'lucide-react';
-// Removed AdminTabs
 
-/* ── Status badge ──────────────────────────────────────── */
 const STATUS_CONFIG = {
     PENDING: { label: 'Pending', cls: 'badgePending', icon: AlertCircle },
     ASSIGNED: { label: 'Assigned', cls: 'badgeAssigned', icon: Clock },
@@ -31,7 +38,6 @@ function StatusBadge({ status }) {
     );
 }
 
-/* ── Assign Inspector Modal ─────────────────────────────── */
 function AssignModal({ booking, inspectors, onConfirm, onClose, loading }) {
     const [selectedId, setSelectedId] = useState('');
 
@@ -63,25 +69,22 @@ function AssignModal({ booking, inspectors, onConfirm, onClose, loading }) {
                         {inspectors.length === 0 && (
                             <p className={styles.noInspectors}>No inspectors found. Assign INSPECTOR role to a user first.</p>
                         )}
-                        {inspectors.map((u) => {
-                            // Use email as unique key since userId may be null in some edge cases
-                            const uid = u.userId ?? u.email;
+                        {inspectors.map((user) => {
+                            const uid = user.userId ?? user.email;
                             return (
                                 <div
-                                    key={u.email}
+                                    key={user.email}
                                     className={`${styles.inspectorItem} ${selectedId === uid ? styles.inspectorItemSelected : ''}`}
                                     onClick={() => setSelectedId(uid)}
                                 >
                                     <div className={styles.inspectorAvatar}>
-                                        {(u.fullName || u.email || '?')[0].toUpperCase()}
+                                        {(user.fullName || user.email || '?')[0].toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className={styles.inspectorName}>{u.fullName || '—'}</p>
-                                        <p className={styles.inspectorEmail}>{u.email}</p>
+                                        <p className={styles.inspectorName}>{user.fullName || '—'}</p>
+                                        <p className={styles.inspectorEmail}>{user.email}</p>
                                     </div>
-                                    {selectedId === uid && (
-                                        <CheckCircle size={16} className={styles.inspectorCheck} />
-                                    )}
+                                    {selectedId === uid ? <CheckCircle size={16} className={styles.inspectorCheck} /> : null}
                                 </div>
                             );
                         })}
@@ -93,8 +96,7 @@ function AssignModal({ booking, inspectors, onConfirm, onClose, loading }) {
                     <button
                         className={styles.assignConfirmBtn}
                         onClick={() => {
-                            // Find the inspector and get their numeric userId for the API call
-                            const inspector = inspectors.find(u => (u.userId ?? u.email) === selectedId);
+                            const inspector = inspectors.find((user) => (user.userId ?? user.email) === selectedId);
                             onConfirm(booking.bookingId, inspector?.userId);
                         }}
                         disabled={!selectedId || loading}
@@ -107,11 +109,81 @@ function AssignModal({ booking, inspectors, onConfirm, onClose, loading }) {
     );
 }
 
-/* ── Booking card ───────────────────────────────────────── */
-function BookingCard({ booking, onAssign }) {
-    // BE keeps status=PENDING after assignment (only changes to CONFIRMED when inspector confirms).
-    // So check BOTH: status is PENDING and no inspector assigned yet.
+function ReportModal({ booking, report, loading, error, onClose }) {
+    return (
+        <div className={styles.assignOverlay} onClick={onClose}>
+            <div className={styles.reportModal} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.assignHeader}>
+                    <div className={styles.assignHeaderLeft}>
+                        <div className={styles.assignIconWrap}>
+                            <FileText size={20} />
+                        </div>
+                        <div>
+                            <h3 className={styles.assignTitle}>Inspection Report</h3>
+                            <p className={styles.assignSub}>{booking.postTitle || `Inspection #${booking.bookingId}`}</p>
+                        </div>
+                    </div>
+                    <button className={styles.assignClose} onClick={onClose}><X size={16} /></button>
+                </div>
+
+                <div className={styles.assignBody}>
+                    {loading ? (
+                        <div className={styles.reportLoading}>
+                            <Loader size={24} className={styles.spin} />
+                            <p>Loading inspection report…</p>
+                        </div>
+                    ) : error ? (
+                        <div className={styles.errorState}>
+                            <AlertCircle size={28} />
+                            <p>{error}</p>
+                        </div>
+                    ) : report ? (
+                        <div className={styles.reportContent}>
+                            <div className={styles.reportGrid}>
+                                <div className={styles.reportStat}><span>Frame</span><strong>{report.frameStatus || '—'}</strong></div>
+                                <div className={styles.reportStat}><span>Brake</span><strong>{report.brakeStatus || '—'}</strong></div>
+                                <div className={styles.reportStat}><span>Drivetrain</span><strong>{report.drivetrainStatus || '—'}</strong></div>
+                                <div className={styles.reportStat}>
+                                    <span>Overall Rating</span>
+                                    <strong>{report.overallRating != null ? `${report.overallRating}/5` : '—'}</strong>
+                                </div>
+                            </div>
+
+                            <div className={styles.reportMetaBlock}>
+                                <div className={styles.metaRow}>
+                                    <UserCheck size={13} />
+                                    <span>{report.inspector?.fullName || report.inspector?.email || 'Unknown inspector'}</span>
+                                </div>
+                                {report.verifiedAt ? (
+                                    <div className={styles.metaRow}>
+                                        <Calendar size={13} />
+                                        <span>{new Date(report.verifiedAt).toLocaleString('vi-VN')}</span>
+                                    </div>
+                                ) : null}
+                                {report.reportFileUrl ? (
+                                    <a className={styles.reportLink} href={report.reportFileUrl} target="_blank" rel="noreferrer">
+                                        <ExternalLink size={14} />
+                                        Open report file
+                                    </a>
+                                ) : null}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <FileText size={40} strokeWidth={1.2} />
+                            <p>No report available for this inspection.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function BookingCard({ booking, onAssign, onViewReport }) {
     const canAssign = booking.status === 'PENDING' && !booking.inspector;
+    const canViewReport = booking.status === 'COMPLETED';
+
     return (
         <div className={styles.card}>
             <div className={styles.cardHeader}>
@@ -124,60 +196,65 @@ function BookingCard({ booking, onAssign }) {
             <h3 className={styles.cardTitle}>{booking.postTitle || `Post #${booking.postId}`}</h3>
 
             <div className={styles.cardMeta}>
-                {booking.bookingDate && (
+                {booking.bookingDate ? (
                     <div className={styles.metaRow}>
                         <Calendar size={13} />
                         <span>{booking.bookingDate}</span>
                     </div>
-                )}
-                {booking.startTime && (
+                ) : null}
+                {booking.startTime ? (
                     <div className={styles.metaRow}>
                         <Clock size={13} />
                         <span>{booking.startTime}{booking.endTime ? ` – ${booking.endTime}` : ''}</span>
                     </div>
-                )}
-                {booking.location && (
+                ) : null}
+                {booking.location ? (
                     <div className={styles.metaRow}>
                         <MapPin size={13} />
                         <span>{booking.location}</span>
                     </div>
-                )}
-                {booking.requester && (
+                ) : null}
+                {booking.requester ? (
                     <div className={styles.metaRow}>
                         <User size={13} />
                         <span>{booking.requester.fullName || booking.requester.email}</span>
                     </div>
-                )}
+                ) : null}
             </div>
 
-            {booking.inspector && (
+            {booking.inspector ? (
                 <div className={styles.inspectorAssigned}>
                     <UserCheck size={13} />
                     <span>{booking.inspector.fullName || booking.inspector.email}</span>
                 </div>
-            )}
+            ) : null}
 
-            {canAssign && (
-                <button className={styles.assignBtn} onClick={() => onAssign(booking)}>
-                    <UserCheck size={14} /> Assign Inspector
-                </button>
-            )}
+            <div className={styles.cardActions}>
+                {canAssign ? (
+                    <button className={styles.assignBtn} onClick={() => onAssign(booking)}>
+                        <UserCheck size={14} /> Assign Inspector
+                    </button>
+                ) : null}
+                {canViewReport ? (
+                    <button className={styles.reportBtn} onClick={() => onViewReport(booking)}>
+                        <FileText size={14} /> View Report
+                    </button>
+                ) : null}
+            </div>
         </div>
     );
 }
 
-/* ── Stat card ──────────────────────────────────────────── */
 function StatCard({ label, value, icon: Icon, accent }) {
     return (
         <div className={`${styles.statCard} ${accent ? styles[`statCard${accent}`] : ''}`}>
-            <div className={styles.statIcon}><Icon size={20} /></div>
+            <div className={styles.statIcon}>{Icon ? <Icon size={20} /> : null}</div>
             <div className={styles.statValue}>{value}</div>
             <div className={styles.statLabel}>{label}</div>
         </div>
     );
 }
 
-/* ── Main page ──────────────────────────────────────────── */
 export default function InspectionAdminPage() {
     const navigate = useNavigate();
     const { isAdmin, loading: authLoading } = useAuth();
@@ -189,26 +266,28 @@ export default function InspectionAdminPage() {
     const [assignTarget, setAssignTarget] = useState(null);
     const [assigning, setAssigning] = useState(false);
     const [filter, setFilter] = useState('ALL');
+    const [reportTarget, setReportTarget] = useState(null);
+    const [report, setReport] = useState(null);
+    const [reportLoading, setReportLoading] = useState(false);
+    const [reportError, setReportError] = useState('');
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         setError('');
         try {
-            const [bkData, usersData] = await Promise.all([
-                getAllBookings(),
-                getAllUsers().catch(() => []),
-            ]);
+            const [bkData, usersData] = await Promise.all([getAllBookings(), getAllUsers().catch(() => [])]);
 
             const list = Array.isArray(bkData) ? bkData : (bkData?.content ?? []);
             setBookings(list);
 
             const allUsers = Array.isArray(usersData) ? usersData : [];
-            // Role comes as 'INSPECTOR' or 'ROLE_INSPECTOR' depending on Spring config
-            setInspectors(allUsers.filter((u) =>
-                u.role === 'INSPECTOR' || u.role === 'ROLE_INSPECTOR' || String(u.role).includes('INSPECTOR')
-            ));
+            setInspectors(
+                allUsers.filter((user) =>
+                    user.role === 'INSPECTOR' || user.role === 'ROLE_INSPECTOR' || String(user.role).includes('INSPECTOR')
+                )
+            );
         } catch (e) {
-            setError(e?.response?.data?.error || e.message || 'Failed to load bookings.');
+            setError(e?.response?.data?.error || e?.response?.data || e.message || 'Failed to load bookings.');
         } finally {
             setLoading(false);
         }
@@ -231,15 +310,31 @@ export default function InspectionAdminPage() {
             setAssignTarget(null);
             fetchData();
         } catch (e) {
-            alert(e?.response?.data?.error || 'Failed to assign inspector.');
+            alert(e?.response?.data?.error || e?.response?.data || 'Failed to assign inspector.');
         } finally {
             setAssigning(false);
         }
     };
 
+    const handleViewReport = async (booking) => {
+        setReportTarget(booking);
+        setReport(null);
+        setReportError('');
+        setReportLoading(true);
+
+        try {
+            const data = await adminService.getInspectionReport(booking.bookingId);
+            setReport(data);
+        } catch (e) {
+            setReportError(e?.response?.data?.error || e?.response?.data || 'Failed to load inspection report.');
+        } finally {
+            setReportLoading(false);
+        }
+    };
+
     const FILTERS = ['ALL', 'PENDING', 'ASSIGNED', 'CONFIRMED', 'COMPLETED'];
     const STATUS_ORDER = { PENDING: 0, ASSIGNED: 1, CONFIRMED: 2, COMPLETED: 3 };
-    const filtered = (filter === 'ALL' ? bookings : bookings.filter((b) => b.status === filter))
+    const filtered = (filter === 'ALL' ? bookings : bookings.filter((booking) => booking.status === filter))
         .slice()
         .sort((a, b) => {
             const orderA = STATUS_ORDER[a.status] ?? 99;
@@ -250,9 +345,9 @@ export default function InspectionAdminPage() {
 
     const stats = {
         total: bookings.length,
-        pending: bookings.filter((b) => b.status === 'PENDING').length,
-        assigned: bookings.filter((b) => b.status === 'ASSIGNED').length,
-        completed: bookings.filter((b) => b.status === 'COMPLETED').length,
+        pending: bookings.filter((booking) => booking.status === 'PENDING').length,
+        assigned: bookings.filter((booking) => booking.status === 'ASSIGNED').length,
+        completed: bookings.filter((booking) => booking.status === 'COMPLETED').length,
     };
 
     if (authLoading) {
@@ -269,13 +364,12 @@ export default function InspectionAdminPage() {
 
     return (
         <div className={styles.page}>
-            {/* Hero header */}
             <div className={styles.pageHeader}>
                 <div className={styles.pageHeaderLeft}>
                     <div className={styles.pageIconWrap}><Shield size={26} /></div>
                     <div>
                         <h1 className={styles.pageTitle}>Inspection Management</h1>
-                        <p className={styles.pageSub}>Assign inspectors to pending bicycle verifications</p>
+                        <p className={styles.pageSub}>Assign inspectors and review completed verification reports</p>
                     </div>
                 </div>
                 <button className={styles.refreshBtn} onClick={fetchData} disabled={loading}>
@@ -283,7 +377,6 @@ export default function InspectionAdminPage() {
                 </button>
             </div>
 
-            {/* Stats row */}
             <div className={styles.statsRow}>
                 <StatCard label="Total Bookings" value={stats.total} icon={ClipboardList} />
                 <StatCard label="Pending" value={stats.pending} icon={AlertCircle} accent="Pending" />
@@ -291,56 +384,49 @@ export default function InspectionAdminPage() {
                 <StatCard label="Completed" value={stats.completed} icon={CheckCircle} accent="Completed" />
             </div>
 
-            {/* Filter tabs */}
             <div className={styles.filterTabs}>
-                {FILTERS.map((f) => (
+                {FILTERS.map((item) => (
                     <button
-                        key={f}
-                        className={`${styles.filterTab} ${filter === f ? styles.filterTabActive : ''}`}
-                        onClick={() => setFilter(f)}
+                        key={item}
+                        className={`${styles.filterTab} ${filter === item ? styles.filterTabActive : ''}`}
+                        onClick={() => setFilter(item)}
                     >
-                        {f === 'ALL' ? `All (${bookings.length})` : `${f} (${bookings.filter(b => b.status === f).length})`}
+                        {item === 'ALL' ? `All (${bookings.length})` : `${item} (${bookings.filter((booking) => booking.status === item).length})`}
                     </button>
                 ))}
             </div>
 
-            {/* Content */}
-            {loading && (
+            {loading ? (
                 <div className={styles.loading}>
                     <Loader size={32} className={styles.spin} />
                     <p>Loading inspection bookings…</p>
                 </div>
-            )}
+            ) : null}
 
-            {!loading && error && (
+            {!loading && error ? (
                 <div className={styles.errorState}>
                     <AlertCircle size={32} />
                     <p>{error}</p>
                     <button onClick={fetchData}>Retry</button>
                 </div>
-            )}
+            ) : null}
 
-            {!loading && !error && filtered.length === 0 && (
+            {!loading && !error && filtered.length === 0 ? (
                 <div className={styles.emptyState}>
                     <ClipboardList size={48} strokeWidth={1} />
                     <p>No {filter !== 'ALL' ? filter.toLowerCase() : ''} bookings found.</p>
                 </div>
-            )}
+            ) : null}
 
-            {!loading && !error && filtered.length > 0 && (
+            {!loading && !error && filtered.length > 0 ? (
                 <div className={styles.bentoGrid}>
                     {filtered.map((booking) => (
-                        <BookingCard
-                            key={booking.bookingId}
-                            booking={booking}
-                            onAssign={setAssignTarget}
-                        />
+                        <BookingCard key={booking.bookingId} booking={booking} onAssign={setAssignTarget} onViewReport={handleViewReport} />
                     ))}
                 </div>
-            )}
+            ) : null}
 
-            {/* Assign modal */}
-            {assignTarget && (
+            {assignTarget ? (
                 <AssignModal
                     booking={assignTarget}
                     inspectors={inspectors}
@@ -348,7 +434,17 @@ export default function InspectionAdminPage() {
                     onClose={() => setAssignTarget(null)}
                     loading={assigning}
                 />
-            )}
+            ) : null}
+
+            {reportTarget ? (
+                <ReportModal
+                    booking={reportTarget}
+                    report={report}
+                    loading={reportLoading}
+                    error={reportError}
+                    onClose={() => setReportTarget(null)}
+                />
+            ) : null}
         </div>
     );
 }

@@ -9,6 +9,11 @@ const unwrapPayloadList = (data, key) => {
 };
 
 const adminService = {
+    getDashboardSummary: async () => {
+        const response = await api.get('/admin/dashboard/summary');
+        return response.data;
+    },
+
     getAllUsers: async (page = 0, size = 50) => {
         const response = await api.get('/admin/users', { params: { page, size } });
         return unwrapPage(response.data);
@@ -130,6 +135,11 @@ const adminService = {
         // Response is Page<TransactionResponse>
         const data = response.data;
         return Array.isArray(data) ? data : (data?.content || []);
+    },
+
+    getInspectionReport: async (inspectionId) => {
+        const response = await api.get(`/admin/inspections/${inspectionId}/report`);
+        return response.data;
     },
 };
 
