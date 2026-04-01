@@ -108,8 +108,9 @@ export const scheduleDelivery = async (orderId, data) => {
     return response.data;
 };
 
-export const sellerConfirmDelivery = async (orderId) => {
-    const response = await api.put(API_ENDPOINTS.ORDERS.SELLER_CONFIRM_DELIVERY(orderId));
+export const sellerConfirmDelivery = async (orderId, data) => {
+    const response = await api.put(API_ENDPOINTS.ORDERS.SELLER_CONFIRM_DELIVERY(orderId), data);
+    saveOrderDeliveryAddress(orderId, data?.deliveryAddress);
     return response.data;
 };
 

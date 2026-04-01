@@ -145,7 +145,7 @@ function ReportModal({ booking, report, loading, error, onClose }) {
                                 <div className={styles.reportStat}><span>Drivetrain</span><strong>{report.drivetrainStatus || '—'}</strong></div>
                                 <div className={styles.reportStat}>
                                     <span>Overall Rating</span>
-                                    <strong>{report.overallRating != null ? `${report.overallRating}/5` : '—'}</strong>
+                                    <strong>{report.overallRating != null ? `${report.overallRating}/10` : '—'}</strong>
                                 </div>
                             </div>
 

@@ -48,7 +48,7 @@ function OrderDetailPage() {
 
     // Delivery modal
     const [deliveryOpen, setDeliveryOpen] = useState(false);
-    const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryTime: null });
+    const [deliveryForm, setDeliveryForm] = useState({ pickupAddress: '', deliveryAddress: '', deliveryTime: null });
     const [inspectors, setInspectors] = useState([]);
     const [assignInspectorId, setAssignInspectorId] = useState();
     const [assignLoading, setAssignLoading] = useState(false);
@@ -76,6 +76,7 @@ function OrderDetailPage() {
     useEffect(() => {
         setDeliveryForm((prev) => ({
             ...prev,
+            pickupAddress: order?.pickupAddress || prev.pickupAddress || '',
             deliveryAddress: order?.deliveryAddress || order?.deliverySession?.location || getSavedOrderDeliveryAddress(order?.orderId) || prev.deliveryAddress || '',
         }));
     }, [order?.deliveryAddress, order?.deliverySession?.location, order?.orderId]);
@@ -219,25 +220,16 @@ function OrderDetailPage() {
             return;
         }
         try {
-            await scheduleDelivery(orderId, {
+            await sellerConfirmDelivery(orderId, {
+                pickupAddress: deliveryForm.pickupAddress,
                 deliveryAddress: currentDeliveryAddress,
                 deliveryTime: deliveryForm.deliveryTime,
             });
-            message.success('Delivery scheduled!');
+            message.success('Delivery confirmed and scheduled!');
             setDeliveryOpen(false);
             fetchOrder();
         } catch (err) {
             message.error(err.response?.data || 'Failed to schedule delivery.');
-        }
-    };
-
-    const handleSellerConfirm = async () => {
-        try {
-            await sellerConfirmDelivery(orderId);
-            message.success('Delivery confirmed. Waiting for admin to assign an inspector.');
-            fetchOrder();
-        } catch (err) {
-            message.error(err.response?.data || 'Failed to confirm delivery.');
         }
     };
 
@@ -414,20 +406,7 @@ function OrderDetailPage() {
                     </div>
                 )}
 
-                {canManageDelivery && (
-                    <div className={styles.card}>
-                        <h3 className={styles.sectionTitle}>Delivery Address</h3>
-                        <p className={styles.helperText}>
-                            Enter or update the buyer delivery address here. This value will be reused when you schedule delivery in this browser.
-                        </p>
-                        <Input.TextArea
-                            rows={3}
-                            placeholder="Enter the buyer delivery address"
-                            value={currentDeliveryAddress}
-                            onChange={(e) => handleDeliveryAddressChange(e.target.value)}
-                        />
-                    </div>
-                )}
+
 
                 {/* Action Buttons */}
                 {order.status === 'PENDING' && (
@@ -452,23 +431,17 @@ function OrderDetailPage() {
                                         Book Inspection
                                     </Button>
                                     <Button
-                                        type="default"
-                                        icon={<CheckCircleOutlined />}
-                                        onClick={handleSellerConfirm}
-                                    >
-                                        Confirm for Inspector
-                                    </Button>
-                                    <Button
                                         icon={<CarOutlined />}
                                         onClick={() => {
                                             setDeliveryForm({
+                                                pickupAddress: order?.pickupAddress || '',
                                                 deliveryAddress: currentDeliveryAddress || getSavedOrderDeliveryAddress(order.orderId) || '',
                                                 deliveryTime: null,
                                             });
                                             setDeliveryOpen(true);
                                         }}
                                     >
-                                        Schedule Delivery
+                                        Confirm & Schedule Delivery
                                     </Button>
                                     <Button
                                         danger
@@ -649,11 +622,18 @@ function OrderDetailPage() {
                 okButtonProps={{ className: styles.btnPrimary }}
             >
                 <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Pickup Address</label>
+                    <Input
+                        placeholder="Enter where inspector should pick up the bicycle"
+                        value={deliveryForm.pickupAddress}
+                        onChange={(e) => setDeliveryForm((prev) => ({ ...prev, pickupAddress: e.target.value }))}
+                    />
+                </div>
+                <div className={styles.formGroup}>
                     <label className={styles.formLabel}>Delivery Address</label>
                     <Input
-                        placeholder="Buyer address should auto-fill here from the deposit order"
                         value={currentDeliveryAddress}
-                        onChange={(e) => handleDeliveryAddressChange(e.target.value)}
+                        disabled
                     />
                 </div>
                 <div className={styles.formGroup}>
