@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, MessageCircleQuestionMark, ShoppingCart, User } from 'lucide-react';
-import LogoImg from '../../assets/HomePage/Logo_ekibdlo2.png';
+import LogoImgLight from '../../assets/HomePage/Logo_ekibdlo2.png';
+import LogoImgDark from '../../assets/HomePage/Logo_ekibdlo.png';
 import { getCurrentUser, isAuthenticated, logoutUser } from '../../service/authService';
 import styles from './Header.module.css';
 
@@ -58,7 +59,7 @@ const Header = ({ variant = 'light' }) => {
         <nav className={navbarClass}>
             <div className={styles.navContainer}>
                 <Link to="/" className={styles.logo}>
-                    <img src={LogoImg} alt="EkibDlo Logo" className={styles.logoImg} />
+                    <img src={variant === 'dark' ? LogoImgDark : LogoImgLight} alt="EkibDlo Logo" className={styles.logoImg} />
                     <span className={styles.logoText}>EkibDlo</span>
                 </Link>
 

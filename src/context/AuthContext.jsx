@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -86,38 +86,38 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(initialAuth.token);
     const [loading] = useState(false);
 
-    const login = (authResponse) => {
+    const login = useCallback((authResponse) => {
         const { token: newToken, user: newUser } = authResponse;
         setToken(newToken);
         setUser(newUser);
         persistAuth(newToken, newUser);
-    };
+    }, []);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         setToken(null);
         setUser(null);
         clearStoredAuth();
-    };
+    }, []);
 
     const isAuthenticated = !!token;
     const isAdmin = user?.role === 'ADMIN';
     const isSeller = user?.role === 'SELLER' || isAdmin;
     const isInspector = user?.role === 'INSPECTOR';
 
+    const value = useMemo(() => ({
+        user,
+        token,
+        loading,
+        isAuthenticated,
+        isAdmin,
+        isSeller,
+        isInspector,
+        login,
+        logout,
+    }), [user, token, loading, isAuthenticated, isAdmin, isSeller, isInspector, login, logout]);
+
     return (
-        <AuthContext.Provider
-            value={{
-                user,
-                token,
-                loading,
-                isAuthenticated,
-                isAdmin,
-                isSeller,
-                isInspector,
-                login,
-                logout,
-            }}
-        >
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );

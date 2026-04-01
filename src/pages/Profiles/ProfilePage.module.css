@@ -221,6 +221,11 @@
     margin-bottom: 16px;
 }
 
+.statusCardDisabled {
+    background: #fff1f0;
+    border-color: #ffa39e;
+}
+
 .statusRow {
     display: flex;
     align-items: center;
@@ -232,6 +237,14 @@
 
 .statusIcon {
     color: #2D5A27;
+}
+
+.statusIconDisabled {
+    color: #ff4d4f;
+}
+
+.statusTextDisabled {
+    color: #cf1322;
 }
 
 .statusDescription {

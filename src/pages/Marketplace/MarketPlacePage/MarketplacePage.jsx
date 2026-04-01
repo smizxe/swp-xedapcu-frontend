@@ -24,18 +24,17 @@ const STATUS_MAP = {
 
 const MarketplacePage = ({
     posts,
-    categories,
     totalElements,
     currentPage,
     pageSize,
     isLoading,
     searchQuery,
-    selectedCategory,
     sortBy,
+    inspectedStatus,
     onSearch,
     onSearchChange,
-    onCategoryChange,
     onSortChange,
+    onInspectedChange,
     onPageChange,
     showAddPost,
     onToggleAddPost,
@@ -83,18 +82,16 @@ const MarketplacePage = ({
                             />
 
                             <Select
-                                id="marketplace-category-filter"
-                                className={styles.categorySelect}
-                                placeholder="All Categories"
-                                value={selectedCategory}
-                                onChange={onCategoryChange}
-                                allowClear
+                                id="marketplace-inspected-filter"
+                                className={styles.sortSelect}
+                                value={inspectedStatus}
+                                onChange={onInspectedChange}
+                                style={{ minWidth: 140 }}
+                                placeholder="Verification"
                             >
-                                {categories.map((cat) => (
-                                    <Option key={cat.categoryId ?? cat.id} value={cat.categoryId ?? cat.id}>
-                                        {cat.name ?? cat.categoryName}
-                                    </Option>
-                                ))}
+                                <Option value="all">All</Option>
+                                <Option value="inspected">Inspected</Option>
+                                <Option value="uninspected">Unverified</Option>
                             </Select>
 
                             <Select
@@ -167,7 +164,6 @@ const MarketplacePage = ({
                         </div>
                     ) : posts.length === 0 ? (
                         <div className={styles.emptyState}>
-                            <div className={styles.emptyIcon}>🚲</div>
                             <p className={styles.emptyTitle}>No bicycles found</p>
                             <p className={styles.emptyText}>
                                 Try adjusting your search or category filter.

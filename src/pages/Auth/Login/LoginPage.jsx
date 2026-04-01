@@ -10,9 +10,23 @@ const normalizeRole = (role) => String(role || '').replace(/^ROLE_/, '').toUpper
 
 const getAuthErrorMessage = (error) => {
   const responseData = error?.response?.data;
+  const rawMessage = typeof responseData === 'string'
+    ? responseData
+    : responseData?.message || '';
 
-  if (typeof responseData === 'string' && responseData.trim()) {
-    return responseData;
+  // Tài khoản bị khoá / disabled
+  if (
+    rawMessage.toLowerCase().includes('deactivated') ||
+    rawMessage.toLowerCase().includes('disabled') ||
+    rawMessage.toLowerCase().includes('banned') ||
+    rawMessage.toLowerCase().includes('account') ||
+    error?.response?.status === 403
+  ) {
+    return 'Tài khoản của bạn đã bị khoá. Vui lòng liên hệ quản trị viên để được hỗ trợ.';
+  }
+
+  if (typeof rawMessage === 'string' && rawMessage.trim()) {
+    return rawMessage;
   }
 
   if (typeof responseData?.message === 'string' && responseData.message.trim()) {
@@ -56,6 +70,13 @@ function LoginPage() {
   const [error, setError] = useState('');
 
   const from = location.state?.from?.pathname || '/';
+
+  // Bắt lỗi OAuth2 của Spring Security: redirect về /login?error khi login Google thất bại (vd: bị banned)
+  const searchParams = new URLSearchParams(location.search);
+  const oauthError = searchParams.get('error');
+  const oauthErrorMessage = oauthError != null
+    ? '🚫 Tài khoản của bạn đã bị khoá hoặc đăng nhập Google thất bại. Vui lòng liên hệ quản trị viên.'
+    : '';
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -119,7 +140,13 @@ function LoginPage() {
           </div>
 
           <form className={styles.form} onSubmit={handleFormSubmit}>
-            {/* Thông báo lỗi */}
+            {/* Thông báo lỗi OAuth2 (bị banned khi đăng nhập Google) */}
+            {oauthErrorMessage && (
+              <div className={styles.errorMessage} style={{ marginBottom: 12 }}>
+                {oauthErrorMessage}
+              </div>
+            )}
+            {/* Thông báo lỗi đăng nhập thông thường */}
             {error && <div className={styles.errorMessage}>{error}</div>}
 
             {/* Input Email */}

@@ -169,7 +169,7 @@ const AdminDashboard = () => {
             from = new Date(fromDate);
             to = new Date(toDate);
             to.setHours(23, 59, 59, 999);
-        } else if (range.days > 0) {
+        } else if (range && range.days > 0) {
             to = new Date();
             to.setHours(23, 59, 59, 999); // Set to end of day to avoid timezone/clock clipping newer records
             from = new Date();

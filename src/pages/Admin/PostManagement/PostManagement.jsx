@@ -16,7 +16,7 @@ import { useAuth } from '../../../context/AuthContext';
 import adminService from '../../../services/adminService';
 import styles from './PostManagement.module.css';
 
-const POST_STATUS_OPTIONS = ['ALL', 'PENDING', 'ACTIVE', 'APPROVED', 'RESERVED', 'SOLD', 'HIDDEN', 'REJECTED', 'CANCELLED', 'EXPIRED'];
+const POST_STATUS_OPTIONS = ['ALL', 'PENDING', 'ACTIVE', 'RESERVED', 'SOLD', 'CANCELLED', 'EXPIRED'];
 
 const normalizePostStatus = (status) => String(status || '').toUpperCase();
 
