@@ -140,14 +140,17 @@ function DeliveryCard({ order, actingOrderId, onStart, onFinish }) {
             </div>
             <h3 className={styles.cardTitle}>{order.postTitle || order.post?.title || 'Untitled order'}</h3>
             <div className={styles.cardMeta}>
-                {order.deliveryAddress && (
-                    <div className={styles.metaRow}><MapPin size={13} /><span>{order.deliveryAddress}</span></div>
+                {order.pickupAddress && (
+                    <div className={styles.metaRow}><MapPin size={13} /><span>Pickup: {order.pickupAddress}</span></div>
                 )}
-                {order.buyer && (
-                    <div className={styles.metaRow}><User size={13} /><span>Buyer: {order.buyer.fullName || order.buyer.email}</span></div>
+                {order.deliveryAddress && (
+                    <div className={styles.metaRow}><MapPin size={13} /><span>Delivery: {order.deliveryAddress}</span></div>
                 )}
                 {order.seller && (
-                    <div className={styles.metaRow}><User size={13} /><span>Seller: {order.seller.fullName || order.seller.email}</span></div>
+                    <div className={styles.metaRow}><User size={13} /><span>Seller: {order.seller.fullName || order.seller.email} {order.seller.phone ? `- ${order.seller.phone}` : ''}</span></div>
+                )}
+                {order.buyer && (
+                    <div className={styles.metaRow}><User size={13} /><span>Buyer: {order.buyer.fullName || order.buyer.email} {order.buyer.phone ? `- ${order.buyer.phone}` : ''}</span></div>
                 )}
                 {order.deliverySession?.deliveryStatus && (
                     <div className={styles.metaRow}><Truck size={13} /><span>Delivery: {order.deliverySession.deliveryStatus}</span></div>

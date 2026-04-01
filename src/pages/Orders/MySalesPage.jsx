@@ -52,7 +52,7 @@ function MySalesPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deliveryModal, setDeliveryModal] = useState({ open: false, orderId: null });
-    const [deliveryForm, setDeliveryForm] = useState({ deliveryAddress: '', deliveryDate: null, startTime: null, endTime: null });
+    const [deliveryForm, setDeliveryForm] = useState({ pickupAddress: '', deliveryAddress: '', deliveryDate: null, startTime: null, endTime: null });
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [sortOrder, setSortOrder] = useState('NEWEST');
@@ -81,6 +81,7 @@ function MySalesPage() {
     const openDeliveryModal = (order) => {
         setDeliveryModal({ open: true, orderId: order.orderId });
         setDeliveryForm({
+            pickupAddress: order?.pickupAddress || '',
             deliveryAddress: getOrderDeliveryAddress(order),
             deliveryDate: null,
             startTime: null,
@@ -115,30 +116,21 @@ function MySalesPage() {
     };
 
     const handleSchedule = async () => {
-        if (!deliveryForm.deliveryAddress || !deliveryForm.deliveryDate || !deliveryForm.startTime) {
+        if (!deliveryForm.pickupAddress || !deliveryForm.deliveryAddress || !deliveryForm.deliveryDate || !deliveryForm.startTime) {
             message.warning('Please fill in all delivery details.');
             return;
         }
         try {
-            await scheduleDelivery(deliveryModal.orderId, {
+            await sellerConfirmDelivery(deliveryModal.orderId, {
+                pickupAddress: deliveryForm.pickupAddress,
                 deliveryAddress: deliveryForm.deliveryAddress,
                 deliveryTime: toIsoDateTime(deliveryForm.deliveryDate, deliveryForm.startTime),
             });
-            message.success('Delivery scheduled!');
+            message.success('Delivery confirmed and scheduled! Waiting for admin to assign an inspector.');
             setDeliveryModal({ open: false, orderId: null });
             fetchSales();
         } catch (err) {
             message.error(err.response?.data || 'Failed to schedule delivery.');
-        }
-    };
-
-    const handleSellerConfirm = async (orderId) => {
-        try {
-            await sellerConfirmDelivery(orderId);
-            message.success('Delivery confirmed. Waiting for admin to assign an inspector.');
-            fetchSales();
-        } catch (err) {
-            message.error(err.response?.data || 'Failed to confirm delivery.');
         }
     };
 
@@ -263,19 +255,12 @@ function MySalesPage() {
                                     {order.status === 'DEPOSIT_PAID' && (
                                         <>
                                             <Button
-                                                type="default"
-                                                icon={<CheckCircleOutlined />}
-                                                onClick={() => handleSellerConfirm(order.orderId)}
-                                            >
-                                                Confirm for Inspector
-                                            </Button>
-                                            <Button
                                                 type="primary"
                                                 icon={<CarOutlined />}
                                                 className={styles.btnSchedule}
                                                 onClick={() => openDeliveryModal(order)}
                                             >
-                                                Schedule Delivery
+                                                Confirm & Schedule Delivery
                                             </Button>
                                             <Button
                                                 danger
@@ -329,11 +314,18 @@ function MySalesPage() {
                 okButtonProps={{ className: styles.btnSchedule }}
             >
                 <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Pickup Address</label>
+                    <Input
+                        placeholder="Enter where inspector should pick up the bicycle"
+                        value={deliveryForm.pickupAddress}
+                        onChange={(e) => setDeliveryForm((prev) => ({ ...prev, pickupAddress: e.target.value }))}
+                    />
+                </div>
+                <div className={styles.formGroup}>
                     <label className={styles.formLabel}>Delivery Address</label>
                     <Input
-                        placeholder="Buyer address should auto-fill here from the deposit order"
                         value={deliveryForm.deliveryAddress}
-                        onChange={(e) => setDeliveryForm((prev) => ({ ...prev, deliveryAddress: e.target.value }))}
+                        disabled
                     />
                 </div>
                 <div className={styles.formGroup}>
