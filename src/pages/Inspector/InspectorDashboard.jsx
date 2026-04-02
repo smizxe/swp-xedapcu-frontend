@@ -5,11 +5,11 @@ import {
     getMyRequests,
     confirmBooking,
 } from '../../service/inspectionService';
-import { getMyDeliveryTasks, inspectorStartDelivery, inspectorMarkDelivered } from '../../service/orderService';
+import { getMyDeliveryTasks, inspectorStartDelivery, inspectorMarkDelivered, reportBuyerNoShow, reportSellerNoShow } from '../../service/orderService';
 import InspectionReportModal from './InspectionReportModal';
 import {
     Shield, ClipboardList, CheckCircle, Clock, AlertCircle,
-    Calendar, MapPin, Loader, ChevronRight, FileText, User, Truck, PackageCheck, Phone
+    Calendar, MapPin, Loader, ChevronRight, FileText, User, Truck, PackageCheck, Phone, UserX
 } from 'lucide-react';
 
 const BOOKING_STATUS = {
@@ -138,9 +138,11 @@ function RequestCard({ req, onReport }) {
     );
 }
 
-function DeliveryCard({ order, actingOrderId, onStart, onFinish }) {
+function DeliveryCard({ order, actingOrderId, onStart, onFinish, onBuyerNoShow, onSellerNoShow }) {
     const isStarting = actingOrderId === `start-${order.orderId}`;
     const isFinishing = actingOrderId === `finish-${order.orderId}`;
+    const isBuyerNoShowing = actingOrderId === `buyer-noshow-${order.orderId}`;
+    const isSellerNoShowing = actingOrderId === `seller-noshow-${order.orderId}`;
 
     return (
         <div className={styles.deliveryCard}>
@@ -169,14 +171,24 @@ function DeliveryCard({ order, actingOrderId, onStart, onFinish }) {
                 )}
             </div>
             {order.status === 'ASSIGNED_TO_INSPECTOR' && (
-                <button className={styles.deliveryActionBtn} onClick={() => onStart(order.orderId)} disabled={isStarting}>
-                    {isStarting ? <><Loader size={14} className={styles.spin} /> Starting...</> : <><Truck size={14} /> Start Shipping</>}
-                </button>
+                <div className={styles.deliveryActionGroup}>
+                    <button className={styles.deliveryActionBtn} onClick={() => onStart(order.orderId)} disabled={actingOrderId !== ''}>
+                        {isStarting ? <><Loader size={14} className={styles.spin} /> Starting...</> : <><Truck size={14} /> Start Shipping</>}
+                    </button>
+                    <button className={styles.deliveryActionBtnDanger} onClick={() => onSellerNoShow(order.orderId)} disabled={actingOrderId !== ''}>
+                        {isSellerNoShowing ? <><Loader size={14} className={styles.spin} /> Reporting...</> : <><UserX size={14} /> Seller No Show</>}
+                    </button>
+                </div>
             )}
             {order.status === 'IN_DELIVERY' && order.deliverySession?.deliveryStatus !== 'DELIVERED' && (
-                <button className={styles.deliveryActionBtnSecondary} onClick={() => onFinish(order.orderId)} disabled={isFinishing}>
-                    {isFinishing ? <><Loader size={14} className={styles.spin} /> Completing...</> : <><PackageCheck size={14} /> Mark Delivered</>}
-                </button>
+                <div className={styles.deliveryActionGroup}>
+                    <button className={styles.deliveryActionBtnSecondary} onClick={() => onFinish(order.orderId)} disabled={actingOrderId !== ''}>
+                        {isFinishing ? <><Loader size={14} className={styles.spin} /> Completing...</> : <><PackageCheck size={14} /> Mark Delivered</>}
+                    </button>
+                    <button className={styles.deliveryActionBtnDanger} onClick={() => onBuyerNoShow(order.orderId)} disabled={actingOrderId !== ''}>
+                        {isBuyerNoShowing ? <><Loader size={14} className={styles.spin} /> Reporting...</> : <><UserX size={14} /> Buyer No Show</>}
+                    </button>
+                </div>
             )}
             {order.status === 'IN_DELIVERY' && order.deliverySession?.deliveryStatus === 'DELIVERED' && (
                 <div className={styles.confirmedNote} style={{ marginTop: '10px' }}>
@@ -255,6 +267,39 @@ export default function InspectorDashboard() {
         }
     };
 
+    const handleBuyerNoShow = async (orderId) => {
+        if (!window.confirm('Are you sure you want to report Buyer No Show?')) return;
+        try {
+            setDeliveryActionKey(`buyer-noshow-${orderId}`);
+            await reportBuyerNoShow(orderId);
+            fetchData();
+        } catch (e) {
+            alert(e?.response?.data || 'Failed to report buyer no show.');
+        } finally {
+            setDeliveryActionKey('');
+        }
+    };
+
+    const handleSellerNoShow = async (orderId) => {
+        if (!window.confirm('Are you sure you want to report Seller No Show?')) return;
+        try {
+            setDeliveryActionKey(`seller-noshow-${orderId}`);
+            
+            const currentOrder = deliveryTasks.find(o => o.orderId === orderId);
+            if (currentOrder && currentOrder.status === 'ASSIGNED_TO_INSPECTOR') {
+                // Backend requires the order to be IN_DELIVERY to report a Seller No Show
+                await inspectorStartDelivery(orderId);
+            }
+
+            await reportSellerNoShow(orderId);
+            fetchData();
+        } catch (e) {
+            alert(e?.response?.data || 'Failed to report seller no show.');
+        } finally {
+            setDeliveryActionKey('');
+        }
+    };
+
     const handleReportDone = () => {
         setReportTarget(null);
         fetchData();
@@ -319,6 +364,8 @@ export default function InspectorDashboard() {
                                 actingOrderId={deliveryActionKey}
                                 onStart={handleStartDelivery}
                                 onFinish={handleFinishDelivery}
+                                onBuyerNoShow={handleBuyerNoShow}
+                                onSellerNoShow={handleSellerNoShow}
                             />
                         ))}
                     </div>

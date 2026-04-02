@@ -37,6 +37,7 @@ const TRANSACTION_TYPES = [
     { value: 'COMPENSATION', label: 'Compensation', color: '#2D5A27', bg: '#e8f5e9' },
     { value: 'TRANSFER', label: 'Transfer', color: '#2f54eb', bg: '#edf2ff' },
     { value: 'FEE', label: 'Fee', color: '#8c6d1f', bg: '#fff7e6' },
+    { value: 'PENALTY', label: 'Penalty', color: '#c0392b', bg: '#fdecea' },
 ];
 
 const STATUS_COLOR = {
