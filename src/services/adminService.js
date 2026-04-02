@@ -137,8 +137,8 @@ const adminService = {
         return Array.isArray(data) ? data : (data?.content || []);
     },
 
-    getInspectionReport: async (inspectionId) => {
-        const response = await api.get(`/admin/inspections/${inspectionId}/report`);
+    getInspectionReport: async (bookingId) => {
+        const response = await api.get(`/admin/bookings/${bookingId}/report`);
         return response.data;
     },
 };
