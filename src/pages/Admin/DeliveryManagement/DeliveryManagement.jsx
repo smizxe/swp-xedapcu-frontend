@@ -138,7 +138,14 @@ export default function DeliveryManagement() {
             const filteredList = status === 'ALL'
                 ? deliveryList
                 : deliveryList.filter((order) => order.status === status);
-            setDeliveryOrders(filteredList);
+
+            const sortedList = [...filteredList].sort((a, b) => {
+                if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1;
+                if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1;
+                return 0;
+            });
+            
+            setDeliveryOrders(sortedList);
         } catch (err) {
             setDeliveryError(err?.response?.data || 'Failed to load delivery orders.');
         } finally {

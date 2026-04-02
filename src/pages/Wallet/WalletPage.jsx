@@ -47,11 +47,14 @@ const STATUS_COLOR = {
     CANCELLED: 'default',
 };
 
-const formatCurrency = (amount) => {
+const formatCurrency = (amount, type) => {
     if (amount === undefined || amount === null) return '—';
-    const abs = Math.abs(Number(amount));
+    const num = Number(amount);
+    let positive = num > 0;
+    if (type === 'WITHDRAW' || type === 'WITHDRAWAL') positive = false;
+    const abs = Math.abs(num);
     const formatted = abs.toLocaleString('vi-VN') + ' đ';
-    return Number(amount) < 0 ? `-${formatted}` : `+${formatted}`;
+    return positive ? `+${formatted}` : `-${formatted}`;
 };
 
 const getTypeInfo = (type) =>
@@ -132,7 +135,11 @@ const WalletPage = ({
             render: (type, record) => {
                 let txType = type || record.type;
                 let info = getTypeInfo(txType);
-                const positive = Number(record.amount) > 0 || (Number(record.amount) === 0 && isPositiveType(txType));
+                let positive = Number(record.amount) > 0 || (Number(record.amount) === 0 && isPositiveType(txType));
+
+                if (txType === 'WITHDRAW' || txType === 'WITHDRAWAL') {
+                    positive = false;
+                }
 
                 if (txType === 'DEPOSIT' && !positive) {
                     txType = 'ORDER_DEPOSIT';
@@ -168,8 +175,11 @@ const WalletPage = ({
             key: 'amount',
             width: 160,
             render: (amount, record) => {
+                const txType = record.transactionType || record.type;
                 const num = Number(amount);
-                const positive = num > 0;
+                let positive = num > 0;
+                if (txType === 'WITHDRAW' || txType === 'WITHDRAWAL') positive = false;
+                
                 return (
                     <span className={positive ? styles.amountPositive : styles.amountNegative}>
                         {positive ? '+' : '-'}{Math.abs(num).toLocaleString('vi-VN')} đ
@@ -483,7 +493,7 @@ const WalletPage = ({
                     <div className={styles.detailContent}>
                         {[
                             { label: 'Type', value: getTypeInfo(selectedTx.transactionType || selectedTx.type).label },
-                            { label: 'Amount', value: formatCurrency(selectedTx.amount) },
+                            { label: 'Amount', value: formatCurrency(selectedTx.amount, selectedTx.transactionType || selectedTx.type) },
                             { label: 'Status', value: selectedTx.status || '—' },
                             { label: 'Time', value: selectedTx.createdAt ? new Date(selectedTx.createdAt).toLocaleString('vi-VN') : '—' },
                             ...(selectedTx.bankAccount ? [{ label: 'Bank Account', value: selectedTx.bankAccount }] : []),
