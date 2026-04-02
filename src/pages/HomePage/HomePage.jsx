@@ -71,7 +71,7 @@ const HomePage = () => {
                 const data = await getAllPosts(0, 4);
                 let rawPosts = Array.isArray(data) ? data : (data.posts || data.content || []);
                 rawPosts = rawPosts.filter(p => p.status !== 'SOLD').slice(0, 1);
-                
+
                 const postsWithThumbs = await Promise.all(rawPosts.map(async (post) => {
                     let thumbUrl = 'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=500&h=400&fit=crop';
                     try {
@@ -96,7 +96,7 @@ const HomePage = () => {
                         image: thumbUrl
                     };
                 }));
-                
+
                 setFeaturedBikes(postsWithThumbs);
             } catch (err) {
                 console.error("Failed to load featured posts", err);
@@ -185,9 +185,9 @@ const HomePage = () => {
                                     alt="Featured premium bicycle"
                                 />
                                 {/* Floating glass badge */}
-                                <div 
-                                    className={styles.floatingVerifiedBadge} 
-                                    onClick={() => navigate('/my-posts')} 
+                                <div
+                                    className={styles.floatingVerifiedBadge}
+                                    onClick={() => navigate('/my-posts')}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <span className={styles.verifiedCheckCircle}><IconCheck /></span>
@@ -244,20 +244,20 @@ const HomePage = () => {
                             </div>
                         </div>
                     ) : (
-                        <div 
-                            className={styles.featuredHeroBanner} 
+                        <div
+                            className={styles.featuredHeroBanner}
                             onClick={() => navigate(featuredBikes.length > 0 ? `/marketplace/${featuredBikes[0].id}` : '/marketplace')}
                         >
-                            <img 
-                                src={featuredBikes.length > 0 ? featuredBikes[0].image : "https://images.unsplash.com/photo-1544191696-102dbbce16ba?w=1600&h=900&fit=crop"} 
-                                alt={featuredBikes.length > 0 ? featuredBikes[0].name : "Elite Racing Bicycle"} 
+                            <img
+                                src={featuredBikes.length > 0 ? featuredBikes[0].image : "https://images.unsplash.com/photo-1544191696-102dbbce16ba?w=1600&h=900&fit=crop"}
+                                alt={featuredBikes.length > 0 ? featuredBikes[0].name : "Elite Racing Bicycle"}
                             />
                             <div className={styles.featuredOverlay}>
                                 <span className={styles.featuredBannerLabel}>
                                     {featuredBikes.length > 0 ? featuredBikes[0].brand : "Racing"}
                                 </span>
                                 <h3 className={styles.featuredBannerTitle}>
-                                    {featuredBikes.length > 0 
+                                    {featuredBikes.length > 0
                                         ? `EXPERIENCE THE ${featuredBikes[0].name.toUpperCase()}`
                                         : "CRANKWORX NEW ZEALAND 2026 RECAP"}
                                 </h3>
@@ -358,6 +358,7 @@ const HomePage = () => {
                     <div className={styles.footerBrand}>
                         <div className={styles.footerLogo}>Ekibdlo</div>
                         <p className={styles.footerTagline}>The trusted marketplace for premium verified bicycles.</p>
+                        <p className={styles.footerTagline} style={{ marginTop: '0.5rem' }}>Phone to contact: 0819458526</p>
                     </div>
                     <div className={styles.footerLinks}>
                         <div className={styles.footerCol}>
