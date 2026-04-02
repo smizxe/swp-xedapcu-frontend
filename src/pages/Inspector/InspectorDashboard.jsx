@@ -9,7 +9,7 @@ import { getMyDeliveryTasks, inspectorStartDelivery, inspectorMarkDelivered } fr
 import InspectionReportModal from './InspectionReportModal';
 import {
     Shield, ClipboardList, CheckCircle, Clock, AlertCircle,
-    Calendar, MapPin, Loader, ChevronRight, FileText, User, Truck, PackageCheck
+    Calendar, MapPin, Loader, ChevronRight, FileText, User, Truck, PackageCheck, Phone
 } from 'lucide-react';
 
 const BOOKING_STATUS = {
@@ -56,6 +56,18 @@ function BookingCard({ booking, onConfirm, confirming }) {
             {booking.requester && (
                 <div className={styles.metaRow}><User size={13} />
                     <span>Booked by: {booking.requester.fullName || booking.requester.email}</span>
+                </div>
+            )}
+            {(booking.sellerPhone || booking.requester?.phone) && (
+                <div className={styles.metaRow}>
+                    <Phone size={13} />
+                    <a
+                        href={`tel:${booking.sellerPhone || booking.requester?.phone}`}
+                        className={styles.phoneLink}
+                    >
+                        {booking.sellerPhone || booking.requester?.phone}
+                    </a>
+                    <span className={styles.phoneLabelBadge}>Seller</span>
                 </div>
             )}
             {booking.paidBy && (

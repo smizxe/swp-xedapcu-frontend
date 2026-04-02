@@ -282,6 +282,28 @@
     text-transform: uppercase;
 }
 
+.phoneLink {
+    color: var(--color-primary, #064E3B);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 150ms ease, text-decoration 150ms ease;
+}
+.phoneLink:hover {
+    color: var(--color-cta, #10B981);
+    text-decoration: underline;
+}
+
+.phoneLabelBadge {
+    display: inline-flex; align-items: center;
+    padding: 1px 7px; border-radius: 999px;
+    font-size: 0.67rem; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    margin-left: 2px;
+}
+
 /* ── Buttons ─────────────────────────────────────────── */
 .confirmBtn, .reportBtn {
     width: 100%; padding: 11px;
